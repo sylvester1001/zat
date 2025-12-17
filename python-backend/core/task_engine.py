@@ -65,13 +65,13 @@ class TaskEngine:
         self.current_state = "STOPPED"
         logger.info("任务引擎已停止")
     
-    async def wait_for_game_ready(self, timeout: int = 60, check_interval: float = 2.0) -> bool:
+    async def wait_for_game_ready(self, timeout: int = 60, check_interval: float = 0.5) -> bool:
         """
         等待游戏加载完成，检测「点击任意处开始游戏」文字
         
         Args:
             timeout: 超时时间（秒）
-            check_interval: 检测间隔（秒）
+            check_interval: 检测间隔（秒），默认 0.5 秒
         
         Returns:
             True 如果成功进入游戏，False 如果超时
@@ -80,33 +80,44 @@ class TaskEngine:
         self.current_state = "WAITING_GAME_READY"
         
         elapsed = 0
+        check_count = 0
         while elapsed < timeout:
             if not self._running:
                 return False
             
+            check_count += 1
             try:
                 # 截图
                 screen = await self.adb.screencap_array()
                 h, w = screen.shape[:2]
                 
-                logger.debug(f"截图成功，尺寸: {w}x{h}")
+                # 每 20 次检测输出一次日志，避免刷屏
+                if check_count % 20 == 1:
+                    logger.debug(f"检测中... ({elapsed:.1f}s/{timeout}s)")
                 
-                # OCR 查找「点击任意处开始游戏」
-                # 先搜索整个屏幕，确保能找到
-                result = image_matcher.ocr_find_text(
-                    screen, 
-                    self.CLICK_TO_START_TEXT
-                )
+                # 只搜索屏幕下方 1/4 区域
+                region = (0, int(h * 0.75), w, int(h * 0.25))
+                
+                # 优先使用模板匹配（速度快）
+                result = image_matcher.match_template(screen, "start", threshold=0.7)
+                
+                # 如果模板匹配失败，使用 OCR 作为备用
+                if not result:
+                    result = image_matcher.ocr_find_text(
+                        screen, 
+                        self.CLICK_TO_START_TEXT,
+                        region=region
+                    )
                 
                 if result:
                     x, y, confidence = result
-                    logger.info(f"检测到游戏启动页面，点击文字位置 ({x}, {y}) 进入游戏...")
+                    logger.info(f"检测到游戏启动页面 (置信度: {confidence:.2f})，点击位置 ({x}, {y}) 进入游戏...")
                     
                     # 点击识别到的文字位置
                     await self.adb.tap(x, y)
                     
                     # 等待一下让游戏响应
-                    await asyncio.sleep(1.5)
+                    await asyncio.sleep(1.0)
                     
                     self.current_state = "GAME_READY"
                     logger.info("已进入游戏")
@@ -117,7 +128,6 @@ class TaskEngine:
             
             await asyncio.sleep(check_interval)
             elapsed += check_interval
-            logger.debug(f"等待游戏加载... ({elapsed:.0f}s/{timeout}s)")
         
         logger.warning(f"等待游戏加载超时 ({timeout}s)")
         return False

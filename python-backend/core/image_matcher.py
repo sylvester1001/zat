@@ -63,18 +63,27 @@ class ImageMatcher:
         template_name: str,
         threshold: float = 0.8,
     ) -> Optional[Tuple[int, int, float]]:
-        """模板匹配（备用方案）"""
+        """模板匹配"""
         if template_name not in self.templates:
+            logger.debug(f"模板不存在: {template_name}")
             return None
         
         template = self.templates[template_name]
+        th, tw = template.shape[:2]
+        sh, sw = screen.shape[:2]
+        
+        # 检查模板尺寸是否小于截图
+        if th > sh or tw > sw:
+            logger.warning(f"模板 {template_name} ({tw}x{th}) 大于截图 ({sw}x{sh})，跳过匹配")
+            return None
+        
         result = cv2.matchTemplate(screen, template, cv2.TM_CCOEFF_NORMED)
         _, max_val, _, max_loc = cv2.minMaxLoc(result)
         
         if max_val >= threshold:
-            h, w = template.shape[:2]
-            center_x = max_loc[0] + w // 2
-            center_y = max_loc[1] + h // 2
+            center_x = max_loc[0] + tw // 2
+            center_y = max_loc[1] + th // 2
+            logger.debug(f"模板匹配成功: {template_name}, 置信度: {max_val:.3f}, 位置: ({center_x}, {center_y})")
             return (center_x, center_y, max_val)
         return None
     
