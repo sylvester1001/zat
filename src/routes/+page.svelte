@@ -1,44 +1,73 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import '../app.css';
-  import TaskControl from '$lib/components/TaskControl.svelte';
-  import LogViewer from '$lib/components/LogViewer.svelte';
-  import StatusBar from '$lib/components/StatusBar.svelte';
-  import DebugPanel from '$lib/components/DebugPanel.svelte';
+  import Layout from '$lib/components/Layout.svelte';
+  import HomePage from '$lib/pages/HomePage.svelte';
+  import DebugPage from '$lib/pages/DebugPage.svelte';
+  import { GradientButton, Badge } from 'flowbite-svelte';
   
+  let currentPage = 'home';
   let connected = false;
-  let device = '';
   
   onMount(() => {
     console.log('ZAT 已启动');
   });
+  
+  // 根据当前页面返回标题和副标题
+  $: pageInfo = getPageInfo(currentPage);
+  
+  function getPageInfo(page: string) {
+    switch (page) {
+      case 'home':
+        return { title: '首页', subtitle: '快速开始你的自动化任务' };
+      case 'tasks':
+        return { title: '任务管理', subtitle: '配置和管理你的任务' };
+      case 'stats':
+        return { title: '统计分析', subtitle: '查看任务执行统计' };
+      case 'debug':
+        return { title: '调试工具', subtitle: '实时调试和测试' };
+      case 'settings':
+        return { title: '设置', subtitle: '配置应用参数' };
+      default:
+        return { title: '', subtitle: '' };
+    }
+  }
 </script>
 
-<main class="h-screen bg-gray-50 dark:bg-gray-900">
-  <div class="container mx-auto p-6 h-full flex flex-col">
-    <!-- Header -->
-    <header class="mb-6">
-      <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
-        ZAT
-      </h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">
-        Automation Tool
-      </p>
-    </header>
-    
-    <!-- Main Content -->
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-hidden">
-      <!-- 左侧：控制面板 -->
-      <div class="lg:col-span-1 space-y-6 overflow-y-auto">
-        <TaskControl bind:connected bind:device />
-        <DebugPanel {connected} />
-      </div>
-      
-      <!-- 右侧：日志和状态 -->
-      <div class="lg:col-span-2 space-y-6 overflow-y-auto">
-        <StatusBar {connected} {device} />
-        <LogViewer />
-      </div>
+<Layout bind:currentPage title={pageInfo.title} subtitle={pageInfo.subtitle}>
+  <!-- Toolbar Actions -->
+  <svelte:fragment slot="toolbar">
+    {#if currentPage === 'home'}
+      <Badge color="green" large>运行中</Badge>
+    {:else if currentPage === 'debug'}
+      <GradientButton shadow color="cyan" size="xs">
+        🔄 刷新
+      </GradientButton>
+    {/if}
+  </svelte:fragment>
+  
+  <!-- Page Content -->
+  {#if currentPage === 'home'}
+    <HomePage />
+  {:else if currentPage === 'tasks'}
+    <div class="text-center py-20">
+      <div class="text-6xl mb-4">🎮</div>
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">任务管理</h3>
+      <p class="text-gray-500 dark:text-gray-400">功能开发中...</p>
     </div>
-  </div>
-</main>
+  {:else if currentPage === 'stats'}
+    <div class="text-center py-20">
+      <div class="text-6xl mb-4">📊</div>
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">统计分析</h3>
+      <p class="text-gray-500 dark:text-gray-400">功能开发中...</p>
+    </div>
+  {:else if currentPage === 'debug'}
+    <DebugPage {connected} />
+  {:else if currentPage === 'settings'}
+    <div class="text-center py-20">
+      <div class="text-6xl mb-4">⚙️</div>
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">设置</h3>
+      <p class="text-gray-500 dark:text-gray-400">功能开发中...</p>
+    </div>
+  {/if}
+</Layout>
