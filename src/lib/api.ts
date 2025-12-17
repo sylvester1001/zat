@@ -46,15 +46,20 @@ export const api = {
     return res.json();
   },
 
-  async start(taskName: string = 'farming'): Promise<{ success: boolean }> {
-    const res = await fetch(`${API_BASE}/start?task_name=${taskName}`, {
+  async startTaskEngine(taskName: string = 'farming'): Promise<{ success: boolean }> {
+    const res = await fetch(`${API_BASE}/task-engine/start?task_name=${taskName}`, {
       method: 'POST',
     });
     return res.json();
   },
 
-  async stop(): Promise<{ success: boolean }> {
-    const res = await fetch(`${API_BASE}/stop`, { method: 'POST' });
+  async stopTaskEngine(): Promise<{ success: boolean }> {
+    const res = await fetch(`${API_BASE}/task-engine/stop`, { method: 'POST' });
+    return res.json();
+  },
+
+  async startGame(): Promise<{ success: boolean; package?: string }> {
+    const res = await fetch(`${API_BASE}/start-game`, { method: 'POST' });
     return res.json();
   },
 

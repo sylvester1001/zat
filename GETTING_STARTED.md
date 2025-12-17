@@ -245,7 +245,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 1. **图像识别引擎** - 模板匹配、OCR
 2. **任务配置系统** - JSON 配置加载
 3. **状态机** - 完整的任务流程
-4. **游戏特定逻辑** - 仗剑传说的具体任务
+4. **游戏特定逻辑** - 杖剑传说的具体任务
 
 详细开发指南请查看 `DEVELOPMENT.md`。
 

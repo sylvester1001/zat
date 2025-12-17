@@ -5,9 +5,10 @@
   let connected = false;
   let device = '';
   let connecting = false;
-  let taskRunning = false;
-  let starting = false;
-  let stopping = false;
+  let taskEngineRunning = false;
+  let startingTaskEngine = false;
+  let stoppingTaskEngine = false;
+  let startingGame = false;
   
   // 状态统计
   let todayTasks = 0;
@@ -32,33 +33,48 @@
     }
   }
   
-  async function handleStart() {
-    starting = true;
+  async function handleStartTaskEngine() {
+    startingTaskEngine = true;
     try {
-      const result = await api.start('farming');
+      const result = await api.startTaskEngine('farming');
       if (result.success) {
-        taskRunning = true;
+        taskEngineRunning = true;
       }
     } catch (error) {
-      console.error('启动失败:', error);
-      alert('启动失败：' + error);
+      console.error('启动任务引擎失败:', error);
+      alert('启动任务引擎失败：' + error);
     } finally {
-      starting = false;
+      startingTaskEngine = false;
     }
   }
   
-  async function handleStop() {
-    stopping = true;
+  async function handleStopTaskEngine() {
+    stoppingTaskEngine = true;
     try {
-      const result = await api.stop();
+      const result = await api.stopTaskEngine();
       if (result.success) {
-        taskRunning = false;
+        taskEngineRunning = false;
       }
     } catch (error) {
-      console.error('停止失败:', error);
-      alert('停止失败：' + error);
+      console.error('停止任务引擎失败:', error);
+      alert('停止任务引擎失败：' + error);
     } finally {
-      stopping = false;
+      stoppingTaskEngine = false;
+    }
+  }
+  
+  async function handleStartGame() {
+    startingGame = true;
+    try {
+      const result = await api.startGame();
+      if (result.success) {
+        console.log('游戏已启动:', result.package);
+      }
+    } catch (error) {
+      console.error('启动游戏失败:', error);
+      alert('启动游戏失败：' + error);
+    } finally {
+      startingGame = false;
     }
   }
 </script>
@@ -113,7 +129,7 @@
   <!-- 快速操作 -->
   <Card size="xl">
     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">快速操作</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <!-- 连接设备 -->
       <div class="text-center">
         <GradientButton
@@ -139,52 +155,75 @@
         <p class="text-xs text-gray-500 dark:text-gray-400">连接到模拟器</p>
       </div>
       
-      <!-- 启动任务 -->
+      <!-- 启动游戏 -->
+      <div class="text-center">
+        <GradientButton
+          shadow
+          color="purple"
+          size="xl"
+          class="w-full mb-2"
+          disabled={!connected || startingGame}
+          on:click={handleStartGame}
+        >
+          {#if startingGame}
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            启动中...
+          {:else}
+            🎮 启动游戏
+          {/if}
+        </GradientButton>
+        <p class="text-xs text-gray-500 dark:text-gray-400">启动杖剑传说</p>
+      </div>
+      
+      <!-- 启动自动化 -->
       <div class="text-center">
         <GradientButton
           shadow
           color="lime"
           size="xl"
           class="w-full mb-2"
-          disabled={!connected || starting || taskRunning}
-          on:click={handleStart}
+          disabled={!connected || startingTaskEngine || taskEngineRunning}
+          on:click={handleStartTaskEngine}
         >
-          {#if starting}
+          {#if startingTaskEngine}
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             启动中...
-          {:else if taskRunning}
+          {:else if taskEngineRunning}
             ▶ 运行中
           {:else}
-            🚀 启动任务
+            🚀 启动自动化
           {/if}
         </GradientButton>
         <p class="text-xs text-gray-500 dark:text-gray-400">开始自动刷图</p>
       </div>
       
-      <!-- 停止任务 -->
+      <!-- 停止自动化 -->
       <div class="text-center">
         <GradientButton
           shadow
           color="red"
           size="xl"
           class="w-full mb-2"
-          disabled={!taskRunning || stopping}
-          on:click={handleStop}
+          disabled={!taskEngineRunning || stoppingTaskEngine}
+          on:click={handleStopTaskEngine}
         >
-          {#if stopping}
+          {#if stoppingTaskEngine}
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             停止中...
           {:else}
-            ⏹ 停止任务
+            ⏹ 停止自动化
           {/if}
         </GradientButton>
-        <p class="text-xs text-gray-500 dark:text-gray-400">停止当前任务</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">停止自动化任务</p>
       </div>
     </div>
   </Card>

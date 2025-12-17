@@ -29,7 +29,7 @@
       </div>
       <div>
         <h1 class="text-xl font-bold text-gray-900 dark:text-white">ZAT</h1>
-        <p class="text-xs text-gray-500 dark:text-gray-400">仗剑传说助手</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">杖剑传说助手</p>
       </div>
     </div>
   </div>
@@ -58,7 +58,7 @@
   <div class="p-4 border-t border-gray-200 dark:border-gray-700">
     <div class="text-xs text-gray-500 dark:text-gray-400 text-center">
       <p>版本 0.1.0</p>
-      <p class="mt-1">© 2024 ZAT</p>
+      <p class="mt-1">© 2025 ZAT</p>
     </div>
   </div>
 </aside>

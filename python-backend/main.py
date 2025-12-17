@@ -91,30 +91,49 @@ async def get_status():
     }
 
 
-@app.post("/start")
-async def start_task(task_name: str = "farming"):
-    """启动任务"""
+@app.post("/task-engine/start")
+async def start_task_engine(task_name: str = "farming"):
+    """启动任务引擎（自动化）"""
     if not adb_controller.is_connected():
         raise HTTPException(status_code=400, detail="设备未连接")
     
     try:
         await task_engine.start(task_name)
-        logger.info(f"任务已启动: {task_name}")
+        logger.info(f"任务引擎已启动: {task_name}")
         return {"success": True, "task": task_name}
     except Exception as e:
-        logger.error(f"启动任务失败: {e}")
+        logger.error(f"启动任务引擎失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/stop")
-async def stop_task():
-    """停止任务"""
+@app.post("/task-engine/stop")
+async def stop_task_engine():
+    """停止任务引擎（自动化）"""
     try:
         await task_engine.stop()
-        logger.info("任务已停止")
+        logger.info("任务引擎已停止")
         return {"success": True}
     except Exception as e:
-        logger.error(f"停止任务失败: {e}")
+        logger.error(f"停止任务引擎失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/start-game")
+async def start_game():
+    """启动游戏（杖剑传说）"""
+    if not adb_controller.is_connected():
+        raise HTTPException(status_code=400, detail="设备未连接")
+    
+    try:
+        # 杖剑传说包名和Activity
+        package = "com.leiting.zjcs"
+        activity = "com.leiting.unity.AppActivity"
+        
+        await adb_controller.start_app(package, activity)
+        logger.info(f"游戏已启动: {package}")
+        return {"success": True, "package": package}
+    except Exception as e:
+        logger.error(f"启动游戏失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

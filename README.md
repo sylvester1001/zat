@@ -1,4 +1,4 @@
-# ZAT - 仗剑传说自动化工具
+# ZAT - 杖剑传说自动化工具
 
 Zhangjianchuanshuo Automation Tool
 

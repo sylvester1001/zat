@@ -22,8 +22,8 @@ class ADBController:
     
     # 常见模拟器端口
     COMMON_PORTS = [
+        5555,   # MuMu (默认端口), BlueStacks, 雷电
         16384,  # MuMu 12
-        5555,   # BlueStacks, 雷电
         62001,  # 夜神
         21503,  # 逍遥
     ]
