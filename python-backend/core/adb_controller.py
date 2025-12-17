@@ -28,6 +28,10 @@ class ADBController:
         21503,  # 逍遥
     ]
     
+    # 推荐的分辨率（用于图像识别）
+    # 仗剑传说是竖屏游戏，推荐 720x1280
+    RECOMMENDED_RESOLUTION = (720, 1280)
+    
     def __init__(self, adb_path: str = "adb"):
         """
         初始化 ADB 控制器
@@ -37,6 +41,7 @@ class ADBController:
         """
         self.adb_path = adb_path
         self.device: Optional[str] = None
+        self.screen_resolution: Optional[tuple[int, int]] = None
         
         # 检查 ADB 是否可用
         if not shutil.which(self.adb_path):
@@ -256,6 +261,43 @@ class ADBController:
             raise ADBError(f"滑动失败: {stderr}")
         
         logger.debug(f"滑动: ({x1}, {y1}) -> ({x2}, {y2})")
+    
+    async def get_screen_resolution(self) -> tuple[int, int]:
+        """
+        获取屏幕分辨率
+        
+        Returns:
+            (width, height)
+        """
+        if not self.is_connected():
+            raise ADBError("设备未连接")
+        
+        cmd = f'"{self.adb_path}" -s {self.device} shell wm size'
+        stdout, stderr, code = await self._run_command(cmd)
+        
+        if code != 0:
+            raise ADBError(f"获取分辨率失败: {stderr}")
+        
+        # 解析输出: "Physical size: 1280x720"
+        for line in stdout.strip().split("\n"):
+            if ":" in line:
+                size_str = line.split(":")[-1].strip()
+                if "x" in size_str:
+                    width, height = map(int, size_str.split("x"))
+                    self.screen_resolution = (width, height)
+                    logger.info(f"屏幕分辨率: {width}x{height}")
+                    
+                    # 检查是否为推荐分辨率
+                    if (width, height) != self.RECOMMENDED_RESOLUTION:
+                        logger.warning(
+                            f"当前分辨率 {width}x{height} 与推荐分辨率 "
+                            f"{self.RECOMMENDED_RESOLUTION[0]}x{self.RECOMMENDED_RESOLUTION[1]} 不匹配，"
+                            f"可能影响图像识别准确性"
+                        )
+                    
+                    return (width, height)
+        
+        raise ADBError("无法解析分辨率")
     
     async def start_app(self, package: str, activity: str = None):
         """

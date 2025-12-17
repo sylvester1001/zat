@@ -71,7 +71,18 @@ async def connect_device():
         device = await adb_controller.auto_discover()
         if device:
             logger.info(f"已连接设备: {device}")
-            return {"success": True, "device": device}
+            
+            # 获取屏幕分辨率
+            try:
+                resolution = await adb_controller.get_screen_resolution()
+                return {
+                    "success": True,
+                    "device": device,
+                    "resolution": {"width": resolution[0], "height": resolution[1]}
+                }
+            except Exception as e:
+                logger.warning(f"获取分辨率失败: {e}")
+                return {"success": True, "device": device}
         else:
             logger.error("未找到设备")
             raise HTTPException(status_code=404, detail="未找到设备")

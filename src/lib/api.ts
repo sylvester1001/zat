@@ -32,11 +32,22 @@ export interface StateMessage {
   loop_count: number;
 }
 
+export interface Resolution {
+  width: number;
+  height: number;
+}
+
+export interface ConnectResponse {
+  success: boolean;
+  device?: string;
+  resolution?: Resolution;
+}
+
 /**
  * HTTP API
  */
 export const api = {
-  async connect(): Promise<{ success: boolean; device?: string }> {
+  async connect(): Promise<ConnectResponse> {
     const res = await fetch(`${API_BASE}/connect`, { method: 'POST' });
     return res.json();
   },

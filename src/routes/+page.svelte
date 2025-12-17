@@ -5,9 +5,13 @@
   import HomePage from '$lib/pages/HomePage.svelte';
   import DebugPage from '$lib/pages/DebugPage.svelte';
   import { GradientButton, Badge } from 'flowbite-svelte';
+  import { appStore } from '$lib/stores/appStore';
   
   let currentPage = 'home';
-  let connected = false;
+  
+  // 从store获取状态
+  $: connected = $appStore.connected;
+  $: taskEngineRunning = $appStore.taskEngineRunning;
   
   onMount(() => {
     console.log('ZAT 已启动');
@@ -38,17 +42,27 @@
   <!-- Toolbar Actions -->
   <svelte:fragment slot="toolbar">
     {#if currentPage === 'home'}
-      <Badge color="green" large>运行中</Badge>
+      {#if taskEngineRunning}
+        <Badge color="green" large>运行中</Badge>
+      {:else if connected}
+        <Badge color="blue" large>已连接</Badge>
+      {:else}
+        <Badge color="gray" large>未连接</Badge>
+      {/if}
     {:else if currentPage === 'debug'}
-      <GradientButton shadow color="cyan" size="xs">
-        🔄 刷新
-      </GradientButton>
+      {#if connected}
+        <Badge color="green" large>已连接</Badge>
+      {:else}
+        <Badge color="gray" large>未连接</Badge>
+      {/if}
     {/if}
   </svelte:fragment>
   
   <!-- Page Content -->
   {#if currentPage === 'home'}
     <HomePage />
+  {:else if currentPage === 'debug'}
+    <DebugPage />
   {:else if currentPage === 'tasks'}
     <div class="text-center py-20">
       <div class="text-6xl mb-4">🎮</div>
@@ -61,8 +75,6 @@
       <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">统计分析</h3>
       <p class="text-gray-500 dark:text-gray-400">功能开发中...</p>
     </div>
-  {:else if currentPage === 'debug'}
-    <DebugPage {connected} />
   {:else if currentPage === 'settings'}
     <div class="text-center py-20">
       <div class="text-6xl mb-4">⚙️</div>

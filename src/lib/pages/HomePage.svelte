@@ -1,14 +1,18 @@
 <script lang="ts">
   import { Card, GradientButton, Button, Badge, Indicator } from 'flowbite-svelte';
   import { api } from '$lib/api';
+  import { appStore, setConnected, setDisconnected, setTaskEngineRunning } from '$lib/stores/appStore';
   
-  let connected = false;
-  let device = '';
   let connecting = false;
-  let taskEngineRunning = false;
   let startingTaskEngine = false;
   let stoppingTaskEngine = false;
   let startingGame = false;
+  
+  // 从store获取状态
+  $: connected = $appStore.connected;
+  $: device = $appStore.device;
+  $: resolution = $appStore.resolution;
+  $: taskEngineRunning = $appStore.taskEngineRunning;
   
   // 状态统计
   let todayTasks = 0;
@@ -20,8 +24,24 @@
     try {
       const result = await api.connect();
       if (result.success && result.device) {
-        connected = true;
-        device = result.device;
+        // 更新全局状态
+        const resolutionStr = result.resolution 
+          ? `${result.resolution.width}x${result.resolution.height}`
+          : '';
+        setConnected(result.device, resolutionStr);
+        
+        // 检查是否为推荐分辨率（仗剑传说是竖屏游戏）
+        if (result.resolution) {
+          if (result.resolution.width !== 720 || result.resolution.height !== 1280) {
+            alert(
+              `⚠️ 分辨率警告\n\n` +
+              `当前分辨率: ${resolutionStr}\n` +
+              `推荐分辨率: 720x1280 (竖屏)\n\n` +
+              `不同分辨率可能影响图像识别准确性。\n` +
+              `建议使用: adb shell wm size 720x1280`
+            );
+          }
+        }
       } else {
         alert('连接失败：未找到设备');
       }
@@ -38,7 +58,7 @@
     try {
       const result = await api.startTaskEngine('farming');
       if (result.success) {
-        taskEngineRunning = true;
+        setTaskEngineRunning(true);
       }
     } catch (error) {
       console.error('启动任务引擎失败:', error);
@@ -53,7 +73,7 @@
     try {
       const result = await api.stopTaskEngine();
       if (result.success) {
-        taskEngineRunning = false;
+        setTaskEngineRunning(false);
       }
     } catch (error) {
       console.error('停止任务引擎失败:', error);
@@ -95,6 +115,9 @@
           </div>
           {#if device}
             <p class="text-xs text-gray-400 mt-1">{device}</p>
+            {#if resolution}
+              <p class="text-xs text-gray-400">分辨率: {resolution}</p>
+            {/if}
           {/if}
         </div>
         <div class="text-4xl">📱</div>

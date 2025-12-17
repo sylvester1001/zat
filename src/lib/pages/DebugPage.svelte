@@ -1,31 +1,61 @@
 <script lang="ts">
-  import { Card, GradientButton, Toggle, Spinner } from 'flowbite-svelte';
+  import { Card, GradientButton, Toggle, Spinner, Badge } from 'flowbite-svelte';
   import { api } from '$lib/api';
-  
-  export let connected = false;
+  import { appStore } from '$lib/stores/appStore';
   
   let screenshotUrl = '';
   let useGray = false;
   let loading = false;
+  let imageWidth = 0;
+  let imageHeight = 0;
+  let imageSize = '';
+  let loadTime = 0;
   
-  function refreshScreenshot() {
+  // 从store获取连接状态
+  $: connected = $appStore.connected;
+  $: deviceResolution = $appStore.resolution;
+  
+  async function refreshScreenshot() {
     if (!connected) {
       alert('请先连接设备');
       return;
     }
     
     loading = true;
+    const startTime = performance.now();
     screenshotUrl = api.getScreenshotUrl(useGray);
     
-    const img = new Image();
-    img.onload = () => {
+    // 获取图片信息
+    try {
+      const response = await fetch(screenshotUrl);
+      const blob = await response.blob();
+      imageSize = formatBytes(blob.size);
+      
+      const img = new Image();
+      img.onload = () => {
+        imageWidth = img.naturalWidth;
+        imageHeight = img.naturalHeight;
+        loadTime = Math.round(performance.now() - startTime);
+        loading = false;
+      };
+      img.onerror = () => {
+        loading = false;
+        alert('截图失败');
+      };
+      img.src = URL.createObjectURL(blob);
+      screenshotUrl = img.src;
+    } catch (error) {
       loading = false;
-    };
-    img.onerror = () => {
-      loading = false;
-      alert('截图失败');
-    };
-    img.src = screenshotUrl;
+      alert('截图失败: ' + error);
+    }
+  }
+  
+  function formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 </script>
 
@@ -33,25 +63,52 @@
   <!-- 左侧：截图预览 -->
   <div class="lg:col-span-2">
     <Card size="xl" class="h-full">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时截图</h3>
-        <div class="flex items-center gap-3">
-          <Toggle bind:checked={useGray} size="small">灰度模式</Toggle>
-          <GradientButton
-            shadow
-            color="cyan"
-            size="sm"
-            disabled={!connected || loading}
-            on:click={refreshScreenshot}
-          >
-            {#if loading}
-              <Spinner class="mr-2" size="4" />
-              加载中...
-            {:else}
-              🔄 刷新截图
-            {/if}
-          </GradientButton>
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时截图</h3>
+          <div class="flex items-center gap-3">
+            <Toggle bind:checked={useGray} size="small">灰度模式</Toggle>
+            <GradientButton
+              shadow
+              color="cyan"
+              size="sm"
+              disabled={!connected || loading}
+              on:click={refreshScreenshot}
+            >
+              {#if loading}
+                <Spinner class="mr-2" size="4" />
+                加载中...
+              {:else}
+                🔄 刷新截图
+              {/if}
+            </GradientButton>
+          </div>
         </div>
+        
+        <!-- 截图信息 -->
+        {#if screenshotUrl}
+          <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+            <Badge color="blue">
+              📐 {imageWidth}x{imageHeight}
+            </Badge>
+            <Badge color="green">
+              💾 {imageSize}
+            </Badge>
+            <Badge color="purple">
+              ⏱️ {loadTime}ms
+            </Badge>
+            {#if deviceResolution}
+              <Badge color="cyan">
+                📱 设备: {deviceResolution}
+              </Badge>
+            {/if}
+            {#if useGray}
+              <Badge color="gray">
+                🎨 灰度模式
+              </Badge>
+            {/if}
+          </div>
+        {/if}
       </div>
       
       <div class="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center">
