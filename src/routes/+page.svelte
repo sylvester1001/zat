@@ -19,10 +19,10 @@
     <!-- Header -->
     <header class="mb-6">
       <h1 class="text-4xl font-bold text-gray-900 dark:text-white">
-        ZAT - 仗剑传说自动化工具
+        ZAT
       </h1>
       <p class="text-gray-600 dark:text-gray-400 mt-2">
-        Zhangjianchuanshuo Automation Tool
+        Automation Tool
       </p>
     </header>
     
