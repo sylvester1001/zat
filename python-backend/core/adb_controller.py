@@ -50,8 +50,32 @@ class ADBController:
         logger.info(f"ADB 控制器已初始化: {self.adb_path}")
     
     def is_connected(self) -> bool:
-        """检查是否已连接设备"""
+        """检查是否已连接设备（仅检查本地状态）"""
         return self.device is not None
+    
+    async def check_device_online(self) -> bool:
+        """
+        实时检查设备是否在线
+        
+        Returns:
+            True 如果设备在线且可用，否则 False
+        """
+        if not self.device:
+            return False
+        
+        try:
+            devices = await self.get_devices()
+            if self.device in devices:
+                return True
+            else:
+                # 设备离线，清除状态
+                logger.warning(f"设备已离线: {self.device}")
+                self.device = None
+                self.screen_resolution = None
+                return False
+        except Exception as e:
+            logger.error(f"检查设备状态失败: {e}")
+            return False
     
     async def _run_command(self, cmd: str) -> tuple[str, str, int]:
         """

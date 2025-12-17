@@ -93,9 +93,12 @@ async def connect_device():
 
 @app.get("/status")
 async def get_status():
-    """获取当前状态"""
+    """获取当前状态（实时检测设备连接）"""
+    # 实时检查设备是否在线
+    is_online = await adb_controller.check_device_online() if adb_controller else False
+    
     return {
-        "connected": adb_controller.is_connected() if adb_controller else False,
+        "connected": is_online,
         "device": adb_controller.device if adb_controller else None,
         "task_running": task_engine.is_running() if task_engine else False,
         "current_state": task_engine.current_state if task_engine else None,

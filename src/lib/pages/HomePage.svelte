@@ -155,10 +155,10 @@
       <div class="text-center">
         <GradientButton
           shadow
-          color="blue"
+          color={connected ? 'cyan' : 'blue'}
           size="xl"
           class="w-full mb-2"
-          disabled={connecting || connected}
+          disabled={connecting}
           onclick={handleConnect}
         >
           {#if connecting}
@@ -168,12 +168,12 @@
             </svg>
             连接中...
           {:else if connected}
-            ✓ 已连接
+            🔄 重新连接
           {:else}
             📱 连接设备
           {/if}
         </GradientButton>
-        <p class="text-xs text-gray-500 dark:text-gray-400">连接到模拟器</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">{connected ? '重新连接设备' : '连接到模拟器'}</p>
       </div>
       
       <!-- 启动游戏 -->

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import '../app.css';
   import Layout from '$lib/components/Layout.svelte';
   import HomePage from '$lib/pages/HomePage.svelte';
   import DebugPage from '$lib/pages/DebugPage.svelte';
   import { Badge } from 'flowbite-svelte';
-  import { appStore } from '$lib/stores/appStore';
+  import { appStore, startHeartbeat, stopHeartbeat } from '$lib/stores/appStore';
   
   let currentPage = $state('home');
   
@@ -15,6 +15,11 @@
   
   onMount(() => {
     console.log('ZAT 已启动');
+    startHeartbeat();
+  });
+  
+  onDestroy(() => {
+    stopHeartbeat();
   });
   
   // 根据当前页面返回标题和副标题
