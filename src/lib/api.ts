@@ -1,0 +1,144 @@
+/**
+ * ZAT API 客户端
+ */
+
+const API_BASE = 'http://127.0.0.1:8000';
+
+export interface ApiResponse<T = any> {
+  success?: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface Status {
+  connected: boolean;
+  device: string | null;
+  task_running: boolean;
+  current_state: string | null;
+}
+
+export interface LogMessage {
+  type: 'log';
+  level: 'info' | 'warning' | 'error' | 'debug';
+  timestamp: string;
+  logger: string;
+  message: string;
+}
+
+export interface StateMessage {
+  type: 'state';
+  current_state: string | null;
+  is_running: boolean;
+  loop_count: number;
+}
+
+/**
+ * HTTP API
+ */
+export const api = {
+  async connect(): Promise<{ success: boolean; device?: string }> {
+    const res = await fetch(`${API_BASE}/connect`, { method: 'POST' });
+    return res.json();
+  },
+
+  async getStatus(): Promise<Status> {
+    const res = await fetch(`${API_BASE}/status`);
+    return res.json();
+  },
+
+  async start(taskName: string = 'farming'): Promise<{ success: boolean }> {
+    const res = await fetch(`${API_BASE}/start?task_name=${taskName}`, {
+      method: 'POST',
+    });
+    return res.json();
+  },
+
+  async stop(): Promise<{ success: boolean }> {
+    const res = await fetch(`${API_BASE}/stop`, { method: 'POST' });
+    return res.json();
+  },
+
+  getScreenshotUrl(gray: boolean = false): string {
+    return `${API_BASE}/debug/screenshot?gray=${gray}&t=${Date.now()}`;
+  },
+};
+
+/**
+ * WebSocket 连接管理
+ */
+export class WebSocketManager {
+  private ws: WebSocket | null = null;
+  private reconnectTimer: number | null = null;
+  private reconnectDelay = 3000;
+
+  constructor(
+    private endpoint: string,
+    private onMessage: (data: any) => void,
+    private onConnect?: () => void,
+    private onDisconnect?: () => void
+  ) {}
+
+  connect() {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    const url = `ws://127.0.0.1:8000${this.endpoint}`;
+    console.log(`连接 WebSocket: ${url}`);
+
+    this.ws = new WebSocket(url);
+
+    this.ws.onopen = () => {
+      console.log(`WebSocket 已连接: ${this.endpoint}`);
+      this.onConnect?.();
+      
+      // 清除重连定时器
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+    };
+
+    this.ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        this.onMessage(data);
+      } catch (e) {
+        console.error('解析 WebSocket 消息失败:', e);
+      }
+    };
+
+    this.ws.onerror = (error) => {
+      console.error(`WebSocket 错误: ${this.endpoint}`, error);
+    };
+
+    this.ws.onclose = () => {
+      console.log(`WebSocket 已断开: ${this.endpoint}`);
+      this.onDisconnect?.();
+      
+      // 自动重连
+      this.reconnectTimer = setTimeout(() => {
+        console.log(`尝试重连: ${this.endpoint}`);
+        this.connect();
+      }, this.reconnectDelay) as unknown as number;
+    };
+  }
+
+  disconnect() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+  }
+
+  send(data: any) {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(data));
+    }
+  }
+}
