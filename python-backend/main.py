@@ -133,8 +133,14 @@ async def stop_task_engine():
 
 
 @app.post("/start-game")
-async def start_game():
-    """启动游戏（杖剑传说）"""
+async def start_game(wait_ready: bool = False, timeout: int = 60):
+    """
+    启动游戏（杖剑传说）
+    
+    Args:
+        wait_ready: 是否等待游戏加载完成并自动点击进入
+        timeout: 等待超时时间（秒）
+    """
     if not adb_controller.is_connected():
         raise HTTPException(status_code=400, detail="设备未连接")
     
@@ -145,6 +151,20 @@ async def start_game():
         
         await adb_controller.start_app(package, activity)
         logger.info(f"游戏已启动: {package}")
+        
+        # 如果需要等待游戏加载完成
+        if wait_ready:
+            # 临时设置 task_engine 为运行状态以便 wait_for_game_ready 工作
+            task_engine._running = True
+            try:
+                success = await task_engine.wait_for_game_ready(timeout=timeout)
+                if not success:
+                    return {"success": True, "package": package, "entered": False, "message": "游戏已启动但等待进入超时"}
+                return {"success": True, "package": package, "entered": True}
+            finally:
+                task_engine._running = False
+                task_engine.current_state = None
+        
         return {"success": True, "package": package}
     except Exception as e:
         logger.error(f"启动游戏失败: {e}")
@@ -162,6 +182,49 @@ async def get_screenshot(gray: bool = False):
         return Response(content=screenshot, media_type="image/jpeg")
     except Exception as e:
         logger.error(f"截图失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/debug/ocr")
+async def debug_ocr(target: str = None):
+    """
+    OCR 调试端点
+    
+    Args:
+        target: 要查找的目标文字（可选），如果不指定则返回所有识别到的文字
+    """
+    if not adb_controller.is_connected():
+        raise HTTPException(status_code=400, detail="设备未连接")
+    
+    try:
+        from core.image_matcher import image_matcher
+        
+        screen = await adb_controller.screencap_array()
+        
+        if target:
+            # 查找特定文字
+            result = image_matcher.ocr_find_text(screen, target)
+            if result:
+                x, y, confidence = result
+                return {
+                    "found": True,
+                    "target": target,
+                    "position": {"x": x, "y": y},
+                    "confidence": confidence
+                }
+            else:
+                return {"found": False, "target": target}
+        else:
+            # 返回所有识别到的文字
+            texts = image_matcher.ocr_get_all_text(screen)
+            return {
+                "texts": [
+                    {"text": t, "confidence": c, "position": {"x": pos[0], "y": pos[1]}}
+                    for t, c, pos in texts
+                ]
+            }
+    except Exception as e:
+        logger.error(f"OCR 失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

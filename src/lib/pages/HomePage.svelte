@@ -81,12 +81,20 @@
     }
   }
   
-  async function handleStartGame() {
+  async function handleStartGame(waitReady: boolean = false) {
     startingGame = true;
     try {
-      const result = await api.startGame();
+      const result = await api.startGame(waitReady, 60);
       if (result.success) {
-        console.log('游戏已启动:', result.package);
+        if (waitReady) {
+          if (result.entered) {
+            console.log('游戏已启动并进入');
+          } else {
+            alert('游戏已启动，但等待进入超时。请手动点击进入游戏。');
+          }
+        } else {
+          console.log('游戏已启动:', result.package);
+        }
       }
     } catch (error) {
       console.error('启动游戏失败:', error);
@@ -184,19 +192,19 @@
           size="xl"
           class="w-full mb-2"
           disabled={!connected || startingGame}
-          onclick={handleStartGame}
+          onclick={() => handleStartGame(true)}
         >
           {#if startingGame}
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            启动中...
+            等待进入...
           {:else}
             🎮 启动游戏
           {/if}
         </GradientButton>
-        <p class="text-xs text-gray-500 dark:text-gray-400">启动杖剑传说</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">启动并自动进入游戏</p>
       </div>
       
       <!-- 启动自动化 -->

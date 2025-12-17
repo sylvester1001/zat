@@ -69,8 +69,16 @@ export const api = {
     return res.json();
   },
 
-  async startGame(): Promise<{ success: boolean; package?: string }> {
-    const res = await fetch(`${API_BASE}/start-game`, { method: 'POST' });
+  async startGame(waitReady: boolean = false, timeout: number = 60): Promise<{ 
+    success: boolean; 
+    package?: string;
+    entered?: boolean;
+    message?: string;
+  }> {
+    const params = new URLSearchParams();
+    params.set('wait_ready', String(waitReady));
+    params.set('timeout', String(timeout));
+    const res = await fetch(`${API_BASE}/start-game?${params}`, { method: 'POST' });
     return res.json();
   },
 

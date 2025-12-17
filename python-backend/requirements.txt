@@ -4,3 +4,5 @@ websockets==14.1
 opencv-python-headless==4.10.0.84
 numpy==2.2.1
 pillow==11.0.0
+paddlepaddle>=3.0.0
+paddleocr>=3.0.0
