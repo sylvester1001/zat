@@ -41,21 +41,38 @@ class ImageMatcher:
         self.templates: dict[str, np.ndarray] = {}
         self._load_templates()
     
-    def _load_templates(self):
-        """加载所有模板图片"""
-        if not os.path.exists(TEMPLATES_DIR):
-            os.makedirs(TEMPLATES_DIR)
-            logger.info(f"创建模板目录: {TEMPLATES_DIR}")
+    def _load_templates(self, directory: str = None, prefix: str = ""):
+        """
+        递归加载所有模板图片
+        
+        子目录中的模板会以 "目录名/文件名" 的格式命名
+        例如: daily-dungeon/world-tree
+        """
+        if directory is None:
+            directory = TEMPLATES_DIR
+            
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            logger.info(f"创建模板目录: {directory}")
             return
         
-        for filename in os.listdir(TEMPLATES_DIR):
+        for filename in os.listdir(directory):
+            filepath = os.path.join(directory, filename)
+            
+            # 如果是目录，递归加载
+            if os.path.isdir(filepath):
+                subdir_prefix = f"{prefix}{filename}/" if prefix else f"{filename}/"
+                self._load_templates(filepath, subdir_prefix)
+                continue
+            
+            # 加载图片文件
             if filename.endswith(('.png', '.jpg', '.jpeg')):
                 name = os.path.splitext(filename)[0]
-                path = os.path.join(TEMPLATES_DIR, filename)
-                img = cv2.imread(path)
+                template_name = f"{prefix}{name}" if prefix else name
+                img = cv2.imread(filepath)
                 if img is not None:
-                    self.templates[name] = img
-                    logger.info(f"已加载模板: {name}")
+                    self.templates[template_name] = img
+                    logger.info(f"已加载模板: {template_name}")
     
     def match_template(
         self,

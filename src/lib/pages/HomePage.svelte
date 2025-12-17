@@ -2,6 +2,7 @@
   import { Card, GradientButton, Badge, Indicator } from 'flowbite-svelte';
   import { api } from '$lib/api';
   import { appStore, setConnected, setTaskEngineRunning } from '$lib/stores/appStore';
+  import DungeonSelector from '$lib/components/DungeonSelector.svelte';
   
   let connecting = $state(false);
   let startingTaskEngine = $state(false);
@@ -9,10 +10,20 @@
   let startingGame = $state(false);
   
   // 从store获取状态
-  let connected = $derived($appStore.connected);
-  let device = $derived($appStore.device);
-  let resolution = $derived($appStore.resolution);
-  let taskEngineRunning = $derived($appStore.taskEngineRunning);
+  let storeValue = $state<import('$lib/stores/appStore').AppState | null>(null);
+  
+  // 订阅 store
+  $effect(() => {
+    const unsubscribe = appStore.subscribe(value => {
+      storeValue = value;
+    });
+    return unsubscribe;
+  });
+  
+  let connected = $derived(storeValue?.connected ?? false);
+  let device = $derived(storeValue?.device ?? '');
+  let resolution = $derived(storeValue?.resolution ?? '');
+  let taskEngineRunning = $derived(storeValue?.taskEngineRunning ?? false);
   
   // 状态统计
   let todayTasks = $state(0);
@@ -23,10 +34,12 @@
     connecting = true;
     try {
       const result = await api.connect();
+      console.log('连接结果:', result);
       if (result.success && result.device) {
         const resolutionStr = result.resolution 
           ? `${result.resolution.width}x${result.resolution.height}`
           : '';
+        console.log('调用 setConnected:', result.device, resolutionStr);
         setConnected(result.device, resolutionStr);
         
         if (result.resolution) {
@@ -257,14 +270,20 @@
     </div>
   </Card>
 
-  <!-- 实时日志 -->
-  <Card size="xl" class="p-4">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时日志</h3>
-      <Badge color="green">运行中</Badge>
-    </div>
-    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 h-48 overflow-y-auto font-mono text-sm">
-      <p class="text-gray-400 dark:text-gray-500">暂无日志...</p>
-    </div>
-  </Card>
+  <!-- 副本选择和实时日志 -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- 副本选择 -->
+    <DungeonSelector />
+    
+    <!-- 实时日志 -->
+    <Card class="p-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时日志</h3>
+        <Badge color="green">运行中</Badge>
+      </div>
+      <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 h-48 overflow-y-auto font-mono text-sm">
+        <p class="text-gray-400 dark:text-gray-500">暂无日志...</p>
+      </div>
+    </Card>
+  </div>
 </div>

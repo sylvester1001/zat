@@ -85,6 +85,30 @@ export const api = {
   getScreenshotUrl(gray: boolean = false): string {
     return `${API_BASE}/debug/screenshot?gray=${gray}&t=${Date.now()}`;
   },
+
+  async getDungeons(): Promise<{
+    dungeons: Array<{
+      id: string;
+      name: string;
+      difficulties: string[];
+    }>;
+  }> {
+    const res = await fetch(`${API_BASE}/dungeons`);
+    return res.json();
+  },
+
+  async navigateToDungeon(dungeonId: string, difficulty: string = 'normal'): Promise<{
+    success: boolean;
+    dungeon?: string;
+    difficulty?: string;
+    message?: string;
+  }> {
+    const params = new URLSearchParams();
+    params.set('dungeon_id', dungeonId);
+    params.set('difficulty', difficulty);
+    const res = await fetch(`${API_BASE}/navigate-to-dungeon?${params}`, { method: 'POST' });
+    return res.json();
+  },
 };
 
 /**

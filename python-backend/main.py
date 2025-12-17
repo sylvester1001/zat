@@ -12,11 +12,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.adb_controller import ADBController
 from core.task_engine import TaskEngine
+from core.dungeon_navigator import DungeonNavigator, DungeonType, DungeonDifficulty, DUNGEON_CONFIG
 from utils.logger import setup_logger, LogBroadcaster
 
 # 全局实例
 adb_controller: ADBController = None
 task_engine: TaskEngine = None
+dungeon_navigator: DungeonNavigator = None
 log_broadcaster = LogBroadcaster()
 logger = setup_logger("zat", log_broadcaster)
 
@@ -24,7 +26,7 @@ logger = setup_logger("zat", log_broadcaster)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    global adb_controller, task_engine
+    global adb_controller, task_engine, dungeon_navigator
     
     logger.info("ZAT Backend 启动中...")
     
@@ -33,6 +35,9 @@ async def lifespan(app: FastAPI):
     
     # 初始化任务引擎
     task_engine = TaskEngine(adb_controller, log_broadcaster)
+    
+    # 初始化副本导航器
+    dungeon_navigator = DungeonNavigator(adb_controller)
     
     logger.info("ZAT Backend 启动完成")
     
@@ -182,6 +187,52 @@ async def get_screenshot(gray: bool = False):
         return Response(content=screenshot, media_type="image/jpeg")
     except Exception as e:
         logger.error(f"截图失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/dungeons")
+async def get_dungeons():
+    """获取可用副本列表"""
+    dungeons = []
+    for dungeon_type, config in DUNGEON_CONFIG.items():
+        dungeons.append({
+            "id": dungeon_type.value,
+            "name": config["name"],
+            "difficulties": [d.value for d in config["difficulties"]],
+        })
+    return {"dungeons": dungeons}
+
+
+@app.post("/navigate-to-dungeon")
+async def navigate_to_dungeon(dungeon_id: str, difficulty: str = "normal"):
+    """
+    导航到指定副本
+    
+    Args:
+        dungeon_id: 副本ID (world-tree, mount-mechagod, sea-palace, mizumoto-shrine)
+        difficulty: 难度 (normal, hard, nightmare)
+    """
+    if not adb_controller.is_connected():
+        raise HTTPException(status_code=400, detail="设备未连接")
+    
+    try:
+        dungeon_type = DungeonType(dungeon_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"未知副本: {dungeon_id}")
+    
+    try:
+        dungeon_difficulty = DungeonDifficulty(difficulty)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"未知难度: {difficulty}")
+    
+    try:
+        success = await dungeon_navigator.navigate_to_dungeon(dungeon_type, dungeon_difficulty)
+        if success:
+            return {"success": True, "dungeon": dungeon_id, "difficulty": difficulty}
+        else:
+            return {"success": False, "message": "导航失败"}
+    except Exception as e:
+        logger.error(f"导航到副本失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
