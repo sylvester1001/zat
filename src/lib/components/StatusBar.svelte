@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import { Card, Badge, Indicator } from 'flowbite-svelte';
   import { WebSocketManager, type StateMessage } from '$lib/api';
   
   export let connected = false;
@@ -11,7 +12,6 @@
   let wsManager: WebSocketManager | null = null;
   
   onMount(() => {
-    // 连接状态 WebSocket
     wsManager = new WebSocketManager(
       '/ws/state',
       (message: StateMessage) => {
@@ -22,7 +22,6 @@
         }
       }
     );
-    
     wsManager.connect();
   });
   
@@ -30,97 +29,56 @@
     wsManager?.disconnect();
   });
   
-  function getStateColor(state: string): string {
+  function getStateColor(state: string): 'green' | 'red' | 'yellow' | 'gray' {
     switch (state) {
-      case 'RUNNING':
-        return 'bg-green-500';
-      case 'ERROR':
-        return 'bg-red-500';
+      case 'RUNNING': return 'green';
+      case 'ERROR': return 'red';
       case 'STOPPING':
-      case 'STARTING':
-        return 'bg-yellow-500';
-      default:
-        return 'bg-gray-400';
+      case 'STARTING': return 'yellow';
+      default: return 'gray';
     }
   }
 </script>
 
-<div class="card bg-white shadow-lg rounded-lg p-4">
+<Card size="xl">
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     <!-- 连接状态 -->
-    <div class="status-item">
-      <div class="status-label">连接状态</div>
-      <div class="status-value">
-        <span class="status-dot {connected ? 'bg-green-500' : 'bg-gray-400'}"></span>
-        {connected ? '已连接' : '未连接'}
+    <div class="flex flex-col gap-1">
+      <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">连接状态</span>
+      <div class="flex items-center gap-2">
+        <Indicator color={connected ? 'green' : 'gray'} size="sm" />
+        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+          {connected ? '已连接' : '未连接'}
+        </span>
       </div>
       {#if device}
-        <div class="status-detail">{device}</div>
+        <span class="text-xs text-gray-400">{device}</span>
       {/if}
     </div>
     
     <!-- 任务状态 -->
-    <div class="status-item">
-      <div class="status-label">任务状态</div>
-      <div class="status-value">
-        <span class="status-dot {getStateColor(currentState)}"></span>
-        {currentState}
+    <div class="flex flex-col gap-1">
+      <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">任务状态</span>
+      <div class="flex items-center gap-2">
+        <Indicator color={getStateColor(currentState)} size="sm" />
+        <Badge color={getStateColor(currentState)}>{currentState}</Badge>
       </div>
     </div>
     
     <!-- 运行状态 -->
-    <div class="status-item">
-      <div class="status-label">运行状态</div>
-      <div class="status-value">
+    <div class="flex flex-col gap-1">
+      <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">运行状态</span>
+      <span class="text-sm font-semibold text-gray-900 dark:text-white">
         {isRunning ? '运行中' : '已停止'}
-      </div>
+      </span>
     </div>
     
     <!-- 循环次数 -->
-    <div class="status-item">
-      <div class="status-label">循环次数</div>
-      <div class="status-value">
+    <div class="flex flex-col gap-1">
+      <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">循环次数</span>
+      <span class="text-sm font-semibold text-gray-900 dark:text-white">
         {loopCount}
-      </div>
+      </span>
     </div>
   </div>
-</div>
-
-<style>
-  .card {
-    border: 1px solid #e5e7eb;
-  }
-  
-  .status-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .status-label {
-    font-size: 0.75rem;
-    color: #6b7280;
-    font-weight: 500;
-  }
-  
-  .status-value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #111827;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  
-  .status-detail {
-    font-size: 0.75rem;
-    color: #9ca3af;
-  }
-  
-  .status-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    display: inline-block;
-  }
-</style>
+</Card>

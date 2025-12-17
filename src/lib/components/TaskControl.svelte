@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Button, Card } from 'flowbite-svelte';
   import { api } from '$lib/api';
   
   export let connected = false;
@@ -61,107 +62,66 @@
   }
 </script>
 
-<div class="card bg-white shadow-lg rounded-lg p-6">
-  <h2 class="text-xl font-bold mb-4">任务控制</h2>
+<Card size="xl">
+  <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">任务控制</h2>
   
   <div class="space-y-4">
     <!-- 连接设备 -->
-    <div>
-      <button
-        class="btn btn-primary w-full"
-        class:btn-disabled={connecting || connected}
-        on:click={handleConnect}
-        disabled={connecting || connected}
-      >
-        {#if connecting}
-          连接中...
-        {:else if connected}
-          已连接: {device}
-        {:else}
-          连接设备
-        {/if}
-      </button>
-    </div>
+    <Button
+      color="blue"
+      class="w-full"
+      disabled={connecting || connected}
+      on:click={handleConnect}
+    >
+      {#if connecting}
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        连接中...
+      {:else if connected}
+        ✓ 已连接: {device}
+      {:else}
+        连接设备
+      {/if}
+    </Button>
     
     <!-- 启动任务 -->
-    <div>
-      <button
-        class="btn btn-success w-full"
-        class:btn-disabled={!connected || starting || taskRunning}
-        on:click={handleStart}
-        disabled={!connected || starting || taskRunning}
-      >
-        {#if starting}
-          启动中...
-        {:else if taskRunning}
-          任务运行中
-        {:else}
-          启动任务
-        {/if}
-      </button>
-    </div>
+    <Button
+      color="green"
+      class="w-full"
+      disabled={!connected || starting || taskRunning}
+      on:click={handleStart}
+    >
+      {#if starting}
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        启动中...
+      {:else if taskRunning}
+        ▶ 任务运行中
+      {:else}
+        启动任务
+      {/if}
+    </Button>
     
     <!-- 停止任务 -->
-    <div>
-      <button
-        class="btn btn-error w-full"
-        class:btn-disabled={!taskRunning || stopping}
-        on:click={handleStop}
-        disabled={!taskRunning || stopping}
-      >
-        {#if stopping}
-          停止中...
-        {:else}
-          停止任务
-        {/if}
-      </button>
-    </div>
+    <Button
+      color="red"
+      class="w-full"
+      disabled={!taskRunning || stopping}
+      on:click={handleStop}
+    >
+      {#if stopping}
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        停止中...
+      {:else}
+        停止任务
+      {/if}
+    </Button>
   </div>
-</div>
-
-<style>
-  .card {
-    border: 1px solid #e5e7eb;
-  }
-  
-  .btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .btn-primary {
-    background-color: #3b82f6;
-    color: white;
-  }
-  
-  .btn-primary:hover:not(.btn-disabled) {
-    background-color: #2563eb;
-  }
-  
-  .btn-success {
-    background-color: #10b981;
-    color: white;
-  }
-  
-  .btn-success:hover:not(.btn-disabled) {
-    background-color: #059669;
-  }
-  
-  .btn-error {
-    background-color: #ef4444;
-    color: white;
-  }
-  
-  .btn-error:hover:not(.btn-disabled) {
-    background-color: #dc2626;
-  }
-  
-  .btn-disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-</style>
+</Card>
