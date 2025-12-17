@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  
   interface NavItem {
     id: string;
     label: string;
@@ -18,12 +16,8 @@
   
   export let currentPage = 'home';
   
-  function isActive(path: string): boolean {
-    if (path === '/') {
-      return currentPage === 'home';
-    }
-    return currentPage === path.slice(1);
-  }
+  // 使用响应式语句，确保 isActive 会随 currentPage 变化而更新
+  $: isActive = (itemId: string) => currentPage === itemId;
 </script>
 
 <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -46,14 +40,14 @@
       <button
         on:click={() => currentPage = item.id}
         class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {
-          isActive(item.path)
+          isActive(item.id)
             ? 'bg-gradient-to-r from-lime-50 to-green-50 dark:from-lime-900/20 dark:to-green-900/20 text-lime-600 dark:text-lime-400 shadow-sm'
             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
         }"
       >
         <span class="text-2xl">{item.icon}</span>
         <span class="font-medium">{item.label}</span>
-        {#if isActive(item.path)}
+        {#if isActive(item.id)}
           <div class="ml-auto w-1.5 h-1.5 bg-lime-500 rounded-full"></div>
         {/if}
       </button>
