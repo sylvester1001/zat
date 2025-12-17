@@ -1,6 +1,13 @@
 <script lang="ts">
-  export let title = '';
-  export let subtitle = '';
+  import type { Snippet } from 'svelte';
+  
+  interface Props {
+    title?: string;
+    subtitle?: string;
+    toolbar?: Snippet;
+  }
+  
+  let { title = '', subtitle = '', toolbar }: Props = $props();
 </script>
 
 <div class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 flex items-center justify-between">
@@ -14,6 +21,8 @@
   
   <!-- Right: Actions Slot -->
   <div class="flex items-center gap-3">
-    <slot />
+    {#if toolbar}
+      {@render toolbar()}
+    {/if}
   </div>
 </div>

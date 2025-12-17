@@ -3,17 +3,17 @@
   import { api } from '$lib/api';
   import { appStore } from '$lib/stores/appStore';
   
-  let screenshotUrl = '';
-  let useGray = false;
-  let loading = false;
-  let imageWidth = 0;
-  let imageHeight = 0;
-  let imageSize = '';
-  let loadTime = 0;
+  let screenshotUrl = $state('');
+  let useGray = $state(false);
+  let loading = $state(false);
+  let imageWidth = $state(0);
+  let imageHeight = $state(0);
+  let imageSize = $state('');
+  let loadTime = $state(0);
   
   // 从store获取连接状态
-  $: connected = $appStore.connected;
-  $: deviceResolution = $appStore.resolution;
+  let connected = $derived($appStore.connected);
+  let deviceResolution = $derived($appStore.resolution);
   
   async function refreshScreenshot() {
     if (!connected) {
@@ -62,7 +62,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
   <!-- 左侧：截图预览 -->
   <div class="lg:col-span-2">
-    <Card size="xl" class="h-full">
+    <Card size="xl" class="p-4 h-full">
       <div class="mb-4">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时截图</h3>
@@ -73,7 +73,7 @@
               color="cyan"
               size="sm"
               disabled={!connected || loading}
-              on:click={refreshScreenshot}
+              onclick={refreshScreenshot}
             >
               {#if loading}
                 <Spinner class="mr-2" size="4" />
@@ -98,12 +98,12 @@
               ⏱️ {loadTime}ms
             </Badge>
             {#if deviceResolution}
-              <Badge color="cyan">
+              <Badge color="indigo">
                 📱 设备: {deviceResolution}
               </Badge>
             {/if}
             {#if useGray}
-              <Badge color="gray">
+              <Badge color="dark">
                 🎨 灰度模式
               </Badge>
             {/if}
@@ -127,7 +127,7 @@
   <!-- 右侧：工具和日志 -->
   <div class="space-y-6">
     <!-- 识别测试 -->
-    <Card>
+    <Card class="p-4">
       <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">识别测试</h3>
       <div class="space-y-3">
         <GradientButton shadow color="purple" size="sm" class="w-full">
@@ -143,7 +143,7 @@
     </Card>
     
     <!-- ADB 工具 -->
-    <Card>
+    <Card class="p-4">
       <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">ADB 工具</h3>
       <div class="space-y-3">
         <GradientButton shadow color="blue" size="sm" class="w-full">
@@ -159,7 +159,7 @@
     </Card>
     
     <!-- 快速操作 -->
-    <Card>
+    <Card class="p-4">
       <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">快速操作</h3>
       <div class="space-y-3">
         <GradientButton shadow color="cyan" size="sm" class="w-full">
@@ -177,7 +177,7 @@
 </div>
 
 <!-- 详细日志 -->
-<Card size="xl" class="mt-6">
+<Card size="xl" class="p-4 mt-6">
   <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">详细日志</h3>
   <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto font-mono text-sm">
     <p class="text-gray-400 dark:text-gray-500">暂无日志...</p>

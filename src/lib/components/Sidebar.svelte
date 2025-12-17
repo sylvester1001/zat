@@ -14,10 +14,15 @@
     { id: 'settings', label: '设置', icon: '⚙️', path: '/settings' },
   ];
   
-  export let currentPage = 'home';
+  interface Props {
+    currentPage?: string;
+  }
   
-  // 使用响应式语句，确保 isActive 会随 currentPage 变化而更新
-  $: isActive = (itemId: string) => currentPage === itemId;
+  let { currentPage = $bindable('home') }: Props = $props();
+  
+  function isActive(itemId: string) {
+    return currentPage === itemId;
+  }
 </script>
 
 <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -38,7 +43,7 @@
   <nav class="flex-1 p-4 space-y-2">
     {#each navItems as item}
       <button
-        on:click={() => currentPage = item.id}
+        onclick={() => currentPage = item.id}
         class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {
           isActive(item.id)
             ? 'bg-gradient-to-r from-lime-50 to-green-50 dark:from-lime-900/20 dark:to-green-900/20 text-lime-600 dark:text-lime-400 shadow-sm'

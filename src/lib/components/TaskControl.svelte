@@ -2,13 +2,17 @@
   import { Button, Card } from 'flowbite-svelte';
   import { api } from '$lib/api';
   
-  export let connected = false;
-  export let device = '';
+  interface Props {
+    connected?: boolean;
+    device?: string;
+  }
   
-  let connecting = false;
-  let starting = false;
-  let stopping = false;
-  let taskRunning = false;
+  let { connected = $bindable(false), device = $bindable('') }: Props = $props();
+  
+  let connecting = $state(false);
+  let starting = $state(false);
+  let stopping = $state(false);
+  let taskRunning = $state(false);
   
   async function handleConnect() {
     connecting = true;
@@ -71,7 +75,7 @@
       color="blue"
       class="w-full"
       disabled={connecting || connected}
-      on:click={handleConnect}
+      onclick={handleConnect}
     >
       {#if connecting}
         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -91,7 +95,7 @@
       color="green"
       class="w-full"
       disabled={!connected || starting || taskRunning}
-      on:click={handleStart}
+      onclick={handleStart}
     >
       {#if starting}
         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -111,7 +115,7 @@
       color="red"
       class="w-full"
       disabled={!taskRunning || stopping}
-      on:click={handleStop}
+      onclick={handleStop}
     >
       {#if stopping}
         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

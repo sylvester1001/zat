@@ -1,36 +1,34 @@
 <script lang="ts">
-  import { Card, GradientButton, Button, Badge, Indicator } from 'flowbite-svelte';
+  import { Card, GradientButton, Badge, Indicator } from 'flowbite-svelte';
   import { api } from '$lib/api';
-  import { appStore, setConnected, setDisconnected, setTaskEngineRunning } from '$lib/stores/appStore';
+  import { appStore, setConnected, setTaskEngineRunning } from '$lib/stores/appStore';
   
-  let connecting = false;
-  let startingTaskEngine = false;
-  let stoppingTaskEngine = false;
-  let startingGame = false;
+  let connecting = $state(false);
+  let startingTaskEngine = $state(false);
+  let stoppingTaskEngine = $state(false);
+  let startingGame = $state(false);
   
   // 从store获取状态
-  $: connected = $appStore.connected;
-  $: device = $appStore.device;
-  $: resolution = $appStore.resolution;
-  $: taskEngineRunning = $appStore.taskEngineRunning;
+  let connected = $derived($appStore.connected);
+  let device = $derived($appStore.device);
+  let resolution = $derived($appStore.resolution);
+  let taskEngineRunning = $derived($appStore.taskEngineRunning);
   
   // 状态统计
-  let todayTasks = 0;
-  let todayTime = '0h 0m';
-  let successRate = '0%';
+  let todayTasks = $state(0);
+  let todayTime = $state('0h 0m');
+  let successRate = $state('0%');
   
   async function handleConnect() {
     connecting = true;
     try {
       const result = await api.connect();
       if (result.success && result.device) {
-        // 更新全局状态
         const resolutionStr = result.resolution 
           ? `${result.resolution.width}x${result.resolution.height}`
           : '';
         setConnected(result.device, resolutionStr);
         
-        // 检查是否为推荐分辨率（仗剑传说是竖屏游戏）
         if (result.resolution) {
           if (result.resolution.width !== 720 || result.resolution.height !== 1280) {
             alert(
@@ -103,7 +101,7 @@
   <!-- 状态卡片 -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <!-- 连接状态 -->
-    <Card class="hover:shadow-lg transition-shadow">
+    <Card class="p-4 hover:shadow-lg transition-shadow">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">连接状态</p>
@@ -125,7 +123,7 @@
     </Card>
     
     <!-- 今日任务 -->
-    <Card class="hover:shadow-lg transition-shadow">
+    <Card class="p-4 hover:shadow-lg transition-shadow">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">今日任务</p>
@@ -137,7 +135,7 @@
     </Card>
     
     <!-- 成功率 -->
-    <Card class="hover:shadow-lg transition-shadow">
+    <Card class="p-4 hover:shadow-lg transition-shadow">
       <div class="flex items-center justify-between">
         <div>
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">成功率</p>
@@ -148,9 +146,9 @@
       </div>
     </Card>
   </div>
-  
+
   <!-- 快速操作 -->
-  <Card size="xl">
+  <Card size="xl" class="p-4">
     <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">快速操作</h3>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <!-- 连接设备 -->
@@ -161,7 +159,7 @@
           size="xl"
           class="w-full mb-2"
           disabled={connecting || connected}
-          on:click={handleConnect}
+          onclick={handleConnect}
         >
           {#if connecting}
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -186,7 +184,7 @@
           size="xl"
           class="w-full mb-2"
           disabled={!connected || startingGame}
-          on:click={handleStartGame}
+          onclick={handleStartGame}
         >
           {#if startingGame}
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -209,7 +207,7 @@
           size="xl"
           class="w-full mb-2"
           disabled={!connected || startingTaskEngine || taskEngineRunning}
-          on:click={handleStartTaskEngine}
+          onclick={handleStartTaskEngine}
         >
           {#if startingTaskEngine}
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -234,7 +232,7 @@
           size="xl"
           class="w-full mb-2"
           disabled={!taskEngineRunning || stoppingTaskEngine}
-          on:click={handleStopTaskEngine}
+          onclick={handleStopTaskEngine}
         >
           {#if stoppingTaskEngine}
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -250,9 +248,9 @@
       </div>
     </div>
   </Card>
-  
-  <!-- 实时日志（可折叠） -->
-  <Card size="xl">
+
+  <!-- 实时日志 -->
+  <Card size="xl" class="p-4">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时日志</h3>
       <Badge color="green">运行中</Badge>

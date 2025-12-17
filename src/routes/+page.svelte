@@ -4,21 +4,21 @@
   import Layout from '$lib/components/Layout.svelte';
   import HomePage from '$lib/pages/HomePage.svelte';
   import DebugPage from '$lib/pages/DebugPage.svelte';
-  import { GradientButton, Badge } from 'flowbite-svelte';
+  import { Badge } from 'flowbite-svelte';
   import { appStore } from '$lib/stores/appStore';
   
-  let currentPage = 'home';
+  let currentPage = $state('home');
   
   // 从store获取状态
-  $: connected = $appStore.connected;
-  $: taskEngineRunning = $appStore.taskEngineRunning;
+  let connected = $derived($appStore.connected);
+  let taskEngineRunning = $derived($appStore.taskEngineRunning);
   
   onMount(() => {
     console.log('ZAT 已启动');
   });
   
   // 根据当前页面返回标题和副标题
-  $: pageInfo = getPageInfo(currentPage);
+  let pageInfo = $derived(getPageInfo(currentPage));
   
   function getPageInfo(page: string) {
     switch (page) {
@@ -40,23 +40,23 @@
 
 <Layout bind:currentPage title={pageInfo.title} subtitle={pageInfo.subtitle}>
   <!-- Toolbar Actions -->
-  <svelte:fragment slot="toolbar">
+  {#snippet toolbar()}
     {#if currentPage === 'home'}
       {#if taskEngineRunning}
         <Badge color="green" large>运行中</Badge>
       {:else if connected}
         <Badge color="blue" large>已连接</Badge>
       {:else}
-        <Badge color="gray" large>未连接</Badge>
+        <Badge color="dark" large>未连接</Badge>
       {/if}
     {:else if currentPage === 'debug'}
       {#if connected}
         <Badge color="green" large>已连接</Badge>
       {:else}
-        <Badge color="gray" large>未连接</Badge>
+        <Badge color="dark" large>未连接</Badge>
       {/if}
     {/if}
-  </svelte:fragment>
+  {/snippet}
   
   <!-- Page Content -->
   {#if currentPage === 'home'}

@@ -3,10 +3,10 @@
   import { Card, Button, Toggle } from 'flowbite-svelte';
   import { WebSocketManager, type LogMessage } from '$lib/api';
   
-  let logs: LogMessage[] = [];
+  let logs = $state<LogMessage[]>([]);
   let wsManager: WebSocketManager | null = null;
   let logContainer: HTMLDivElement;
-  let autoScroll = true;
+  let autoScroll = $state(true);
   
   onMount(() => {
     wsManager = new WebSocketManager(
@@ -61,7 +61,7 @@
     <h2 class="text-xl font-bold text-gray-900 dark:text-white">日志</h2>
     <div class="flex items-center gap-3">
       <Toggle bind:checked={autoScroll} size="small">自动滚动</Toggle>
-      <Button size="xs" color="alternative" on:click={clearLogs}>清空</Button>
+      <Button size="xs" color="alternative" onclick={clearLogs}>清空</Button>
     </div>
   </div>
   

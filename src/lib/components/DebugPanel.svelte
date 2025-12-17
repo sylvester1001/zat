@@ -2,11 +2,15 @@
   import { Card, Button, Toggle, Spinner } from 'flowbite-svelte';
   import { api } from '$lib/api';
   
-  export let connected = false;
+  interface Props {
+    connected?: boolean;
+  }
   
-  let screenshotUrl = '';
-  let useGray = false;
-  let loading = false;
+  let { connected = false }: Props = $props();
+  
+  let screenshotUrl = $state('');
+  let useGray = $state(false);
+  let loading = $state(false);
   
   function refreshScreenshot() {
     if (!connected) return;
@@ -38,7 +42,7 @@
         color="blue"
         size="sm"
         disabled={!connected || loading}
-        on:click={refreshScreenshot}
+        onclick={refreshScreenshot}
       >
         {#if loading}
           <Spinner class="mr-2" size="4" />

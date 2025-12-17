@@ -1,10 +1,17 @@
 <script lang="ts">
   import Sidebar from './Sidebar.svelte';
   import Toolbar from './Toolbar.svelte';
+  import type { Snippet } from 'svelte';
   
-  export let currentPage = 'home';
-  export let title = '';
-  export let subtitle = '';
+  interface Props {
+    currentPage?: string;
+    title?: string;
+    subtitle?: string;
+    toolbar?: Snippet;
+    children?: Snippet;
+  }
+  
+  let { currentPage = $bindable('home'), title = '', subtitle = '', toolbar, children }: Props = $props();
 </script>
 
 <div class="h-screen flex bg-gray-50 dark:bg-gray-900">
@@ -14,13 +21,13 @@
   <!-- Main Content -->
   <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Toolbar -->
-    <Toolbar {title} {subtitle}>
-      <slot name="toolbar" />
-    </Toolbar>
+    <Toolbar {title} {subtitle} {toolbar} />
     
     <!-- Content Area -->
     <main class="flex-1 overflow-y-auto p-6">
-      <slot />
+      {#if children}
+        {@render children()}
+      {/if}
     </main>
   </div>
 </div>

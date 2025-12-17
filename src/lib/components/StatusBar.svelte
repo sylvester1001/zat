@@ -3,12 +3,16 @@
   import { Card, Badge, Indicator } from 'flowbite-svelte';
   import { WebSocketManager, type StateMessage } from '$lib/api';
   
-  export let connected = false;
-  export let device = '';
+  interface Props {
+    connected?: boolean;
+    device?: string;
+  }
   
-  let currentState = 'IDLE';
-  let isRunning = false;
-  let loopCount = 0;
+  let { connected = false, device = '' }: Props = $props();
+  
+  let currentState = $state('IDLE');
+  let isRunning = $state(false);
+  let loopCount = $state(0);
   let wsManager: WebSocketManager | null = null;
   
   onMount(() => {
