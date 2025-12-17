@@ -28,9 +28,9 @@
   function getPageInfo(page: string) {
     switch (page) {
       case 'home':
-        return { title: '首页', subtitle: '快速开始你的自动化任务' };
+        return { title: '首页', subtitle: '快速开始任务' };
       case 'tasks':
-        return { title: '任务管理', subtitle: '配置和管理你的任务' };
+        return { title: '任务管理', subtitle: '配置和管理任务' };
       case 'stats':
         return { title: '统计分析', subtitle: '查看任务执行统计' };
       case 'debug':

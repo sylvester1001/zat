@@ -12,13 +12,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.adb_controller import ADBController
 from core.task_engine import TaskEngine
-from core.dungeon_navigator import DungeonNavigator, DungeonType, DungeonDifficulty, DUNGEON_CONFIG
+from core.dungeon_navigator import GameNavigator
+from core.scene_graph import SCENES
 from utils.logger import setup_logger, LogBroadcaster
 
 # 全局实例
 adb_controller: ADBController = None
 task_engine: TaskEngine = None
-dungeon_navigator: DungeonNavigator = None
+game_navigator: GameNavigator = None
 log_broadcaster = LogBroadcaster()
 logger = setup_logger("zat", log_broadcaster)
 
@@ -26,7 +27,7 @@ logger = setup_logger("zat", log_broadcaster)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    global adb_controller, task_engine, dungeon_navigator
+    global adb_controller, task_engine, game_navigator
     
     logger.info("ZAT Backend 启动中...")
     
@@ -36,8 +37,8 @@ async def lifespan(app: FastAPI):
     # 初始化任务引擎
     task_engine = TaskEngine(adb_controller, log_broadcaster)
     
-    # 初始化副本导航器
-    dungeon_navigator = DungeonNavigator(adb_controller)
+    # 初始化游戏导航器
+    game_navigator = GameNavigator(adb_controller)
     
     logger.info("ZAT Backend 启动完成")
     
@@ -193,12 +194,26 @@ async def get_screenshot(gray: bool = False):
 @app.get("/dungeons")
 async def get_dungeons():
     """获取可用副本列表"""
+    # 从场景图中获取副本场景
     dungeons = []
-    for dungeon_type, config in DUNGEON_CONFIG.items():
+    dungeon_names = {
+        "world-tree": "世界之树",
+        "mount-mechagod": "机神山",
+        "sea-palace": "海之宫遗迹",
+        "mizumoto-shrine": "源水大社",
+    }
+    dungeon_difficulties = {
+        "world-tree": ["normal", "hard"],
+        "mount-mechagod": ["normal", "hard"],
+        "sea-palace": ["normal", "hard"],
+        "mizumoto-shrine": ["normal", "hard", "nightmare"],
+    }
+    
+    for dungeon_id, name in dungeon_names.items():
         dungeons.append({
-            "id": dungeon_type.value,
-            "name": config["name"],
-            "difficulties": [d.value for d in config["difficulties"]],
+            "id": dungeon_id,
+            "name": name,
+            "difficulties": dungeon_difficulties.get(dungeon_id, ["normal"]),
         })
     return {"dungeons": dungeons}
 
@@ -216,23 +231,80 @@ async def navigate_to_dungeon(dungeon_id: str, difficulty: str = "normal"):
         raise HTTPException(status_code=400, detail="设备未连接")
     
     try:
-        dungeon_type = DungeonType(dungeon_id)
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"未知副本: {dungeon_id}")
-    
-    try:
-        dungeon_difficulty = DungeonDifficulty(difficulty)
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"未知难度: {difficulty}")
-    
-    try:
-        success = await dungeon_navigator.navigate_to_dungeon(dungeon_type, dungeon_difficulty)
+        success = await game_navigator.navigate_to_dungeon(dungeon_id)
         if success:
             return {"success": True, "dungeon": dungeon_id, "difficulty": difficulty}
         else:
             return {"success": False, "message": "导航失败"}
     except Exception as e:
         logger.error(f"导航到副本失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/scenes")
+async def get_scenes():
+    """获取所有场景"""
+    scenes = []
+    for scene_id, scene in SCENES.items():
+        scenes.append({
+            "id": scene_id,
+            "name": scene.name,
+            "transitions": list(scene.transitions.keys()),
+            "back_to": scene.back_to,
+        })
+    return {"scenes": scenes}
+
+
+@app.get("/current-scene")
+async def get_current_scene():
+    """获取当前场景"""
+    if not adb_controller.is_connected():
+        raise HTTPException(status_code=400, detail="设备未连接")
+    
+    current = game_navigator.get_current_scene()
+    if current:
+        scene = SCENES.get(current)
+        return {
+            "scene_id": current,
+            "scene_name": scene.name if scene else None,
+            "detected": False
+        }
+    
+    # 如果当前场景未知，尝试检测
+    detected = await game_navigator.detect_current_scene()
+    if detected:
+        scene = SCENES.get(detected)
+        return {
+            "scene_id": detected,
+            "scene_name": scene.name if scene else None,
+            "detected": True
+        }
+    
+    return {"scene_id": None, "scene_name": None, "detected": True}
+
+
+@app.post("/navigate-to")
+async def navigate_to_scene(scene_id: str):
+    """
+    导航到指定场景
+    
+    Args:
+        scene_id: 场景ID
+    """
+    if not adb_controller.is_connected():
+        raise HTTPException(status_code=400, detail="设备未连接")
+    
+    if scene_id not in SCENES:
+        raise HTTPException(status_code=400, detail=f"未知场景: {scene_id}")
+    
+    try:
+        success = await game_navigator.navigate_to(scene_id)
+        if success:
+            return {"success": True, "scene": scene_id}
+        else:
+            return {"success": False, "message": "导航失败"}
+    except Exception as e:
+        logger.error(f"导航失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

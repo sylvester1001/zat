@@ -133,7 +133,7 @@
             </span>
           </div>
           {#if device}
-            <p class="text-xs text-gray-400 mt-1">{device}</p>
+            <p class="text-xs text-gray-400 mt-1">设备: {device}</p>
             {#if resolution}
               <p class="text-xs text-gray-400">分辨率: {resolution}</p>
             {/if}
