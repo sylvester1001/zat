@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Card, GradientButton, Toggle, Spinner, Badge } from 'flowbite-svelte';
   import { api } from '$lib/api';
   import { appStore } from '$lib/stores/appStore';
+  import PageHeader from '$lib/components/PageHeader.svelte';
   
   let screenshotUrl = $state('');
   let useGray = $state(false);
@@ -11,7 +11,6 @@
   let imageSize = $state('');
   let loadTime = $state(0);
   
-  // 从store获取连接状态
   let connected = $derived($appStore.connected);
   let deviceResolution = $derived($appStore.resolution);
   
@@ -25,7 +24,6 @@
     const startTime = performance.now();
     screenshotUrl = api.getScreenshotUrl(useGray);
     
-    // 获取图片信息
     try {
       const response = await fetch(screenshotUrl);
       const blob = await response.blob();
@@ -59,127 +57,122 @@
   }
 </script>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- 左侧：截图预览 -->
-  <div class="lg:col-span-2">
-    <Card size="xl" class="p-4 h-full">
-      <div class="mb-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时截图</h3>
+<div class="flex-1 overflow-auto px-5 pb-5 space-y-5">
+  <PageHeader title="实时调试" subtitle="调试工具 🔧" />
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- 左侧：截图预览 -->
+    <div class="lg:col-span-2">
+      <div class="clean-card p-5 h-full">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base font-bold text-gray-900">实时截图</h3>
           <div class="flex items-center gap-3">
-            <Toggle bind:checked={useGray} size="small">灰度模式</Toggle>
-            <GradientButton
-              shadow
-              color="cyan"
-              size="sm"
+            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <input type="checkbox" bind:checked={useGray} class="rounded" />
+              灰度
+            </label>
+            <button
+              class="pill-btn pill-btn-lime text-sm py-2 px-4"
               disabled={!connected || loading}
               onclick={refreshScreenshot}
             >
               {#if loading}
-                <Spinner class="mr-2" size="4" />
-                加载中...
+                ⏳ 加载中...
               {:else}
                 🔄 刷新截图
               {/if}
-            </GradientButton>
+            </button>
           </div>
         </div>
         
         <!-- 截图信息 -->
         {#if screenshotUrl}
-          <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <Badge color="blue">
-              📐 {imageWidth}x{imageHeight}
-            </Badge>
-            <Badge color="green">
-              💾 {imageSize}
-            </Badge>
-            <Badge color="purple">
-              ⏱️ {loadTime}ms
-            </Badge>
+          <div class="flex items-center gap-2 mb-4 flex-wrap">
+            <span class="tag tag-outline">📐 {imageWidth}x{imageHeight}</span>
+            <span class="tag tag-outline">💾 {imageSize}</span>
+            <span class="tag tag-outline">⏱️ {loadTime}ms</span>
             {#if deviceResolution}
-              <Badge color="indigo">
-                📱 设备: {deviceResolution}
-              </Badge>
+              <span class="tag tag-lime">📱 {deviceResolution}</span>
             {/if}
             {#if useGray}
-              <Badge color="dark">
-                🎨 灰度模式
-              </Badge>
+              <span class="tag tag-outline">🎨 灰度</span>
             {/if}
           </div>
         {/if}
+        
+        <div class="bg-gray-50 rounded-2xl overflow-hidden aspect-video flex items-center justify-center">
+          {#if screenshotUrl}
+            <img src={screenshotUrl} alt="截图" class="w-full h-full object-contain" />
+          {:else}
+            <div class="text-center text-gray-400">
+              <div class="text-6xl mb-4">📸</div>
+              <p>点击"刷新截图"查看</p>
+            </div>
+          {/if}
+        </div>
+      </div>
+    </div>
+    
+    <!-- 右侧：工具 -->
+    <div class="space-y-5">
+      <!-- 识别测试 -->
+      <div class="clean-card p-5">
+        <h3 class="text-base font-bold text-gray-900 mb-4">识别测试</h3>
+        <div class="space-y-3">
+          <button class="pill-btn pill-btn-dark w-full py-3">
+            🎯 模板匹配测试
+          </button>
+          <button class="pill-btn pill-btn-light w-full py-3">
+            📝 OCR 测试
+          </button>
+          <button class="pill-btn pill-btn-light w-full py-3">
+            🔍 特征匹配测试
+          </button>
+        </div>
       </div>
       
-      <div class="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden aspect-video flex items-center justify-center">
-        {#if screenshotUrl}
-          <img src={screenshotUrl} alt="截图" class="w-full h-full object-contain" />
-        {:else}
-          <div class="text-center text-gray-400 dark:text-gray-500">
-            <div class="text-6xl mb-4">📸</div>
-            <p>点击"刷新截图"查看</p>
-          </div>
-        {/if}
+      <!-- ADB 工具 -->
+      <div class="clean-card p-5">
+        <h3 class="text-base font-bold text-gray-900 mb-4">ADB 工具</h3>
+        <div class="space-y-3">
+          <button class="pill-btn pill-btn-lime w-full py-3">
+            📱 设备信息
+          </button>
+          <button class="pill-btn pill-btn-yellow w-full py-3">
+            🎮 启动游戏
+          </button>
+          <button class="pill-btn pill-btn-light w-full py-3">
+            🔄 重启 ADB
+          </button>
+        </div>
       </div>
-    </Card>
+      
+      <!-- 快速操作 -->
+      <div class="clean-card p-5">
+        <h3 class="text-base font-bold text-gray-900 mb-4">快速操作</h3>
+        <div class="space-y-3">
+          <button class="pill-btn pill-btn-dark w-full py-3">
+            💾 保存截图
+          </button>
+          <button class="pill-btn pill-btn-light w-full py-3">
+            📋 复制日志
+          </button>
+          <button class="pill-btn pill-btn-light w-full py-3">
+            🗑️ 清空日志
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-  
-  <!-- 右侧：工具和日志 -->
-  <div class="space-y-6">
-    <!-- 识别测试 -->
-    <Card class="p-4">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">识别测试</h3>
-      <div class="space-y-3">
-        <GradientButton shadow color="purple" size="sm" class="w-full">
-          🎯 模板匹配测试
-        </GradientButton>
-        <GradientButton shadow color="pink" size="sm" class="w-full">
-          📝 OCR 测试
-        </GradientButton>
-        <GradientButton shadow color="teal" size="sm" class="w-full">
-          🔍 特征匹配测试
-        </GradientButton>
-      </div>
-    </Card>
-    
-    <!-- ADB 工具 -->
-    <Card class="p-4">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">ADB 工具</h3>
-      <div class="space-y-3">
-        <GradientButton shadow color="blue" size="sm" class="w-full">
-          📱 设备信息
-        </GradientButton>
-        <GradientButton shadow color="green" size="sm" class="w-full">
-          🎮 启动游戏
-        </GradientButton>
-        <GradientButton shadow color="red" size="sm" class="w-full">
-          🔄 重启 ADB
-        </GradientButton>
-      </div>
-    </Card>
-    
-    <!-- 快速操作 -->
-    <Card class="p-4">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">快速操作</h3>
-      <div class="space-y-3">
-        <GradientButton shadow color="cyan" size="sm" class="w-full">
-          💾 保存截图
-        </GradientButton>
-        <GradientButton shadow color="lime" size="sm" class="w-full">
-          📋 复制日志
-        </GradientButton>
-        <GradientButton shadow color="red" size="sm" class="w-full">
-          🗑️ 清空日志
-        </GradientButton>
-      </div>
-    </Card>
+
+  <!-- 详细日志 -->
+  <div class="clean-card p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-bold text-gray-900">详细日志</h3>
+      <span class="tag tag-lime">实时</span>
+    </div>
+    <div class="bg-gray-50 rounded-2xl p-4 h-48 overflow-y-auto font-mono text-sm">
+      <p class="text-gray-400">暂无日志...</p>
+    </div>
   </div>
 </div>
-
-<!-- 详细日志 -->
-<Card size="xl" class="p-4 mt-6">
-  <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">详细日志</h3>
-  <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto font-mono text-sm">
-    <p class="text-gray-400 dark:text-gray-500">暂无日志...</p>
-  </div>
-</Card>

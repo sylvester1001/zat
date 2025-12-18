@@ -1,6 +1,7 @@
 <script lang="ts">
   import { api } from '$lib/api';
   import { appStore, setConnected, setTaskEngineRunning } from '$lib/stores/appStore';
+  import PageHeader from '$lib/components/PageHeader.svelte';
   
   let connecting = $state(false);
   let startingTaskEngine = $state(false);
@@ -102,11 +103,7 @@
 </script>
 
 <div class="flex-1 overflow-auto px-5 pb-5 space-y-5">
-  <!-- 渐变头部 -->
-  <div class="gradient-header px-6 pt-6 pb-8 rounded-3xl">
-    <p class="text-sm text-gray-700 font-medium mb-1">欢迎回来 👋</p>
-    <h2 class="text-3xl font-bold text-gray-900">开始冒险吧！</h2>
-  </div>
+  <PageHeader title="开始冒险吧！" subtitle="欢迎回来 👋" />
 
   <!-- 状态卡片 -->
   <div class="grid grid-cols-2 gap-4">
