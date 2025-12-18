@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Card, GradientButton, Badge, Indicator } from 'flowbite-svelte';
   import { api } from '$lib/api';
   import { appStore, setConnected, setTaskEngineRunning } from '$lib/stores/appStore';
   
@@ -8,13 +7,11 @@
   let stoppingTaskEngine = $state(false);
   let startingGame = $state(false);
   
-  // 从store获取状态
   let connected = $derived($appStore.connected);
   let device = $derived($appStore.device);
   let resolution = $derived($appStore.resolution);
   let taskEngineRunning = $derived($appStore.taskEngineRunning);
   
-  // 状态统计
   let todayTasks = $state(0);
   let todayTime = $state('0h 0m');
   let successRate = $state('0%');
@@ -105,166 +102,150 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="space-y-6 p-2">
+  <!-- 欢迎区域 -->
+  <div class="cute-card p-6">
+    <p class="text-sm text-[var(--color-purple)] font-medium">欢迎回来 ✨</p>
+    <h2 class="text-3xl font-bold text-gray-800 mt-1">开始冒险吧！</h2>
+  </div>
+
   <!-- 状态卡片 -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
     <!-- 连接状态 -->
-    <Card class="p-4 hover:shadow-lg transition-shadow">
-      <div class="flex items-center justify-between">
+    <div class="cute-card-yellow p-5">
+      <div class="flex items-start justify-between">
         <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">连接状态</p>
-          <div class="flex items-center gap-2">
-            <Indicator color={connected ? 'green' : 'gray'} size="lg" />
-            <span class="text-2xl font-bold text-gray-900 dark:text-white">
+          <p class="text-sm text-gray-600 font-medium mb-2">连接状态</p>
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-3 h-3 rounded-full {connected ? 'bg-green-500' : 'bg-gray-400'}"></div>
+            <span class="text-xl font-bold text-gray-800">
               {connected ? '已连接' : '未连接'}
             </span>
           </div>
           {#if device}
-            <p class="text-xs text-gray-400 mt-1">{device}</p>
+            <p class="text-xs text-gray-500">{device}</p>
             {#if resolution}
-              <p class="text-xs text-gray-400">分辨率: {resolution}</p>
+              <p class="text-xs text-gray-500">{resolution}</p>
             {/if}
           {/if}
         </div>
-        <div class="text-4xl">📱</div>
+        <div class="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center text-2xl">
+          📱
+        </div>
       </div>
-    </Card>
+    </div>
     
     <!-- 今日任务 -->
-    <Card class="p-4 hover:shadow-lg transition-shadow">
-      <div class="flex items-center justify-between">
+    <div class="cute-card-mint p-5">
+      <div class="flex items-start justify-between">
         <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">今日任务</p>
-          <p class="text-2xl font-bold text-gray-900 dark:text-white">{todayTasks} 次</p>
-          <p class="text-xs text-gray-400 mt-1">运行时长: {todayTime}</p>
+          <p class="text-sm text-gray-600 font-medium mb-2">今日任务</p>
+          <p class="text-xl font-bold text-gray-800 mb-2">{todayTasks} 次</p>
+          <p class="text-xs text-gray-500">运行时长: {todayTime}</p>
         </div>
-        <div class="text-4xl">🎮</div>
+        <div class="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center text-2xl">
+          🎮
+        </div>
       </div>
-    </Card>
+    </div>
     
     <!-- 成功率 -->
-    <Card class="p-4 hover:shadow-lg transition-shadow">
-      <div class="flex items-center justify-between">
+    <div class="cute-card-purple p-5">
+      <div class="flex items-start justify-between">
         <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">成功率</p>
-          <p class="text-2xl font-bold text-lime-600 dark:text-lime-400">{successRate}</p>
-          <p class="text-xs text-gray-400 mt-1">最近 24 小时</p>
+          <p class="text-sm text-gray-600 font-medium mb-2">成功率</p>
+          <p class="text-xl font-bold text-[var(--color-purple-dark)] mb-2">{successRate}</p>
+          <p class="text-xs text-gray-500">最近 24 小时</p>
         </div>
-        <div class="text-4xl">📈</div>
+        <div class="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center text-2xl">
+          📈
+        </div>
       </div>
-    </Card>
+    </div>
   </div>
 
   <!-- 快速操作 -->
-  <Card size="xl" class="p-4">
-    <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">快速操作</h3>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+  <div class="cute-card p-6">
+    <h3 class="text-lg font-bold text-gray-800 mb-5">快速操作</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <!-- 连接设备 -->
-      <div class="text-center">
-        <GradientButton
-          shadow
-          color={connected ? 'cyan' : 'blue'}
-          size="xl"
-          class="w-full mb-2"
-          disabled={connecting}
-          onclick={handleConnect}
-        >
-          {#if connecting}
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            连接中...
-          {:else if connected}
-            🔄 重新连接
-          {:else}
-            📱 连接设备
-          {/if}
-        </GradientButton>
-        <p class="text-xs text-gray-500 dark:text-gray-400">{connected ? '重新连接设备' : '连接到模拟器'}</p>
-      </div>
+      <button
+        class="cute-btn cute-btn-primary flex flex-col items-center gap-2 py-5"
+        disabled={connecting}
+        onclick={handleConnect}
+      >
+        {#if connecting}
+          <span class="text-2xl animate-spin">⏳</span>
+          <span class="text-sm">连接中...</span>
+        {:else if connected}
+          <span class="text-2xl">🔄</span>
+          <span class="text-sm">重新连接</span>
+        {:else}
+          <span class="text-2xl">📱</span>
+          <span class="text-sm">连接设备</span>
+        {/if}
+      </button>
       
       <!-- 启动游戏 -->
-      <div class="text-center">
-        <GradientButton
-          shadow
-          color="purple"
-          size="xl"
-          class="w-full mb-2"
-          disabled={!connected || startingGame}
-          onclick={() => handleStartGame(true)}
-        >
-          {#if startingGame}
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            等待进入...
-          {:else}
-            🎮 启动游戏
-          {/if}
-        </GradientButton>
-        <p class="text-xs text-gray-500 dark:text-gray-400">启动并自动进入游戏</p>
-      </div>
+      <button
+        class="cute-btn cute-btn-yellow flex flex-col items-center gap-2 py-5"
+        disabled={!connected || startingGame}
+        onclick={() => handleStartGame(true)}
+      >
+        {#if startingGame}
+          <span class="text-2xl animate-bounce">🎮</span>
+          <span class="text-sm">启动中...</span>
+        {:else}
+          <span class="text-2xl">🎮</span>
+          <span class="text-sm">启动游戏</span>
+        {/if}
+      </button>
       
       <!-- 启动自动化 -->
-      <div class="text-center">
-        <GradientButton
-          shadow
-          color="lime"
-          size="xl"
-          class="w-full mb-2"
-          disabled={!connected || startingTaskEngine || taskEngineRunning}
-          onclick={handleStartTaskEngine}
-        >
-          {#if startingTaskEngine}
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            启动中...
-          {:else if taskEngineRunning}
-            ▶ 运行中
-          {:else}
-            🚀 启动自动化
-          {/if}
-        </GradientButton>
-        <p class="text-xs text-gray-500 dark:text-gray-400">开始自动刷图</p>
-      </div>
+      <button
+        class="cute-btn cute-btn-mint flex flex-col items-center gap-2 py-5"
+        disabled={!connected || startingTaskEngine || taskEngineRunning}
+        onclick={handleStartTaskEngine}
+      >
+        {#if startingTaskEngine}
+          <span class="text-2xl animate-pulse">🚀</span>
+          <span class="text-sm">启动中...</span>
+        {:else if taskEngineRunning}
+          <span class="text-2xl">▶️</span>
+          <span class="text-sm">运行中</span>
+        {:else}
+          <span class="text-2xl">🚀</span>
+          <span class="text-sm">开始自动化</span>
+        {/if}
+      </button>
       
       <!-- 停止自动化 -->
-      <div class="text-center">
-        <GradientButton
-          shadow
-          color="red"
-          size="xl"
-          class="w-full mb-2"
-          disabled={!taskEngineRunning || stoppingTaskEngine}
-          onclick={handleStopTaskEngine}
-        >
-          {#if stoppingTaskEngine}
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            停止中...
-          {:else}
-            ⏹ 停止自动化
-          {/if}
-        </GradientButton>
-        <p class="text-xs text-gray-500 dark:text-gray-400">停止自动化任务</p>
-      </div>
+      <button
+        class="cute-btn flex flex-col items-center gap-2 py-5 bg-[var(--color-pink)] text-gray-700"
+        disabled={!taskEngineRunning || stoppingTaskEngine}
+        onclick={handleStopTaskEngine}
+      >
+        {#if stoppingTaskEngine}
+          <span class="text-2xl animate-spin">⏳</span>
+          <span class="text-sm">停止中...</span>
+        {:else}
+          <span class="text-2xl">⏹️</span>
+          <span class="text-sm">停止</span>
+        {/if}
+      </button>
     </div>
-  </Card>
+  </div>
 
   <!-- 实时日志 -->
-  <Card size="xl" class="p-4">
+  <div class="cute-card p-6">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时日志</h3>
-      <Badge color="green">运行中</Badge>
+      <h3 class="text-lg font-bold text-gray-800">实时日志</h3>
+      <span class="px-3 py-1 bg-[var(--color-mint)] text-[#2D5A47] text-xs font-medium rounded-full">
+        运行中
+      </span>
     </div>
-    <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 h-48 overflow-y-auto font-mono text-sm">
-      <p class="text-gray-400 dark:text-gray-500">暂无日志...</p>
+    <div class="bg-[var(--color-lavender-light)] rounded-2xl p-4 h-48 overflow-y-auto font-mono text-sm">
+      <p class="text-gray-400">暂无日志...</p>
     </div>
-  </Card>
+  </div>
 </div>

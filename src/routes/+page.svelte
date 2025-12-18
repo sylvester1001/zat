@@ -69,22 +69,22 @@
   {:else if currentPage === 'debug'}
     <DebugPage />
   {:else if currentPage === 'tasks'}
-    <div class="text-center py-20">
-      <div class="text-6xl mb-4">🎮</div>
-      <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">任务管理</h3>
-      <p class="text-gray-500 dark:text-gray-400">功能开发中...</p>
+    <div class="cute-card text-center py-20 mx-2">
+      <div class="w-20 h-20 mx-auto mb-4 bg-[var(--color-yellow)] rounded-3xl flex items-center justify-center text-4xl">🎮</div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-2">任务管理</h3>
+      <p class="text-[var(--color-purple)]">功能开发中...</p>
     </div>
   {:else if currentPage === 'stats'}
-    <div class="text-center py-20">
-      <div class="text-6xl mb-4">📊</div>
-      <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">统计分析</h3>
-      <p class="text-gray-500 dark:text-gray-400">功能开发中...</p>
+    <div class="cute-card text-center py-20 mx-2">
+      <div class="w-20 h-20 mx-auto mb-4 bg-[var(--color-mint)] rounded-3xl flex items-center justify-center text-4xl">📊</div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-2">统计分析</h3>
+      <p class="text-[var(--color-purple)]">功能开发中...</p>
     </div>
   {:else if currentPage === 'settings'}
-    <div class="text-center py-20">
-      <div class="text-6xl mb-4">⚙️</div>
-      <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">设置</h3>
-      <p class="text-gray-500 dark:text-gray-400">功能开发中...</p>
+    <div class="cute-card text-center py-20 mx-2">
+      <div class="w-20 h-20 mx-auto mb-4 bg-[var(--color-lavender)] rounded-3xl flex items-center justify-center text-4xl">⚙️</div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-2">设置</h3>
+      <p class="text-[var(--color-purple)]">功能开发中...</p>
     </div>
   {/if}
 </Layout>

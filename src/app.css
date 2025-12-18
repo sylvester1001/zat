@@ -6,11 +6,108 @@
 @source "../node_modules/flowbite-svelte-icons/dist";
 
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* 可爱现代配色 */
+  --color-lavender: #E8E0F0;
+  --color-lavender-light: #F5F0FA;
+  --color-purple: #9B7ED9;
+  --color-purple-dark: #7C5FC4;
+  --color-yellow: #F9E27C;
+  --color-yellow-light: #FFF8DC;
+  --color-mint: #B8E8D4;
+  --color-mint-light: #E0F5ED;
+  --color-pink: #FFD4E5;
+  --color-pink-light: #FFF0F5;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #f9fafb;
+  background: linear-gradient(135deg, var(--color-lavender-light) 0%, var(--color-lavender) 100%);
+  min-height: 100vh;
+}
+
+/* 可爱卡片样式 */
+.cute-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(155, 126, 217, 0.1);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.cute-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(155, 126, 217, 0.15);
+}
+
+/* 彩色卡片变体 */
+.cute-card-yellow {
+  background: linear-gradient(135deg, var(--color-yellow) 0%, var(--color-yellow-light) 100%);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(249, 226, 124, 0.3);
+}
+
+.cute-card-mint {
+  background: linear-gradient(135deg, var(--color-mint) 0%, var(--color-mint-light) 100%);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(184, 232, 212, 0.3);
+}
+
+.cute-card-purple {
+  background: linear-gradient(135deg, var(--color-lavender) 0%, var(--color-lavender-light) 100%);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(155, 126, 217, 0.2);
+}
+
+.cute-card-pink {
+  background: linear-gradient(135deg, var(--color-pink) 0%, var(--color-pink-light) 100%);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(255, 212, 229, 0.3);
+}
+
+/* 可爱按钮 */
+.cute-btn {
+  border-radius: 16px;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.cute-btn-primary {
+  background: var(--color-purple);
+  color: white;
+}
+
+.cute-btn-primary:hover:not(:disabled) {
+  background: var(--color-purple-dark);
+  transform: scale(1.02);
+}
+
+.cute-btn-yellow {
+  background: var(--color-yellow);
+  color: #5D4E37;
+}
+
+.cute-btn-yellow:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: scale(1.02);
+}
+
+.cute-btn-mint {
+  background: var(--color-mint);
+  color: #2D5A47;
+}
+
+.cute-btn-mint:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: scale(1.02);
+}
+
+.cute-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
