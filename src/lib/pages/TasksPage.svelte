@@ -7,10 +7,10 @@
   
   // 副本配置
   const dungeons = [
-    { id: 'world_tree', name: '世界之树', icon: '🌳', difficulties: ['normal', 'hard'] },
-    { id: 'machine_mountain', name: '机神山', icon: '⛰️', difficulties: ['normal', 'hard'] },
-    { id: 'sea_palace', name: '海之宫遗迹', icon: '🏛️', difficulties: ['normal', 'hard'] },
-    { id: 'water_shrine', name: '源水大社', icon: '⛩️', difficulties: ['normal', 'hard', 'nightmare'] },
+    { id: 'world_tree', name: '世界之树', icon: '🌳', difficulties: ['normal', 'hard'], color: '' },
+    { id: 'machine_mountain', name: '机神山', icon: '⛰️', difficulties: ['normal', 'hard'], color: 'yellow' },
+    { id: 'sea_palace', name: '海之宫遗迹', icon: '🏛️', difficulties: ['normal', 'hard'], color: 'with-bg sea-palace-bg' },
+    { id: 'water_shrine', name: '源水大社', icon: '⛩️', difficulties: ['normal', 'hard', 'nightmare'], color: 'white' },
   ];
   
   const difficultyLabels: Record<string, string> = {
@@ -62,19 +62,25 @@
   <PageHeader title="任务配置" subtitle="选择副本开始自动化 🎮" />
 
   <!-- 副本选择 -->
-  <div class="clean-card p-5">
-    <h3 class="text-base font-bold text-gray-900 mb-4">选择副本</h3>
-    <div class="grid grid-cols-4 gap-4">
-      {#each dungeons as dungeon}
-        <button
-          class="dungeon-card {selectedDungeon === dungeon.id ? 'selected' : ''}"
-          onclick={() => selectDungeon(dungeon.id)}
-        >
-          <span class="text-4xl mb-2">{dungeon.icon}</span>
-          <span class="font-semibold text-sm">{dungeon.name}</span>
-        </button>
-      {/each}
-    </div>
+  <div class="grid grid-cols-4 gap-4">
+    {#each dungeons as dungeon}
+      <button
+        class="dungeon-card {dungeon.color} {selectedDungeon === dungeon.id ? 'selected' : ''}"
+        onclick={() => selectDungeon(dungeon.id)}
+      >
+        <!-- 跑马灯 -->
+        <div class="carousel" data-position="top">
+          <span class="carousel-text">{dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • </span>
+        </div>
+        <div class="carousel" data-position="bottom" data-direction="right">
+          <span class="carousel-text">{dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • </span>
+        </div>
+        
+        <div class="card-icon">{dungeon.icon}</div>
+        <span class="card-title">{dungeon.name}</span>
+        <span class="card-desc">{dungeon.difficulties.length} 种难度</span>
+      </button>
+    {/each}
   </div>
 
   <!-- 难度选择 -->
@@ -115,29 +121,6 @@
 </div>
 
 <style>
-  .dungeon-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem 1rem;
-    background: var(--color-gray-50);
-    border: 2px solid transparent;
-    border-radius: 1.25rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .dungeon-card:hover {
-    background: var(--color-gray-100);
-    transform: translateY(-2px);
-  }
-  
-  .dungeon-card.selected {
-    background: var(--color-lime);
-    border-color: var(--color-gray-900);
-  }
-  
   .difficulty-btn {
     padding: 0.75rem 1.5rem;
     background: var(--color-gray-100);

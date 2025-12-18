@@ -1,0 +1,188 @@
+/* Universe 风格副本卡片 */
+.dungeon-card {
+  --card-bg: var(--color-lime);
+  --card-accent: var(--color-gray-900);
+  
+  overflow: hidden !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  gap: 0.25rem !important;
+  padding: 1.25rem !important;
+  width: 100% !important;
+  min-height: 14rem !important;
+  background-color: var(--card-bg) !important;
+  border-radius: 1.25rem !important;
+  border: 2px solid transparent !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.dungeon-card::before {
+  content: "";
+  position: absolute;
+  top: 5rem;
+  right: 1.5rem;
+  width: 1rem;
+  aspect-ratio: 1 / 1;
+  background-color: var(--card-accent);
+  border-radius: 9999px;
+  opacity: 0.15;
+  transition: all 0.3s ease;
+}
+
+.dungeon-card::after {
+  content: "";
+  position: absolute;
+  top: 6.5rem;
+  right: -0.5rem;
+  width: 2.5rem;
+  aspect-ratio: 1 / 1;
+  background-color: var(--card-accent);
+  border-radius: 9999px;
+  opacity: 0.15;
+  transition: all 0.3s ease;
+}
+
+.dungeon-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dungeon-card:hover::before,
+.dungeon-card:hover::after {
+  opacity: 0.25;
+}
+
+.dungeon-card.selected {
+  border-color: var(--card-accent) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 跑马灯文字 - 默认隐藏 */
+.dungeon-card .carousel {
+  position: absolute !important;
+  left: 0 !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+  pointer-events: none !important;
+}
+
+.dungeon-card:hover .carousel {
+  opacity: 1 !important;
+  animation: dungeon-carousel 8s linear var(--carousel_direction, normal) infinite !important;
+}
+
+.dungeon-card .carousel[data-direction="right"] {
+  --carousel_direction: reverse;
+}
+
+.dungeon-card .carousel[data-position="top"] {
+  top: 0.5rem !important;
+}
+
+.dungeon-card .carousel[data-position="bottom"] {
+  bottom: 0.5rem !important;
+}
+
+.dungeon-card .carousel .carousel-text {
+  font-size: 0.65rem !important;
+  color: var(--card-accent) !important;
+  opacity: 0.4 !important;
+  white-space: nowrap !important;
+  letter-spacing: 0.5px !important;
+}
+
+@keyframes dungeon-carousel {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* 图标 */
+.dungeon-card .card-icon {
+  position: relative !important;
+  z-index: 10 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 3rem !important;
+  height: 3rem !important;
+  font-size: 1.75rem !important;
+  background-color: white !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  transition: transform 0.3s ease !important;
+}
+
+.dungeon-card:hover .card-icon {
+  transform: scale(1.1) !important;
+}
+
+/* 标题 */
+.dungeon-card .card-title {
+  position: relative !important;
+  z-index: 10 !important;
+  font-size: 0.95rem !important;
+  color: var(--card-accent) !important;
+  font-weight: 700 !important;
+  margin-top: 0.5rem !important;
+}
+
+/* 描述 */
+.dungeon-card .card-desc {
+  position: relative !important;
+  z-index: 10 !important;
+  font-size: 0.75rem !important;
+  color: var(--card-accent) !important;
+  opacity: 0.7 !important;
+}
+
+/* 颜色变体 */
+.dungeon-card.yellow {
+  --card-bg: var(--color-yellow);
+}
+
+.dungeon-card.white {
+  --card-bg: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06) !important;
+}
+
+.dungeon-card.gray {
+  --card-bg: var(--color-gray-100);
+}
+
+
+/* 带背景图的卡片 */
+.dungeon-card.with-bg {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.dungeon-card.with-bg::before,
+.dungeon-card.with-bg::after {
+  display: none;
+}
+
+.dungeon-card.with-bg .card-title,
+.dungeon-card.with-bg .card-desc {
+  color: white !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dungeon-card.with-bg .carousel .carousel-text {
+  color: white !important;
+  opacity: 0.6 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 海之宫遗迹背景 */
+.dungeon-card.sea-palace-bg {
+  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/sea-palace.jpg') !important;
+}

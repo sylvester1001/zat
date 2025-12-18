@@ -1,0 +1,95 @@
+/* Universe 风格状态卡片 */
+.status-card {
+  background: var(--color-lime);
+  color: var(--color-gray-900);
+  position: relative;
+  border-radius: 2em;
+  padding: 1.5em;
+  transition: transform 0.4s ease;
+  overflow: hidden;
+}
+
+.status-card .card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2em;
+  height: 100%;
+  transition: transform 0.4s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.status-card .card-top,
+.status-card .card-bottom {
+  display: flex;
+  justify-content: space-between;
+}
+
+.status-card .card-top p,
+.status-card .card-top .card-title,
+.status-card .card-bottom p,
+.status-card .card-bottom .card-title {
+  margin: 0;
+}
+
+.status-card .card-title {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.status-card .card-top p,
+.status-card .card-bottom p {
+  font-weight: 600;
+}
+
+.status-card .card-bottom {
+  align-items: flex-end;
+}
+
+.status-card .card-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.status-card .card-image svg {
+  width: 5em;
+  height: 5em;
+  transition: transform 0.4s ease;
+  opacity: 0.15;
+  fill: var(--color-gray-900);
+}
+
+.status-card:hover {
+  cursor: pointer;
+  transform: scale(0.97);
+}
+
+.status-card:hover .card-content {
+  transform: scale(0.96);
+}
+
+.status-card:hover .card-image svg {
+  transform: scale(1.05);
+}
+
+.status-card:active {
+  transform: scale(0.95);
+}
+
+/* 变体 - 黄色 */
+.status-card.yellow {
+  background: var(--color-yellow);
+}
+
+/* 变体 - 白色 */
+.status-card.white {
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
