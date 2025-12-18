@@ -166,18 +166,16 @@
     <h3 class="text-base font-bold text-gray-900 mb-4">快速操作</h3>
     <div class="grid grid-cols-3 gap-3">
       <!-- 启动游戏 -->
-      <Button
-        pill
-        class="py-4 zat-yellow"
+      <button
+        class="play-btn"
         disabled={!connected || startingGame}
         onclick={() => handleStartGame(true)}
       >
-        {#if startingGame}
-          <span class="animate-bounce mr-2">🎮</span>启动中...
-        {:else}
-          <span class="mr-2">🎮</span>启动游戏
-        {/if}
-      </Button>
+        <img src="/assets/sword.png" alt="" class="play-btn-img" />
+        <span class="now-text">启动游戏</span>
+        <span class="play-text">Now!</span>
+
+      </button>
       
       <!-- 启动自动化 -->
       <Button
@@ -208,6 +206,8 @@
           <span class="mr-2">⏹️</span>停止
         {/if}
       </Button>
+
+      
     </div>
   </div>
 

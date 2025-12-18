@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "ZAT - 杖剑传说自动化工具",
+        "title": "ZAT",
         "width": 1200,
         "height": 800,
         "minWidth": 800,

@@ -1,0 +1,67 @@
+/* Universe 风格 Play 按钮 */
+.play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 16px;
+  color: var(--color-gray-900);
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  border: solid 2px black;
+  letter-spacing: 1px;
+  font-weight: 600;
+  font-size: 14px;
+  background-color: hsl(49deg 98% 60%);
+  border-radius: 50px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 52px;
+  min-width: 140px;
+}
+
+.play-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.play-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.play-btn .play-btn-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  transition: all 0.4s ease;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.play-btn .play-text {
+  transition: all 0.4s ease;
+  z-index: 2;
+}
+
+.play-btn .now-text {
+  position: absolute;
+  left: 0;
+  transform: translateX(-100%);
+  transition: all 0.4s ease;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.play-btn:hover:not(:disabled) .play-btn-img {
+  transform: scale(1.5) translateX(30px);
+}
+
+.play-btn:hover:not(:disabled) .now-text {
+  transform: translateX(16px);
+}
+
+.play-btn:hover:not(:disabled) .play-text {
+  transform: translateX(150%);
+  opacity: 0;
+}
