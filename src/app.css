@@ -6,11 +6,388 @@
 @source "../node_modules/flowbite-svelte-icons/dist";
 
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'GenSenRounded2 TC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* 清爽现代配色 - 黄绿渐变风格 */
+  --color-bg: #FAFAFA;
+  --color-bg-secondary: #F5F5F5;
+  
+  /* 主色调 - 黄绿渐变 */
+  --color-lime: #D4F542;
+  --color-lime-light: #E8FF7A;
+  --color-lime-dark: #B8D93A;
+  --color-yellow: #FFE566;
+  --color-yellow-dark: #E6C84D;
+  
+  /* 辅助色 */
+  --color-gray-50: #FAFAFA;
+  --color-gray-100: #F5F5F5;
+  --color-gray-200: #EEEEEE;
+  --color-gray-300: #E0E0E0;
+  --color-gray-400: #BDBDBD;
+  --color-gray-500: #9E9E9E;
+  --color-gray-600: #757575;
+  --color-gray-700: #616161;
+  --color-gray-800: #424242;
+  --color-gray-900: #212121;
+  
+  /* 状态色 */
+  --color-success: #4CAF50;
+  --color-warning: #FF9800;
+  --color-error: #F44336;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #f9fafb;
+  background: var(--color-bg);
+  min-height: 100vh;
+  color: var(--color-gray-800);
 }
+
+/* 渐变头部背景 */
+.gradient-header {
+  background: linear-gradient(135deg, var(--color-lime) 0%, var(--color-lime-light) 50%, var(--color-yellow) 100%);
+  border-radius: 0 0 32px 32px;
+}
+
+/* 清爽卡片样式 */
+.clean-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.clean-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* 小卡片 */
+.mini-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.mini-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* 胶囊按钮 - 黑底 */
+.pill-btn {
+  border-radius: 50px;
+  font-weight: 600;
+  padding: 10px 20px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pill-btn-dark {
+  background: var(--color-gray-900);
+  color: white;
+}
+
+.pill-btn-dark:hover:not(:disabled) {
+  background: var(--color-gray-800);
+  transform: scale(1.02);
+}
+
+/* 胶囊按钮 - 白底灰边 */
+.pill-btn-light {
+  background: white;
+  color: var(--color-gray-700);
+  border: 1.5px solid var(--color-gray-300);
+}
+
+.pill-btn-light:hover:not(:disabled) {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-400);
+}
+
+/* 胶囊按钮 - 黄色强调 */
+.pill-btn-yellow {
+  background: var(--color-yellow);
+  color: var(--color-gray-900);
+}
+
+.pill-btn-yellow:hover:not(:disabled) {
+  background: var(--color-yellow-dark);
+  transform: scale(1.02);
+}
+
+/* 胶囊按钮 - 青柠强调 */
+.pill-btn-lime {
+  background: var(--color-lime);
+  color: var(--color-gray-900);
+}
+
+.pill-btn-lime:hover:not(:disabled) {
+  background: var(--color-lime-dark);
+  transform: scale(1.02);
+}
+
+.pill-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 搜索框 */
+.search-input {
+  background: white;
+  border-radius: 16px;
+  border: none;
+  padding: 14px 20px;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  outline: none;
+  transition: box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.search-input::placeholder {
+  color: var(--color-gray-400);
+}
+
+/* 标签/徽章 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tag-outline {
+  background: transparent;
+  border: 1px solid var(--color-gray-300);
+  color: var(--color-gray-600);
+}
+
+.tag-lime {
+  background: var(--color-lime);
+  color: var(--color-gray-900);
+}
+
+.tag-yellow {
+  background: var(--color-yellow);
+  color: var(--color-gray-900);
+}
+
+/* 图标按钮 */
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-lime);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  transform: scale(1.05);
+}
+
+/* 导航项 */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  color: var(--color-gray-600);
+}
+
+.nav-item:hover {
+  background: var(--color-gray-100);
+}
+
+.nav-item.active {
+  background: var(--color-lime);
+  color: var(--color-gray-900);
+  font-weight: 600;
+}
+
+/* 数据展示 */
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--color-gray-500);
+}
+
+/* 进度条 */
+.progress-bar {
+  height: 6px;
+  background: var(--color-gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill-lime {
+  background: var(--color-lime);
+}
+
+.progress-fill-yellow {
+  background: var(--color-yellow);
+}
+
+/* 旧样式兼容 */
+.cute-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: none;
+}
+
+.cute-card-yellow {
+  background: var(--color-yellow);
+  border-radius: 20px;
+}
+
+.cute-card-cyan {
+  background: var(--color-lime);
+  border-radius: 20px;
+}
+
+.cute-card-violet {
+  background: var(--color-gray-100);
+  border-radius: 20px;
+}
+
+.cute-btn {
+  border-radius: 50px;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.cute-btn-primary {
+  background: var(--color-gray-900);
+  color: white;
+}
+
+.cute-btn-primary:hover:not(:disabled) {
+  background: var(--color-gray-800);
+}
+
+.cute-btn-yellow {
+  background: var(--color-yellow);
+  color: var(--color-gray-900);
+}
+
+.cute-btn-cyan {
+  background: var(--color-lime);
+  color: var(--color-gray-900);
+}
+
+.cute-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card-deco {
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+  font-size: 80px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+
+/* 去掉 toggle/checkbox/button 的 focus ring */
+input[type="checkbox"]:focus,
+input[type="checkbox"]:focus-visible,
+button:focus,
+button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+/* 针对 flowbite toggle 的 focus ring */
+.peer:focus~*[class*="peer-focus"] {
+  --tw-ring-shadow: none !important;
+  --tw-ring-offset-shadow: none !important;
+}
+
+
+
+
+/* ZAT 自定义按钮样式 - 用于 Flowbite Button 的 class 属性 */
+.zat-lime {
+  background-color: var(--color-lime) !important;
+  color: var(--color-gray-900) !important;
+  border-radius: 50px !important;
+}
+.zat-lime:hover:not(:disabled) {
+  background-color: var(--color-lime-dark) !important;
+}
+
+.zat-yellow {
+  background-color: var(--color-yellow) !important;
+  color: var(--color-gray-900) !important;
+}
+.zat-yellow:hover:not(:disabled) {
+  background-color: var(--color-yellow-dark) !important;
+}
+
+.zat-dark {
+  background-color: var(--color-gray-900) !important;
+  color: white !important;
+}
+.zat-dark:hover:not(:disabled) {
+  background-color: var(--color-gray-800) !important;
+}
+
+.zat-light {
+  background-color: white !important;
+  color: var(--color-gray-700) !important;
+  border: 1.5px solid var(--color-gray-300) !important;
+  border-radius: 50px !important;
+}
+.zat-light:hover:not(:disabled) {
+  background-color: var(--color-gray-100) !important;
+  border-color: var(--color-gray-400) !important;
+}
+
+.zat-danger {
+  background-color: var(--color-error) !important;
+  color: white !important;
+}
+.zat-danger:hover:not(:disabled) {
+  background-color: #D32F2F !important;
+}
+
+/* Universe 组件样式 */
+@import './styles/universe/index.css';

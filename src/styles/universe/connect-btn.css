@@ -1,0 +1,42 @@
+/* Universe 风格连接按钮 */
+.connect-btn {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  background-color: var(--color-lime);
+  border-radius: 30px;
+  color: var(--color-gray-900);
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 0 14px 0 8px;
+}
+
+.connect-btn:hover:not(:disabled) {
+  background-color: var(--color-lime-dark);
+}
+
+.connect-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.connect-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.connect-btn-icon {
+  height: 22px;
+  width: 22px;
+  transition: transform 0.5s ease;
+  fill: var(--color-gray-900);
+}
+
+.connect-btn:hover:not(:disabled) .connect-btn-icon {
+  transform: rotate(90deg);
+}
