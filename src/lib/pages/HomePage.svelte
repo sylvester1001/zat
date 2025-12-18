@@ -129,7 +129,7 @@
             {/if}
           {/if}
         </div>
-        <div class="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center text-2xl">
+        <div class="w-12 h-12 bg-white/70 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
           📱
         </div>
       </div>
@@ -143,12 +143,12 @@
           <p class="text-xl font-bold text-gray-800 mb-2">{todayTasks} 次</p>
           <p class="text-xs text-gray-500">运行时长: {todayTime}</p>
         </div>
-        <div class="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center text-2xl">
+        <div class="w-12 h-12 bg-white/70 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
           🎮
         </div>
       </div>
     </div>
-    
+      
     <!-- 成功率 -->
     <div class="cute-card-purple p-5">
       <div class="flex items-start justify-between">
@@ -157,7 +157,7 @@
           <p class="text-xl font-bold text-[var(--color-purple-dark)] mb-2">{successRate}</p>
           <p class="text-xs text-gray-500">最近 24 小时</p>
         </div>
-        <div class="w-12 h-12 bg-white/60 rounded-2xl flex items-center justify-center text-2xl">
+        <div class="w-12 h-12 bg-white/70 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
           📈
         </div>
       </div>
