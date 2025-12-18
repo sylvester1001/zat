@@ -172,8 +172,8 @@
         onclick={() => handleStartGame(true)}
       >
         <img src="/assets/sword.png" alt="" class="play-btn-img" />
-        <span class="now-text">启动游戏</span>
-        <span class="play-text">Now!</span>
+        <span class="now-text">Now!</span>
+        <span class="play-text">启动游戏</span>
 
       </button>
       
