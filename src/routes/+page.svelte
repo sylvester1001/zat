@@ -5,7 +5,8 @@
   import PageHeader from '$lib/components/PageHeader.svelte';
   import HomePage from '$lib/pages/HomePage.svelte';
   import DebugPage from '$lib/pages/DebugPage.svelte';
-  import { appStore, startHeartbeat, stopHeartbeat } from '$lib/stores/appStore';
+  import TasksPage from '$lib/pages/TasksPage.svelte';
+  import { startHeartbeat, stopHeartbeat } from '$lib/stores/appStore';
   
   let currentPage = $state('home');
   
@@ -25,14 +26,7 @@
   {:else if currentPage === 'debug'}
     <DebugPage />
   {:else if currentPage === 'tasks'}
-    <div class="flex-1 overflow-auto px-5 pb-5 space-y-5">
-      <PageHeader title="任务管理" subtitle="配置和管理你的任务 🎮" />
-      <div class="clean-card text-center py-20">
-        <div class="w-20 h-20 mx-auto mb-4 bg-[var(--color-yellow)] rounded-3xl flex items-center justify-center text-4xl">🎮</div>
-        <h3 class="text-2xl font-bold text-gray-800 mb-2">任务管理</h3>
-        <p class="text-gray-500">功能开发中...</p>
-      </div>
-    </div>
+    <TasksPage />
   {:else if currentPage === 'stats'}
     <div class="flex-1 overflow-auto px-5 pb-5 space-y-5">
       <PageHeader title="统计分析" subtitle="查看任务执行统计 📊" />
