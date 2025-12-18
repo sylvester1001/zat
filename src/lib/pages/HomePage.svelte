@@ -175,9 +175,9 @@
           onclick={handleStopGame}
         >
           {#if stoppingGame}
-            ⏳
+            <span class="animate-spin">⏳</span>
           {:else}
-            ⏹️
+            <span class="stop-icon"></span>
           {/if}
         </button>
       </div>
@@ -229,21 +229,32 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-gray-100);
+    background: #ef4444;
     border: none;
     border-radius: 50px;
-    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
   }
   
   .stop-btn:hover:not(:disabled) {
-    background: #fee2e2;
+    background: #dc2626;
   }
   
   .stop-btn:disabled {
+    background: var(--color-gray-200);
     opacity: 0.5;
     cursor: not-allowed;
+  }
+  
+  .stop-icon {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 2px;
+  }
+  
+  .stop-btn:disabled .stop-icon {
+    background: var(--color-gray-400);
   }
   
   .tag-gray {
