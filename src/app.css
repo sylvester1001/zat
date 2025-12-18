@@ -386,3 +386,6 @@ button:focus-visible {
 .zat-danger:hover:not(:disabled) {
   background-color: #D32F2F !important;
 }
+
+/* Universe 组件样式 */
+@import './styles/universe/index.css';
