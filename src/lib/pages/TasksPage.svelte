@@ -1,59 +1,53 @@
 <script lang="ts">
   import { Button } from 'flowbite-svelte';
   import PageHeader from '$lib/components/PageHeader.svelte';
-  import { appStore } from '$lib/stores/appStore';
+  import { appStore, type AppState } from '$lib/stores/appStore';
+  import { api } from '$lib/api';
   
-  let connected = $derived($appStore.connected);
+  // 订阅 store
+  let storeValue = $state<AppState | null>(null);
+  $effect(() => {
+    const unsubscribe = appStore.subscribe(value => {
+      storeValue = value;
+    });
+    return unsubscribe;
+  });
   
-  // 副本配置
+  let connected = $derived(storeValue?.connected ?? false);
+  
+  // 副本配置 (ID 需要和后端 scene_graph.py 一致)
   const dungeons = [
-    { id: 'world_tree', name: '世界之树', icon: '🌳', difficulties: ['normal', 'hard'], color: '' },
-    { id: 'machine_mountain', name: '机神山', icon: '⛰️', difficulties: ['normal', 'hard'], color: 'yellow' },
-    { id: 'sea_palace', name: '海之宫遗迹', icon: '🏛️', difficulties: ['normal', 'hard'], color: 'with-bg sea-palace-bg' },
-    { id: 'water_shrine', name: '源水大社', icon: '⛩️', difficulties: ['normal', 'hard', 'nightmare'], color: 'white' },
+    { id: 'world-tree', name: '世界之树', icon: '🌳', color: '' },
+    { id: 'mount-mechagod', name: '机神山', icon: '⛰️', color: 'yellow' },
+    { id: 'sea-palace', name: '海之宫遗迹', icon: '🏛️', color: 'with-bg sea-palace-bg' },
+    { id: 'mizumoto-shrine', name: '源水大社', icon: '⛩️', color: 'white' },
   ];
   
-  const difficultyLabels: Record<string, string> = {
-    normal: '普通',
-    hard: '困难',
-    nightmare: '噩梦',
-  };
-  
   let selectedDungeon = $state<string | null>(null);
-  let selectedDifficulty = $state<string>('normal');
-  let starting = $state(false);
-  
-  // 获取当前选中副本的可用难度
-  let availableDifficulties = $derived(() => {
-    const dungeon = dungeons.find(d => d.id === selectedDungeon);
-    return dungeon?.difficulties || ['normal', 'hard'];
-  });
-  
-  // 当选中副本变化时，检查当前难度是否可用
-  $effect(() => {
-    const difficulties = availableDifficulties();
-    if (!difficulties.includes(selectedDifficulty)) {
-      selectedDifficulty = 'normal';
-    }
-  });
+  let navigating = $state(false);
   
   function selectDungeon(id: string) {
     selectedDungeon = selectedDungeon === id ? null : id;
   }
   
-  async function handleStartTask() {
+  // 导航到副本
+  async function handleEnterDungeon() {
     if (!selectedDungeon || !connected) return;
     
-    starting = true;
+    navigating = true;
     try {
-      // TODO: 调用后端 API 开始任务
-      console.log('开始任务:', selectedDungeon, selectedDifficulty);
-      alert(`开始任务: ${dungeons.find(d => d.id === selectedDungeon)?.name} - ${difficultyLabels[selectedDifficulty]}`);
+      const result = await api.navigateToDungeon(selectedDungeon, 'normal');
+      if (result.success) {
+        const dungeonName = dungeons.find(d => d.id === selectedDungeon)?.name;
+        console.log(`已进入副本: ${dungeonName}`);
+      } else {
+        alert('进入副本失败: ' + (result.message || '未知错误'));
+      }
     } catch (error) {
-      console.error('启动任务失败:', error);
-      alert('启动任务失败：' + error);
+      console.error('进入副本失败:', error);
+      alert('进入副本失败：' + error);
     } finally {
-      starting = false;
+      navigating = false;
     }
   }
 </script>
@@ -78,29 +72,8 @@
         
         <div class="card-icon">{dungeon.icon}</div>
         <span class="card-title">{dungeon.name}</span>
-        <span class="card-desc">{dungeon.difficulties.length} 种难度</span>
       </button>
     {/each}
-  </div>
-
-  <!-- 难度选择 -->
-  <div class="clean-card p-5">
-    <h3 class="text-base font-bold text-gray-900 mb-4">难度选择</h3>
-    <div class="flex gap-3">
-      {#each ['normal', 'hard', 'nightmare'] as difficulty}
-        {@const isAvailable = availableDifficulties().includes(difficulty)}
-        <button
-          class="difficulty-btn {selectedDifficulty === difficulty ? 'selected' : ''} {!isAvailable ? 'unavailable' : ''}"
-          disabled={!isAvailable}
-          onclick={() => selectedDifficulty = difficulty}
-        >
-          {difficultyLabels[difficulty]}
-        </button>
-      {/each}
-    </div>
-    {#if selectedDungeon && !availableDifficulties().includes('nightmare')}
-      <p class="text-xs text-gray-400 mt-2">噩梦难度仅源水大社可选</p>
-    {/if}
   </div>
 
   <!-- 底部操作区 -->
@@ -108,43 +81,18 @@
     <Button
       pill
       class="px-8 py-4 zat-lime"
-      disabled={!selectedDungeon || !connected || starting}
-      onclick={handleStartTask}
+      disabled={!selectedDungeon || !connected || navigating}
+      onclick={handleEnterDungeon}
     >
-      {#if starting}
-        <span class="animate-pulse mr-2">🚀</span>启动中...
+      {#if navigating}
+        <svg class="animate-spin -ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        进入副本中...
       {:else}
-        <span class="mr-2">🚀</span>开始任务
+        <span class="mr-2">🚀</span>进入副本
       {/if}
     </Button>
   </div>
 </div>
-
-<style>
-  .difficulty-btn {
-    padding: 0.75rem 1.5rem;
-    background: var(--color-gray-100);
-    border: 2px solid transparent;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: var(--color-gray-700);
-  }
-  
-  .difficulty-btn:hover:not(:disabled) {
-    background: var(--color-gray-200);
-  }
-  
-  .difficulty-btn.selected {
-    background: var(--color-lime);
-    border-color: var(--color-gray-900);
-    color: var(--color-gray-900);
-  }
-  
-  .difficulty-btn.unavailable {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-</style>

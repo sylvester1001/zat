@@ -1,7 +1,6 @@
 <script lang="ts">
   import { api } from '$lib/api';
-  import { appStore, setConnected, setTaskEngineRunning } from '$lib/stores/appStore';
-  import DungeonSelector from '$lib/components/DungeonSelector.svelte';
+  import { appStore, setConnected, setTaskEngineRunning, type AppState } from '$lib/stores/appStore';
   import { Button } from 'flowbite-svelte';
   import PageHeader from '$lib/components/PageHeader.svelte';
 
@@ -10,24 +9,18 @@
   let stoppingTaskEngine = $state(false);
   let startingGame = $state(false);
   
-  // 从store获取状态
-  let storeValue = $state<import('$lib/stores/appStore').AppState | null>(null);
-
   // 订阅 store
+  let storeValue = $state<AppState | null>(null);
   $effect(() => {
     const unsubscribe = appStore.subscribe(value => {
       storeValue = value;
     });
     return unsubscribe;
   });
-
+  
   let connected = $derived(storeValue?.connected ?? false);
   let device = $derived(storeValue?.device ?? '');
-  let resolution = $derived(storeValue?.resolution ?? '');
   let taskEngineRunning = $derived(storeValue?.taskEngineRunning ?? false);
-  let connected = $derived($appStore.connected);
-  let device = $derived($appStore.device);
-  let taskEngineRunning = $derived($appStore.taskEngineRunning);
 
   let todayTasks = $state(0);
   let todayTime = $state('0h 0m');
@@ -158,21 +151,6 @@
             重新连接
           {:else}
             连接设备
-    <Card class="p-4 hover:shadow-lg transition-shadow">
-      <div class="flex items-center justify-between">
-        <div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">连接状态</p>
-          <div class="flex items-center gap-2">
-            <Indicator color={connected ? 'green' : 'gray'} size="lg" />
-            <span class="text-2xl font-bold text-gray-900 dark:text-white">
-              {connected ? '已连接' : '未连接'}
-            </span>
-          </div>
-          {#if device}
-            <p class="text-xs text-gray-400 mt-1">设备: {device}</p>
-            {#if resolution}
-              <p class="text-xs text-gray-400">分辨率: {resolution}</p>
-            {/if}
           {/if}
         </button>
       </div>
@@ -207,7 +185,6 @@
         <img src="/assets/sword.png" alt="" class="play-btn-img" />
         <span class="now-text">Now!</span>
         <span class="play-text">启动游戏</span>
-
       </button>
       
       <!-- 启动自动化 -->
@@ -239,8 +216,6 @@
           <span class="mr-2">⏹️</span>停止
         {/if}
       </Button>
-
-
     </div>
   </div>
 
@@ -253,21 +228,5 @@
     <div class="bg-gray-50 rounded-2xl p-4 h-40 overflow-y-auto font-mono text-sm">
       <p class="text-gray-400">暂无日志...</p>
     </div>
-  </div>
-  <!-- 副本选择和实时日志 -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- 副本选择 -->
-    <DungeonSelector />
-
-    <!-- 实时日志 -->
-    <Card class="p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white">实时日志</h3>
-        <Badge color="green">运行中</Badge>
-      </div>
-      <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 h-48 overflow-y-auto font-mono text-sm">
-        <p class="text-gray-400 dark:text-gray-500">暂无日志...</p>
-      </div>
-    </Card>
   </div>
 </div>

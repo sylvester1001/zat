@@ -10,10 +10,6 @@
   
   let currentPage = $state('home');
   
-  // 从store获取状态
-  let connected = $derived($appStore.connected);
-  let taskEngineRunning = $derived($appStore.taskEngineRunning);
-  
   onMount(() => {
     console.log('ZAT 已启动');
     startHeartbeat();
