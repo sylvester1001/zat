@@ -1,13 +1,11 @@
 <script lang="ts">
   import { api } from '$lib/api';
-  import { appStore, setConnected, setTaskEngineRunning, type AppState } from '$lib/stores/appStore';
-  import { Button } from 'flowbite-svelte';
+  import { appStore, setConnected, setGameRunning, type AppState } from '$lib/stores/appStore';
   import PageHeader from '$lib/components/PageHeader.svelte';
 
   let connecting = $state(false);
-  let startingTaskEngine = $state(false);
-  let stoppingTaskEngine = $state(false);
   let startingGame = $state(false);
+  let stoppingGame = $state(false);
   
   // 订阅 store
   let storeValue = $state<AppState | null>(null);
@@ -20,7 +18,7 @@
   
   let connected = $derived(storeValue?.connected ?? false);
   let device = $derived(storeValue?.device ?? '');
-  let taskEngineRunning = $derived(storeValue?.taskEngineRunning ?? false);
+  let gameRunning = $derived(storeValue?.gameRunning ?? false);
 
   let todayTasks = $state(0);
   let todayTime = $state('0h 0m');
@@ -34,7 +32,6 @@
         const resolutionStr = result.resolution 
           ? `${result.resolution.width}x${result.resolution.height}`
           : '';
-        console.log('调用 setConnected:', result.device, resolutionStr);
         setConnected(result.device, resolutionStr);
         
         if (result.resolution) {
@@ -59,49 +56,16 @@
     }
   }
   
-  async function handleStartTaskEngine() {
-    startingTaskEngine = true;
-    try {
-      const result = await api.startTaskEngine('farming');
-      if (result.success) {
-        setTaskEngineRunning(true);
-      }
-    } catch (error) {
-      console.error('启动任务引擎失败:', error);
-      alert('启动任务引擎失败：' + error);
-    } finally {
-      startingTaskEngine = false;
-    }
-  }
-  
-  async function handleStopTaskEngine() {
-    stoppingTaskEngine = true;
-    try {
-      const result = await api.stopTaskEngine();
-      if (result.success) {
-        setTaskEngineRunning(false);
-      }
-    } catch (error) {
-      console.error('停止任务引擎失败:', error);
-      alert('停止任务引擎失败：' + error);
-    } finally {
-      stoppingTaskEngine = false;
-    }
-  }
-  
-  async function handleStartGame(waitReady: boolean = false) {
+  async function handleStartGame() {
     startingGame = true;
     try {
-      const result = await api.startGame(waitReady, 60);
+      const result = await api.startGame(true, 60);
       if (result.success) {
-        if (waitReady) {
-          if (result.entered) {
-            console.log('游戏已启动并进入');
-          } else {
-            alert('游戏已启动，但等待进入超时。请手动点击进入游戏。');
-          }
+        setGameRunning(true);
+        if (result.entered) {
+          console.log('游戏已启动并进入');
         } else {
-          console.log('游戏已启动:', result.package);
+          alert('游戏已启动，但等待进入超时。请手动点击进入游戏。');
         }
       }
     } catch (error) {
@@ -109,6 +73,22 @@
       alert('启动游戏失败：' + error);
     } finally {
       startingGame = false;
+    }
+  }
+  
+  async function handleStopGame() {
+    stoppingGame = true;
+    try {
+      const result = await api.stopGame();
+      if (result.success) {
+        setGameRunning(false);
+        console.log('游戏已停止');
+      }
+    } catch (error) {
+      console.error('停止游戏失败:', error);
+      alert('停止游戏失败：' + error);
+    } finally {
+      stoppingGame = false;
     }
   }
 </script>
@@ -175,47 +155,39 @@
   <!-- 快速操作 -->
   <div class="clean-card p-5">
     <h3 class="text-base font-bold text-gray-900 mb-4">快速操作</h3>
-    <div class="grid grid-cols-3 gap-3">
+    <div class="flex gap-3">
       <!-- 启动游戏 -->
       <button
-        class="play-btn"
-        disabled={!connected || startingGame}
-        onclick={() => handleStartGame(true)}
+        class="play-btn flex-1"
+        disabled={!connected || startingGame || gameRunning}
+        onclick={handleStartGame}
       >
-        <img src="/assets/sword.png" alt="" class="play-btn-img" />
+        <img src="/assets/sword-border.png" alt="" class="play-btn-img" />
         <span class="now-text">Now!</span>
-        <span class="play-text">启动游戏</span>
+        <span class="play-text">
+          {#if startingGame}
+            启动中...
+          {:else if gameRunning}
+            游戏运行中
+          {:else}
+            启动游戏
+          {/if}
+        </span>
       </button>
       
-      <!-- 启动自动化 -->
-      <Button
-        pill
-        class="py-4 zat-lime"
-        disabled={!connected || startingTaskEngine || taskEngineRunning}
-        onclick={handleStartTaskEngine}
+      <!-- 停止游戏 -->
+      <button
+        class="stop-btn"
+        disabled={!gameRunning || stoppingGame}
+        onclick={handleStopGame}
       >
-        {#if startingTaskEngine}
-          <span class="animate-pulse mr-2">🚀</span>启动中...
-        {:else if taskEngineRunning}
-          <span class="mr-2">▶️</span>运行中
+        {#if stoppingGame}
+          <span class="animate-spin">⏳</span>
         {:else}
-          <span class="mr-2">🚀</span>开始自动化
+          <span>⏹️</span>
         {/if}
-      </Button>
-      
-      <!-- 停止自动化 -->
-      <Button
-        pill
-        class="py-4 zat-light"
-        disabled={!taskEngineRunning || stoppingTaskEngine}
-        onclick={handleStopTaskEngine}
-      >
-        {#if stoppingTaskEngine}
-          <span class="animate-spin mr-2">⏳</span>停止中...
-        {:else}
-          <span class="mr-2">⏹️</span>停止
-        {/if}
-      </Button>
+        <span>停止游戏</span>
+      </button>
     </div>
   </div>
 
@@ -223,10 +195,44 @@
   <div class="clean-card p-5">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-base font-bold text-gray-900">实时日志</h3>
-      <span class="tag tag-lime">运行中</span>
+      <span class="tag {gameRunning ? 'tag-lime' : 'tag-gray'}">{gameRunning ? '运行中' : '已停止'}</span>
     </div>
     <div class="bg-gray-50 rounded-2xl p-4 h-40 overflow-y-auto font-mono text-sm">
       <p class="text-gray-400">暂无日志...</p>
     </div>
   </div>
 </div>
+
+<style>
+  .stop-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: var(--color-gray-100);
+    border: 2px solid transparent;
+    border-radius: 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--color-gray-700);
+  }
+  
+  .stop-btn:hover:not(:disabled) {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+  
+  .stop-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  
+  .tag-gray {
+    background: var(--color-gray-100);
+    color: var(--color-gray-600);
+  }
+</style>

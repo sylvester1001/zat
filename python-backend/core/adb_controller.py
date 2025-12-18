@@ -354,3 +354,40 @@ class ADBController:
             raise ADBError(f"启动应用失败: {stderr}")
         
         logger.info(f"已启动应用: {target}")
+    
+    async def stop_app(self, package: str):
+        """
+        停止应用
+        
+        Args:
+            package: 包名
+        """
+        if not self.is_connected():
+            raise ADBError("设备未连接")
+        
+        cmd = f'"{self.adb_path}" -s {self.device} shell am force-stop {package}'
+        stdout, stderr, code = await self._run_command(cmd)
+        
+        if code != 0:
+            raise ADBError(f"停止应用失败: {stderr}")
+        
+        logger.info(f"已停止应用: {package}")
+    
+    async def is_app_running(self, package: str) -> bool:
+        """
+        检查应用是否正在运行
+        
+        Args:
+            package: 包名
+        
+        Returns:
+            True 如果应用正在运行
+        """
+        if not self.is_connected():
+            return False
+        
+        cmd = f'"{self.adb_path}" -s {self.device} shell pidof {package}'
+        stdout, stderr, code = await self._run_command(cmd)
+        
+        # pidof 返回 PID 表示运行中，空表示未运行
+        return bool(stdout.strip())

@@ -9,6 +9,7 @@ export interface AppState {
   device: string;
   resolution: string;
   taskEngineRunning: boolean;
+  gameRunning: boolean;
 }
 
 const initialState: AppState = {
@@ -16,6 +17,7 @@ const initialState: AppState = {
   device: '',
   resolution: '',
   taskEngineRunning: false,
+  gameRunning: false,
 };
 
 export const appStore = writable<AppState>(initialState);
@@ -37,6 +39,14 @@ export const setDisconnected = () => {
     device: '',
     resolution: '',
     taskEngineRunning: false,
+    gameRunning: false,
+  }));
+};
+
+export const setGameRunning = (running: boolean) => {
+  appStore.update(state => ({
+    ...state,
+    gameRunning: running,
   }));
 };
 
@@ -67,13 +77,19 @@ export const startHeartbeat = () => {
             device: '',
             resolution: '',
             taskEngineRunning: false,
+            gameRunning: false,
           };
         }
-        // 同步任务运行状态
-        if (state.taskEngineRunning !== status.task_running) {
+        // 同步状态
+        const needsUpdate = 
+          state.taskEngineRunning !== status.task_running ||
+          state.gameRunning !== status.game_running;
+        
+        if (needsUpdate) {
           return {
             ...state,
             taskEngineRunning: status.task_running,
+            gameRunning: status.game_running,
           };
         }
         return state;
@@ -85,6 +101,7 @@ export const startHeartbeat = () => {
         ...state,
         connected: false,
         taskEngineRunning: false,
+        gameRunning: false,
       }));
     }
   }, HEARTBEAT_INTERVAL);

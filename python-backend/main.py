@@ -103,11 +103,17 @@ async def get_status():
     # 实时检查设备是否在线
     is_online = await adb_controller.check_device_online() if adb_controller else False
     
+    # 检查游戏是否运行
+    game_running = False
+    if is_online and adb_controller:
+        game_running = await adb_controller.is_app_running("com.leiting.zjcs")
+    
     return {
         "connected": is_online,
         "device": adb_controller.device if adb_controller else None,
         "task_running": task_engine.is_running() if task_engine else False,
         "current_state": task_engine.current_state if task_engine else None,
+        "game_running": game_running,
     }
 
 
@@ -138,6 +144,9 @@ async def stop_task_engine():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# 用于中断 wait_for_game_ready 的标志
+_game_starting = False
+
 @app.post("/start-game")
 async def start_game(wait_ready: bool = False, timeout: int = 60):
     """
@@ -147,6 +156,8 @@ async def start_game(wait_ready: bool = False, timeout: int = 60):
         wait_ready: 是否等待游戏加载完成并自动点击进入
         timeout: 等待超时时间（秒）
     """
+    global _game_starting
+    
     if not adb_controller.is_connected():
         raise HTTPException(status_code=400, detail="设备未连接")
     
@@ -160,20 +171,46 @@ async def start_game(wait_ready: bool = False, timeout: int = 60):
         
         # 如果需要等待游戏加载完成
         if wait_ready:
-            # 临时设置 task_engine 为运行状态以便 wait_for_game_ready 工作
+            _game_starting = True
             task_engine._running = True
             try:
                 success = await task_engine.wait_for_game_ready(timeout=timeout)
+                if not _game_starting:
+                    # 被中断了
+                    return {"success": True, "package": package, "entered": False, "message": "已取消"}
                 if not success:
                     return {"success": True, "package": package, "entered": False, "message": "游戏已启动但等待进入超时"}
                 return {"success": True, "package": package, "entered": True}
             finally:
+                _game_starting = False
                 task_engine._running = False
                 task_engine.current_state = None
         
         return {"success": True, "package": package}
     except Exception as e:
         logger.error(f"启动游戏失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/stop-game")
+async def stop_game():
+    """停止游戏（杖剑传说）"""
+    global _game_starting
+    
+    if not adb_controller.is_connected():
+        raise HTTPException(status_code=400, detail="设备未连接")
+    
+    # 中断 wait_for_game_ready
+    _game_starting = False
+    task_engine._running = False
+    
+    try:
+        package = "com.leiting.zjcs"
+        await adb_controller.stop_app(package)
+        logger.info(f"游戏已停止: {package}")
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"停止游戏失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

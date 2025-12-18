@@ -15,6 +15,7 @@ export interface Status {
   device: string | null;
   task_running: boolean;
   current_state: string | null;
+  game_running: boolean;
 }
 
 export interface LogMessage {
@@ -79,6 +80,11 @@ export const api = {
     params.set('wait_ready', String(waitReady));
     params.set('timeout', String(timeout));
     const res = await fetch(`${API_BASE}/start-game?${params}`, { method: 'POST' });
+    return res.json();
+  },
+
+  async stopGame(): Promise<{ success: boolean }> {
+    const res = await fetch(`${API_BASE}/stop-game`, { method: 'POST' });
     return res.json();
   },
 

@@ -74,7 +74,7 @@ class TaskEngine:
             check_interval: 检测间隔（秒），默认 0.5 秒
         
         Returns:
-            True 如果成功进入游戏，False 如果超时
+            True 如果成功进入游戏，False 如果超时或被中断
         """
         logger.info("等待游戏加载...")
         self.current_state = "WAITING_GAME_READY"
@@ -82,7 +82,9 @@ class TaskEngine:
         elapsed = 0
         check_count = 0
         while elapsed < timeout:
+            # 检查是否被中断
             if not self._running:
+                logger.info("等待游戏加载被中断")
                 return False
             
             check_count += 1
@@ -124,6 +126,9 @@ class TaskEngine:
                     return True
                 
             except Exception as e:
+                # 如果被中断，不输出警告
+                if not self._running:
+                    return False
                 logger.warning(f"检测游戏状态失败: {e}")
             
             await asyncio.sleep(check_interval)
