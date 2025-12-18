@@ -9,22 +9,25 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
   /* 可爱现代配色 */
-  --color-lavender: #E8E0F0;
-  --color-lavender-light: #F5F0FA;
+  --color-bg: #F8F7FC;
+  --color-lavender: #E8E4F0;
+  --color-lavender-light: #F3F1F8;
   --color-purple: #9B7ED9;
   --color-purple-dark: #7C5FC4;
-  --color-yellow: #F9E27C;
-  --color-yellow-light: #FFF8DC;
-  --color-mint: #B8E8D4;
-  --color-mint-light: #E0F5ED;
-  --color-pink: #FFD4E5;
-  --color-pink-light: #FFF0F5;
+  --color-yellow: #FFE566;
+  --color-yellow-dark: #E6C84D;
+  --color-cyan: #A8E6F0;
+  --color-cyan-dark: #7DCCD9;
+  --color-violet: #D4C4F0;
+  --color-violet-dark: #B8A3E0;
+  --color-pink: #FFB8D4;
+  --color-pink-dark: #E69AB8;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, var(--color-lavender-light) 0%, var(--color-lavender) 100%);
+  background: var(--color-bg);
   min-height: 100vh;
 }
 
@@ -42,77 +45,71 @@ body {
   box-shadow: 0 8px 30px rgba(155, 126, 217, 0.15);
 }
 
-/* 彩色卡片变体 - 纯阴影增加层次感 */
+/* 彩色卡片变体 - 纯色 + 装饰图标 */
 .cute-card-yellow {
-  background: linear-gradient(145deg, #FFF9E6 0%, var(--color-yellow) 100%);
+  background: var(--color-yellow);
   border-radius: 24px;
-  box-shadow: 
-    0 8px 32px rgba(200, 170, 50, 0.25),
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .cute-card-yellow:hover {
   transform: translateY(-2px);
-  box-shadow: 
-    0 12px 40px rgba(200, 170, 50, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
-.cute-card-mint {
-  background: linear-gradient(145deg, #E8FFF5 0%, var(--color-mint) 100%);
+.cute-card-cyan {
+  background: var(--color-cyan);
   border-radius: 24px;
-  box-shadow: 
-    0 8px 32px rgba(100, 180, 150, 0.25),
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.cute-card-mint:hover {
+.cute-card-cyan:hover {
   transform: translateY(-2px);
-  box-shadow: 
-    0 12px 40px rgba(100, 180, 150, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
-.cute-card-purple {
-  background: linear-gradient(145deg, #F8F4FF 0%, var(--color-lavender) 100%);
+.cute-card-violet {
+  background: var(--color-violet);
   border-radius: 24px;
-  box-shadow: 
-    0 8px 32px rgba(155, 126, 217, 0.25),
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.cute-card-purple:hover {
+.cute-card-violet:hover {
   transform: translateY(-2px);
-  box-shadow: 
-    0 12px 40px rgba(155, 126, 217, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .cute-card-pink {
-  background: linear-gradient(145deg, #FFF5F9 0%, var(--color-pink) 100%);
+  background: var(--color-pink);
   border-radius: 24px;
-  box-shadow: 
-    0 8px 32px rgba(220, 150, 180, 0.25),
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .cute-card-pink:hover {
   transform: translateY(-2px);
-  box-shadow: 
-    0 12px 40px rgba(220, 150, 180, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* 卡片装饰图标 */
+.card-deco {
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+  font-size: 80px;
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 /* 可爱按钮 */
@@ -145,9 +142,9 @@ body {
   transform: scale(1.02);
 }
 
-.cute-btn-mint {
-  background: var(--color-mint);
-  color: #2D5A47;
+.cute-btn-cyan {
+  background: var(--color-cyan);
+  color: #2D5A5A;
 }
 
 .cute-btn-mint:hover:not(:disabled) {

@@ -113,54 +113,54 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
     <!-- 连接状态 -->
     <div class="cute-card-yellow p-5">
-      <div class="flex items-start justify-between">
+      <div class="flex items-start justify-between relative z-10">
         <div>
-          <p class="text-sm text-gray-600 font-medium mb-2">连接状态</p>
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-3 h-3 rounded-full {connected ? 'bg-green-500' : 'bg-gray-400'}"></div>
-            <span class="text-xl font-bold text-gray-800">
+          <div class="w-12 h-12 bg-white/80 rounded-2xl flex items-center justify-center text-xl shadow-sm mb-3">
+            📱
+          </div>
+          <p class="text-sm text-gray-700 font-medium mb-1">连接状态</p>
+          <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full {connected ? 'bg-green-600' : 'bg-gray-500'}"></div>
+            <span class="text-lg font-bold text-gray-800">
               {connected ? '已连接' : '未连接'}
             </span>
           </div>
           {#if device}
-            <p class="text-xs text-gray-500">{device}</p>
-            {#if resolution}
-              <p class="text-xs text-gray-500">{resolution}</p>
-            {/if}
+            <p class="text-xs text-gray-600 mt-1">{device}</p>
           {/if}
         </div>
-        <div class="w-12 h-12 bg-white/70 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
-          📱
-        </div>
       </div>
+      <span class="card-deco text-[var(--color-yellow-dark)]">📱</span>
     </div>
     
     <!-- 今日任务 -->
-    <div class="cute-card-mint p-5">
-      <div class="flex items-start justify-between">
+    <div class="cute-card-cyan p-5">
+      <div class="flex items-start justify-between relative z-10">
         <div>
-          <p class="text-sm text-gray-600 font-medium mb-2">今日任务</p>
-          <p class="text-xl font-bold text-gray-800 mb-2">{todayTasks} 次</p>
-          <p class="text-xs text-gray-500">运行时长: {todayTime}</p>
-        </div>
-        <div class="w-12 h-12 bg-white/70 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
-          🎮
+          <div class="w-12 h-12 bg-white/80 rounded-2xl flex items-center justify-center text-xl shadow-sm mb-3">
+            🎮
+          </div>
+          <p class="text-sm text-gray-700 font-medium mb-1">今日任务</p>
+          <p class="text-lg font-bold text-gray-800">{todayTasks} 次</p>
+          <p class="text-xs text-gray-600 mt-1">运行时长: {todayTime}</p>
         </div>
       </div>
+      <span class="card-deco text-[var(--color-cyan-dark)]">🎮</span>
     </div>
       
     <!-- 成功率 -->
-    <div class="cute-card-purple p-5">
-      <div class="flex items-start justify-between">
+    <div class="cute-card-violet p-5">
+      <div class="flex items-start justify-between relative z-10">
         <div>
-          <p class="text-sm text-gray-600 font-medium mb-2">成功率</p>
-          <p class="text-xl font-bold text-[var(--color-purple-dark)] mb-2">{successRate}</p>
-          <p class="text-xs text-gray-500">最近 24 小时</p>
-        </div>
-        <div class="w-12 h-12 bg-white/70 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
-          📈
+          <div class="w-12 h-12 bg-white/80 rounded-2xl flex items-center justify-center text-xl shadow-sm mb-3">
+            📈
+          </div>
+          <p class="text-sm text-gray-700 font-medium mb-1">成功率</p>
+          <p class="text-lg font-bold text-gray-800">{successRate}</p>
+          <p class="text-xs text-gray-600 mt-1">最近 24 小时</p>
         </div>
       </div>
+      <span class="card-deco text-[var(--color-violet-dark)]">📈</span>
     </div>
   </div>
 
@@ -203,7 +203,7 @@
       
       <!-- 启动自动化 -->
       <button
-        class="cute-btn cute-btn-mint flex flex-col items-center gap-2 py-5"
+        class="cute-btn cute-btn-cyan flex flex-col items-center gap-2 py-5"
         disabled={!connected || startingTaskEngine || taskEngineRunning}
         onclick={handleStartTaskEngine}
       >
@@ -240,11 +240,11 @@
   <div class="cute-card p-6">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-bold text-gray-800">实时日志</h3>
-      <span class="px-3 py-1 bg-[var(--color-mint)] text-[#2D5A47] text-xs font-medium rounded-full">
+      <span class="px-3 py-1 bg-[var(--color-cyan)] text-[#2D5A5A] text-xs font-medium rounded-full">
         运行中
       </span>
     </div>
-    <div class="bg-[var(--color-lavender-light)] rounded-2xl p-4 h-48 overflow-y-auto font-mono text-sm">
+    <div class="bg-gray-50 rounded-2xl p-4 h-48 overflow-y-auto font-mono text-sm">
       <p class="text-gray-400">暂无日志...</p>
     </div>
   </div>

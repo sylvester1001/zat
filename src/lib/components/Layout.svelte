@@ -14,7 +14,7 @@
   let { currentPage = $bindable('home'), title = '', subtitle = '', toolbar, children }: Props = $props();
 </script>
 
-<div class="h-screen flex bg-gradient-to-br from-[var(--color-lavender-light)] to-[var(--color-lavender)] p-4 gap-4">
+<div class="h-screen flex bg-[var(--color-bg)] p-4 gap-4">
   <!-- Sidebar -->
   <Sidebar bind:currentPage />
   
