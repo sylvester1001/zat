@@ -25,49 +25,37 @@
   }
 </script>
 
-<aside class="w-72 bg-white/80 backdrop-blur-sm flex flex-col rounded-r-[32px] shadow-lg shadow-purple-100/50">
+<aside class="w-64 bg-white flex flex-col border-r border-gray-100">
   <!-- Logo -->
-  <div class="p-6 mb-2">
-    <div class="flex items-center gap-4">
-      <div class="w-14 h-14 bg-gradient-to-br from-[var(--color-yellow)] to-[var(--color-mint)] rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+  <div class="p-5 mb-2">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-[var(--color-lime)] rounded-2xl flex items-center justify-center text-2xl">
         ⚔️
       </div>
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">ZAT</h1>
-        <p class="text-sm text-[var(--color-purple)]">杖剑传说助手</p>
+        <h1 class="text-xl font-bold text-gray-900">ZAT</h1>
+        <p class="text-xs text-gray-500">杖剑传说助手</p>
       </div>
     </div>
   </div>
   
   <!-- Navigation -->
-  <nav class="flex-1 px-4 space-y-2">
+  <nav class="flex-1 px-3 space-y-1">
     {#each navItems as item}
       <button
         onclick={() => currentPage = item.id}
-        class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 {
-          isActive(item.id)
-            ? 'cute-card-yellow shadow-md'
-            : 'hover:bg-[var(--color-lavender-light)] text-gray-600'
-        }"
+        class="nav-item w-full {isActive(item.id) ? 'active' : ''}"
       >
-        <span class="text-2xl">{item.icon}</span>
-        <span class="font-semibold {isActive(item.id) ? 'text-gray-800' : ''}">{item.label}</span>
-        {#if isActive(item.id)}
-          <div class="ml-auto">
-            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
-              <span class="text-[var(--color-purple)]">→</span>
-            </div>
-          </div>
-        {/if}
+        <span class="text-xl">{item.icon}</span>
+        <span class="font-medium">{item.label}</span>
       </button>
     {/each}
   </nav>
   
   <!-- Footer -->
-  <div class="p-6">
-    <div class="cute-card-purple p-4 text-center">
-      <p class="text-sm font-medium text-[var(--color-purple-dark)]">版本 0.1.0</p>
-      <p class="text-xs text-gray-500 mt-1">© 2025 ZAT</p>
+  <div class="p-4">
+    <div class="bg-gray-50 rounded-2xl p-4 text-center">
+      <p class="text-xs text-gray-500">版本 0.1.0</p>
     </div>
   </div>
 </aside>

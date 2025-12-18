@@ -9,7 +9,6 @@
   
   let connected = $derived($appStore.connected);
   let device = $derived($appStore.device);
-  let resolution = $derived($appStore.resolution);
   let taskEngineRunning = $derived($appStore.taskEngineRunning);
   
   let todayTasks = $state(0);
@@ -102,149 +101,129 @@
   }
 </script>
 
-<div class="space-y-6 p-2">
-  <!-- 欢迎区域 -->
-  <div class="cute-card p-6">
-    <p class="text-sm text-[var(--color-purple)] font-medium">欢迎回来 ✨</p>
-    <h2 class="text-3xl font-bold text-gray-800 mt-1">开始冒险吧！</h2>
+<div class="flex-1 overflow-auto px-5 pb-5 space-y-5">
+  <!-- 渐变头部 -->
+  <div class="gradient-header px-6 pt-6 pb-8 rounded-3xl">
+    <p class="text-sm text-gray-700 font-medium mb-1">欢迎回来 👋</p>
+    <h2 class="text-3xl font-bold text-gray-900">开始冒险吧！</h2>
   </div>
 
   <!-- 状态卡片 -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-    <!-- 连接状态 -->
-    <div class="cute-card-yellow p-5">
-      <div class="flex items-start justify-between relative z-10">
-        <div>
-          <div class="w-12 h-12 bg-white/80 rounded-2xl flex items-center justify-center text-xl shadow-sm mb-3">
-            📱
-          </div>
-          <p class="text-sm text-gray-700 font-medium mb-1">连接状态</p>
-          <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 rounded-full {connected ? 'bg-green-600' : 'bg-gray-500'}"></div>
-            <span class="text-lg font-bold text-gray-800">
-              {connected ? '已连接' : '未连接'}
-            </span>
-          </div>
-          {#if device}
-            <p class="text-xs text-gray-600 mt-1">{device}</p>
-          {/if}
+  <div class="grid grid-cols-2 gap-4">
+    <!-- 今日任务 -->
+    <div class="mini-card p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 bg-[var(--color-yellow)] rounded-xl flex items-center justify-center text-lg">
+          🎮
         </div>
+        <span class="text-sm font-medium text-gray-600">今日任务</span>
       </div>
-      <span class="card-deco text-[var(--color-yellow-dark)]">📱</span>
+      <p class="stat-value text-xl">{todayTasks} 次</p>
+      <p class="text-xs text-gray-500 mt-1">运行时长: {todayTime}</p>
+      <div class="flex gap-2 mt-3">
+        <span class="tag tag-lime">进行中</span>
+      </div>
     </div>
     
-    <!-- 今日任务 -->
-    <div class="cute-card-cyan p-5">
-      <div class="flex items-start justify-between relative z-10">
-        <div>
-          <div class="w-12 h-12 bg-white/80 rounded-2xl flex items-center justify-center text-xl shadow-sm mb-3">
-            🎮
-          </div>
-          <p class="text-sm text-gray-700 font-medium mb-1">今日任务</p>
-          <p class="text-lg font-bold text-gray-800">{todayTasks} 次</p>
-          <p class="text-xs text-gray-600 mt-1">运行时长: {todayTime}</p>
-        </div>
-      </div>
-      <span class="card-deco text-[var(--color-cyan-dark)]">🎮</span>
-    </div>
-      
     <!-- 成功率 -->
-    <div class="cute-card-violet p-5">
-      <div class="flex items-start justify-between relative z-10">
-        <div>
-          <div class="w-12 h-12 bg-white/80 rounded-2xl flex items-center justify-center text-xl shadow-sm mb-3">
-            📈
-          </div>
-          <p class="text-sm text-gray-700 font-medium mb-1">成功率</p>
-          <p class="text-lg font-bold text-gray-800">{successRate}</p>
-          <p class="text-xs text-gray-600 mt-1">最近 24 小时</p>
+    <div class="mini-card p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-lg">
+          📈
         </div>
+        <span class="text-sm font-medium text-gray-600">成功率</span>
       </div>
-      <span class="card-deco text-[var(--color-violet-dark)]">📈</span>
+      <p class="stat-value text-xl">{successRate}</p>
+      <p class="text-xs text-gray-500 mt-1">最近 24 小时</p>
+      <div class="progress-bar mt-3">
+        <div class="progress-fill progress-fill-lime" style="width: 75%"></div>
+      </div>
     </div>
   </div>
 
   <!-- 快速操作 -->
-  <div class="cute-card p-6">
-    <h3 class="text-lg font-bold text-gray-800 mb-5">快速操作</h3>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <div class="clean-card p-5">
+    <h3 class="text-base font-bold text-gray-900 mb-4">快速操作</h3>
+    <div class="grid grid-cols-2 gap-3">
       <!-- 连接设备 -->
       <button
-        class="cute-btn cute-btn-primary flex flex-col items-center gap-2 py-5"
+        class="pill-btn pill-btn-dark flex items-center justify-center gap-2 py-4"
         disabled={connecting}
         onclick={handleConnect}
       >
         {#if connecting}
-          <span class="text-2xl animate-spin">⏳</span>
-          <span class="text-sm">连接中...</span>
+          <span class="animate-spin">⏳</span>
+          <span>连接中...</span>
         {:else if connected}
-          <span class="text-2xl">🔄</span>
-          <span class="text-sm">重新连接</span>
+          <span>✅</span>
+          <span>已连接</span>
         {:else}
-          <span class="text-2xl">📱</span>
-          <span class="text-sm">连接设备</span>
+          <span>📱</span>
+          <span>连接设备</span>
         {/if}
       </button>
       
       <!-- 启动游戏 -->
       <button
-        class="cute-btn cute-btn-yellow flex flex-col items-center gap-2 py-5"
+        class="pill-btn pill-btn-yellow flex items-center justify-center gap-2 py-4"
         disabled={!connected || startingGame}
         onclick={() => handleStartGame(true)}
       >
         {#if startingGame}
-          <span class="text-2xl animate-bounce">🎮</span>
-          <span class="text-sm">启动中...</span>
+          <span class="animate-bounce">🎮</span>
+          <span>启动中...</span>
         {:else}
-          <span class="text-2xl">🎮</span>
-          <span class="text-sm">启动游戏</span>
+          <span>🎮</span>
+          <span>启动游戏</span>
         {/if}
       </button>
       
       <!-- 启动自动化 -->
       <button
-        class="cute-btn cute-btn-cyan flex flex-col items-center gap-2 py-5"
+        class="pill-btn pill-btn-lime flex items-center justify-center gap-2 py-4"
         disabled={!connected || startingTaskEngine || taskEngineRunning}
         onclick={handleStartTaskEngine}
       >
         {#if startingTaskEngine}
-          <span class="text-2xl animate-pulse">🚀</span>
-          <span class="text-sm">启动中...</span>
+          <span class="animate-pulse">🚀</span>
+          <span>启动中...</span>
         {:else if taskEngineRunning}
-          <span class="text-2xl">▶️</span>
-          <span class="text-sm">运行中</span>
+          <span>▶️</span>
+          <span>运行中</span>
         {:else}
-          <span class="text-2xl">🚀</span>
-          <span class="text-sm">开始自动化</span>
+          <span>🚀</span>
+          <span>开始自动化</span>
         {/if}
       </button>
       
       <!-- 停止自动化 -->
       <button
-        class="cute-btn flex flex-col items-center gap-2 py-5 bg-[var(--color-pink)] text-gray-700"
+        class="pill-btn pill-btn-light flex items-center justify-center gap-2 py-4"
         disabled={!taskEngineRunning || stoppingTaskEngine}
         onclick={handleStopTaskEngine}
       >
         {#if stoppingTaskEngine}
-          <span class="text-2xl animate-spin">⏳</span>
-          <span class="text-sm">停止中...</span>
+          <span class="animate-spin">⏳</span>
+          <span>停止中...</span>
         {:else}
-          <span class="text-2xl">⏹️</span>
-          <span class="text-sm">停止</span>
+          <span>⏹️</span>
+          <span>停止</span>
         {/if}
       </button>
     </div>
+    
+    {#if device}
+      <p class="text-xs text-gray-400 mt-3 text-center">{device}</p>
+    {/if}
   </div>
 
   <!-- 实时日志 -->
-  <div class="cute-card p-6">
+  <div class="clean-card p-5">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold text-gray-800">实时日志</h3>
-      <span class="px-3 py-1 bg-[var(--color-cyan)] text-[#2D5A5A] text-xs font-medium rounded-full">
-        运行中
-      </span>
+      <h3 class="text-base font-bold text-gray-900">实时日志</h3>
+      <span class="tag tag-lime">运行中</span>
     </div>
-    <div class="bg-gray-50 rounded-2xl p-4 h-48 overflow-y-auto font-mono text-sm">
+    <div class="bg-gray-50 rounded-2xl p-4 h-40 overflow-y-auto font-mono text-sm">
       <p class="text-gray-400">暂无日志...</p>
     </div>
   </div>

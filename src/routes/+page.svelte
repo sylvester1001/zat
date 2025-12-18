@@ -43,18 +43,15 @@
   }
 </script>
 
-<Layout bind:currentPage title={pageInfo.title} subtitle={pageInfo.subtitle}>
+<Layout 
+  bind:currentPage 
+  title={currentPage === 'home' ? '' : pageInfo.title} 
+  subtitle={currentPage === 'home' ? '' : pageInfo.subtitle}
+  hideToolbar={currentPage === 'home'}
+>
   <!-- Toolbar Actions -->
   {#snippet toolbar()}
-    {#if currentPage === 'home'}
-      {#if taskEngineRunning}
-        <Badge color="green" large>运行中</Badge>
-      {:else if connected}
-        <Badge color="blue" large>已连接</Badge>
-      {:else}
-        <Badge color="dark" large>未连接</Badge>
-      {/if}
-    {:else if currentPage === 'debug'}
+    {#if currentPage === 'debug'}
       {#if connected}
         <Badge color="green" large>已连接</Badge>
       {:else}
