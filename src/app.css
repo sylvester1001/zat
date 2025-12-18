@@ -6,7 +6,7 @@
 @source "../node_modules/flowbite-svelte-icons/dist";
 
 :root {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'GenSenRounded2 TC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
   /* 可爱现代配色 */
   --color-bg: #F8F7FC;
