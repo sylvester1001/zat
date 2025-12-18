@@ -19,15 +19,11 @@
   let connected = $derived(storeValue?.connected ?? false);
   let device = $derived(storeValue?.device ?? '');
   let gameRunning = $derived(storeValue?.gameRunning ?? false);
-
-  let todayTasks = $state(0);
-  let todayTime = $state('0h 0m');
   
   async function handleConnect() {
     connecting = true;
     try {
       const result = await api.connect();
-      console.log('连接结果:', result);
       if (result.success && result.device) {
         const resolutionStr = result.resolution 
           ? `${result.resolution.width}x${result.resolution.height}`
@@ -62,9 +58,7 @@
       const result = await api.startGame(true, 60);
       if (result.success) {
         setGameRunning(true);
-        if (result.entered) {
-          console.log('游戏已启动并进入');
-        } else {
+        if (!result.entered) {
           alert('游戏已启动，但等待进入超时。请手动点击进入游戏。');
         }
       }
@@ -82,7 +76,6 @@
       const result = await api.stopGame();
       if (result.success) {
         setGameRunning(false);
-        console.log('游戏已停止');
       }
     } catch (error) {
       console.error('停止游戏失败:', error);
@@ -136,58 +129,58 @@
       </div>
     </div>
     
-    <!-- 今日任务 -->
-    <div class="mini-card p-4">
+    <!-- 游戏控制 -->
+    <div class="mini-card p-4 flex flex-col">
       <div class="flex items-center gap-3 mb-3">
         <div class="w-10 h-10 bg-[var(--color-yellow)] rounded-xl flex items-center justify-center text-lg">
           🎮
         </div>
-        <span class="text-sm font-medium text-gray-600">今日任务</span>
+        <span class="text-sm font-medium text-gray-600">游戏控制</span>
       </div>
-      <p class="stat-value text-xl">{todayTasks} 次</p>
-      <p class="text-xs text-gray-500 mt-1">运行时长: {todayTime}</p>
-      <div class="flex gap-2 mt-3">
-        <span class="tag tag-lime">进行中</span>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full {gameRunning ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}"></div>
+        <p class="stat-value text-xl">{gameRunning ? '运行中' : '未启动'}</p>
       </div>
-    </div>
-  </div>
-
-  <!-- 快速操作 -->
-  <div class="clean-card p-5">
-    <h3 class="text-base font-bold text-gray-900 mb-4">快速操作</h3>
-    <div class="flex gap-3">
-      <!-- 启动游戏 -->
-      <button
-        class="play-btn flex-1"
-        disabled={!connected || startingGame || gameRunning}
-        onclick={handleStartGame}
-      >
-        <img src="/assets/sword-border.png" alt="" class="play-btn-img" />
-        <span class="now-text">Now!</span>
-        <span class="play-text">
-          {#if startingGame}
-            启动中...
-          {:else if gameRunning}
-            游戏运行中
-          {:else}
-            启动游戏
-          {/if}
-        </span>
-      </button>
-      
-      <!-- 停止游戏 -->
-      <button
-        class="stop-btn"
-        disabled={!gameRunning || stoppingGame}
-        onclick={handleStopGame}
-      >
-        {#if stoppingGame}
-          <span class="animate-spin">⏳</span>
+      <p class="text-xs text-gray-500 mt-1">
+        {#if !connected}
+          请先连接设备
+        {:else if gameRunning}
+          杖剑传说
         {:else}
-          <span>⏹️</span>
+          准备就绪
         {/if}
-        <span>停止游戏</span>
-      </button>
+      </p>
+      <!-- 游戏控制按钮 -->
+      <div class="mt-auto pt-3 flex gap-2 justify-end">
+        <button
+          class="play-btn play-btn-sm"
+          disabled={!connected || startingGame || gameRunning}
+          onclick={handleStartGame}
+        >
+          <img src="/assets/sword-border.png" alt="" class="play-btn-img" />
+          <span class="now-text">Now!</span>
+          <span class="play-text">
+            {#if startingGame}
+              启动中...
+            {:else if gameRunning}
+              运行中
+            {:else}
+              启动游戏
+            {/if}
+          </span>
+        </button>
+        <button
+          class="stop-btn"
+          disabled={!gameRunning || stoppingGame}
+          onclick={handleStopGame}
+        >
+          {#if stoppingGame}
+            ⏳
+          {:else}
+            ⏹️
+          {/if}
+        </button>
+      </div>
     </div>
   </div>
 
@@ -197,37 +190,59 @@
       <h3 class="text-base font-bold text-gray-900">实时日志</h3>
       <span class="tag {gameRunning ? 'tag-lime' : 'tag-gray'}">{gameRunning ? '运行中' : '已停止'}</span>
     </div>
-    <div class="bg-gray-50 rounded-2xl p-4 h-40 overflow-y-auto font-mono text-sm">
+    <div class="bg-gray-50 rounded-2xl p-4 h-48 overflow-y-auto font-mono text-sm">
       <p class="text-gray-400">暂无日志...</p>
     </div>
   </div>
 </div>
 
 <style>
+  /* 小尺寸 play-btn，和 connect-btn 一样高 (36px) */
+  .play-btn-sm {
+    height: 36px !important;
+    min-width: 100px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+    gap: 6px !important;
+  }
+  
+  .play-btn-sm .play-btn-img {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  
+  .play-btn-sm:hover:not(:disabled) .play-btn-img {
+    transform: scale(1.3) translateX(35px) !important;
+  }
+  
+  .play-btn-sm .now-text {
+    font-size: 11px !important;
+  }
+  
+  .play-btn-sm:hover:not(:disabled) .now-text {
+    transform: translateX(12px) !important;
+  }
+  
   .stop-btn {
+    height: 36px;
+    width: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem 1.5rem;
     background: var(--color-gray-100);
-    border: 2px solid transparent;
-    border-radius: 1rem;
-    font-weight: 600;
-    font-size: 0.875rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: var(--color-gray-700);
   }
   
   .stop-btn:hover:not(:disabled) {
     background: #fee2e2;
-    border-color: #ef4444;
-    color: #ef4444;
   }
   
   .stop-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.5;
     cursor: not-allowed;
   }
   
