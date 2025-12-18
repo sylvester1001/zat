@@ -1,6 +1,7 @@
 <script lang="ts">
   import { api } from '$lib/api';
   import { appStore, setConnected, setTaskEngineRunning } from '$lib/stores/appStore';
+  import { Button } from 'flowbite-svelte';
   import PageHeader from '$lib/components/PageHeader.svelte';
   
   let connecting = $state(false);
@@ -14,7 +15,6 @@
   
   let todayTasks = $state(0);
   let todayTime = $state('0h 0m');
-  let successRate = $state('0%');
   
   async function handleConnect() {
     connecting = true;
@@ -147,70 +147,68 @@
     <h3 class="text-base font-bold text-gray-900 mb-4">快速操作</h3>
     <div class="grid grid-cols-2 gap-3">
       <!-- 连接设备 -->
-      <button
-        class="pill-btn pill-btn-dark flex items-center justify-center gap-2 py-4"
+      <Button
+        pill
+        color="dark"
+        class="py-4"
         disabled={connecting}
         onclick={handleConnect}
       >
         {#if connecting}
-          <span class="animate-spin">⏳</span>
-          <span>连接中...</span>
+          <span class="animate-spin mr-2">⏳</span>连接中...
         {:else if connected}
-          <span>✅</span>
-          <span>已连接</span>
+          <span class="mr-2">✅</span>已连接
         {:else}
-          <span>📱</span>
-          <span>连接设备</span>
+          <span class="mr-2">📱</span>连接设备
         {/if}
-      </button>
+      </Button>
       
       <!-- 启动游戏 -->
-      <button
-        class="pill-btn pill-btn-yellow flex items-center justify-center gap-2 py-4"
+      <Button
+        pill
+        color="yellow"
+        class="py-4"
         disabled={!connected || startingGame}
         onclick={() => handleStartGame(true)}
       >
         {#if startingGame}
-          <span class="animate-bounce">🎮</span>
-          <span>启动中...</span>
+          <span class="animate-bounce mr-2">🎮</span>启动中...
         {:else}
-          <span>🎮</span>
-          <span>启动游戏</span>
+          <span class="mr-2">🎮</span>启动游戏
         {/if}
-      </button>
+      </Button>
       
       <!-- 启动自动化 -->
-      <button
-        class="pill-btn pill-btn-lime flex items-center justify-center gap-2 py-4"
+      <Button
+        pill
+        color="green"
+        class="py-4"
         disabled={!connected || startingTaskEngine || taskEngineRunning}
         onclick={handleStartTaskEngine}
       >
         {#if startingTaskEngine}
-          <span class="animate-pulse">🚀</span>
-          <span>启动中...</span>
+          <span class="animate-pulse mr-2">🚀</span>启动中...
         {:else if taskEngineRunning}
-          <span>▶️</span>
-          <span>运行中</span>
+          <span class="mr-2">▶️</span>运行中
         {:else}
-          <span>🚀</span>
-          <span>开始自动化</span>
+          <span class="mr-2">🚀</span>开始自动化
         {/if}
-      </button>
+      </Button>
       
       <!-- 停止自动化 -->
-      <button
-        class="pill-btn pill-btn-light flex items-center justify-center gap-2 py-4"
+      <Button
+        pill
+        color="light"
+        class="py-4"
         disabled={!taskEngineRunning || stoppingTaskEngine}
         onclick={handleStopTaskEngine}
       >
         {#if stoppingTaskEngine}
-          <span class="animate-spin">⏳</span>
-          <span>停止中...</span>
+          <span class="animate-spin mr-2">⏳</span>停止中...
         {:else}
-          <span>⏹️</span>
-          <span>停止</span>
+          <span class="mr-2">⏹️</span>停止
         {/if}
-      </button>
+      </Button>
     </div>
     
     {#if device}

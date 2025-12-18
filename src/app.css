@@ -322,3 +322,21 @@ body {
   opacity: 0.15;
   pointer-events: none;
 }
+
+
+/* 去掉 toggle/checkbox/button 的 focus ring */
+input[type="checkbox"]:focus,
+input[type="checkbox"]:focus-visible,
+button:focus,
+button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+/* 针对 flowbite toggle 的 focus ring */
+.peer:focus~*[class*="peer-focus"] {
+  --tw-ring-shadow: none !important;
+  --tw-ring-offset-shadow: none !important;
+}

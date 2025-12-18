@@ -1,6 +1,7 @@
 <script lang="ts">
   import { api } from '$lib/api';
   import { appStore } from '$lib/stores/appStore';
+  import { Button, Toggle } from 'flowbite-svelte';
   import PageHeader from '$lib/components/PageHeader.svelte';
   
   let screenshotUrl = $state('');
@@ -67,12 +68,11 @@
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-base font-bold text-gray-900">实时截图</h3>
           <div class="flex items-center gap-3">
-            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-              <input type="checkbox" bind:checked={useGray} class="rounded" />
-              灰度
-            </label>
-            <button
-              class="pill-btn pill-btn-lime text-sm py-2 px-4"
+            <Toggle bind:checked={useGray} size="small">灰度</Toggle>
+            <Button
+              pill
+              color="green"
+              size="sm"
               disabled={!connected || loading}
               onclick={refreshScreenshot}
             >
@@ -81,7 +81,7 @@
               {:else}
                 🔄 刷新截图
               {/if}
-            </button>
+            </Button>
           </div>
         </div>
         
@@ -119,15 +119,9 @@
       <div class="clean-card p-5">
         <h3 class="text-base font-bold text-gray-900 mb-4">识别测试</h3>
         <div class="space-y-3">
-          <button class="pill-btn pill-btn-dark w-full py-3">
-            🎯 模板匹配测试
-          </button>
-          <button class="pill-btn pill-btn-light w-full py-3">
-            📝 OCR 测试
-          </button>
-          <button class="pill-btn pill-btn-light w-full py-3">
-            🔍 特征匹配测试
-          </button>
+          <Button pill color="dark" class="w-full">🎯 模板匹配测试</Button>
+          <Button pill color="light" class="w-full">📝 OCR 测试</Button>
+          <Button pill color="light" class="w-full">🔍 特征匹配测试</Button>
         </div>
       </div>
       
@@ -135,15 +129,9 @@
       <div class="clean-card p-5">
         <h3 class="text-base font-bold text-gray-900 mb-4">ADB 工具</h3>
         <div class="space-y-3">
-          <button class="pill-btn pill-btn-lime w-full py-3">
-            📱 设备信息
-          </button>
-          <button class="pill-btn pill-btn-yellow w-full py-3">
-            🎮 启动游戏
-          </button>
-          <button class="pill-btn pill-btn-light w-full py-3">
-            🔄 重启 ADB
-          </button>
+          <Button pill color="green" class="w-full">📱 设备信息</Button>
+          <Button pill color="yellow" class="w-full">🎮 启动游戏</Button>
+          <Button pill color="light" class="w-full">🔄 重启 ADB</Button>
         </div>
       </div>
       
@@ -151,15 +139,9 @@
       <div class="clean-card p-5">
         <h3 class="text-base font-bold text-gray-900 mb-4">快速操作</h3>
         <div class="space-y-3">
-          <button class="pill-btn pill-btn-dark w-full py-3">
-            💾 保存截图
-          </button>
-          <button class="pill-btn pill-btn-light w-full py-3">
-            📋 复制日志
-          </button>
-          <button class="pill-btn pill-btn-light w-full py-3">
-            🗑️ 清空日志
-          </button>
+          <Button pill color="dark" class="w-full">💾 保存截图</Button>
+          <Button pill color="light" class="w-full">📋 复制日志</Button>
+          <Button pill color="red" class="w-full">🗑️ 清空日志</Button>
         </div>
       </div>
     </div>
