@@ -219,8 +219,9 @@ body {
 }
 
 .nav-item.active {
-  background: var(--color-gray-900);
-  color: white;
+  background: var(--color-lime);
+  color: var(--color-gray-900);
+  font-weight: 600;
 }
 
 /* 数据展示 */
