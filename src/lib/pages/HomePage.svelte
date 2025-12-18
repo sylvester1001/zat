@@ -110,6 +110,25 @@
 
   <!-- 状态卡片 -->
   <div class="grid grid-cols-2 gap-4">
+    <!-- 连接状态 -->
+    <div class="mini-card p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 bg-[var(--color-lime)] rounded-xl flex items-center justify-center text-lg">
+          📱
+        </div>
+        <span class="text-sm font-medium text-gray-600">连接状态</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full {connected ? 'bg-green-500' : 'bg-gray-400'}"></div>
+        <p class="stat-value text-xl">{connected ? '已连接' : '未连接'}</p>
+      </div>
+      {#if device}
+        <p class="text-xs text-gray-500 mt-1 truncate">{device}</p>
+      {:else}
+        <p class="text-xs text-gray-500 mt-1">等待连接设备</p>
+      {/if}
+    </div>
+    
     <!-- 今日任务 -->
     <div class="mini-card p-4">
       <div class="flex items-center gap-3 mb-3">
@@ -122,21 +141,6 @@
       <p class="text-xs text-gray-500 mt-1">运行时长: {todayTime}</p>
       <div class="flex gap-2 mt-3">
         <span class="tag tag-lime">进行中</span>
-      </div>
-    </div>
-    
-    <!-- 成功率 -->
-    <div class="mini-card p-4">
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-lg">
-          📈
-        </div>
-        <span class="text-sm font-medium text-gray-600">成功率</span>
-      </div>
-      <p class="stat-value text-xl">{successRate}</p>
-      <p class="text-xs text-gray-500 mt-1">最近 24 小时</p>
-      <div class="progress-bar mt-3">
-        <div class="progress-fill progress-fill-lime" style="width: 75%"></div>
       </div>
     </div>
   </div>
