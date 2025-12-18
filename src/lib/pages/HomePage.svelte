@@ -149,8 +149,7 @@
       <!-- 连接设备 -->
       <Button
         pill
-        color="dark"
-        class="py-4"
+        class="py-4 zat-dark"
         disabled={connecting}
         onclick={handleConnect}
       >
@@ -166,8 +165,7 @@
       <!-- 启动游戏 -->
       <Button
         pill
-        color="yellow"
-        class="py-4"
+        class="py-4 zat-yellow"
         disabled={!connected || startingGame}
         onclick={() => handleStartGame(true)}
       >
@@ -181,8 +179,7 @@
       <!-- 启动自动化 -->
       <Button
         pill
-        color="green"
-        class="py-4"
+        class="py-4 zat-lime"
         disabled={!connected || startingTaskEngine || taskEngineRunning}
         onclick={handleStartTaskEngine}
       >
@@ -198,8 +195,7 @@
       <!-- 停止自动化 -->
       <Button
         pill
-        color="light"
-        class="py-4"
+        class="py-4 zat-light"
         disabled={!taskEngineRunning || stoppingTaskEngine}
         onclick={handleStopTaskEngine}
       >

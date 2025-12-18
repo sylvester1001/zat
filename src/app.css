@@ -340,3 +340,49 @@ button:focus-visible {
   --tw-ring-shadow: none !important;
   --tw-ring-offset-shadow: none !important;
 }
+
+
+
+
+/* ZAT 自定义按钮样式 - 用于 Flowbite Button 的 class 属性 */
+.zat-lime {
+  background-color: var(--color-lime) !important;
+  color: var(--color-gray-900) !important;
+}
+.zat-lime:hover:not(:disabled) {
+  background-color: var(--color-lime-dark) !important;
+}
+
+.zat-yellow {
+  background-color: var(--color-yellow) !important;
+  color: var(--color-gray-900) !important;
+}
+.zat-yellow:hover:not(:disabled) {
+  background-color: var(--color-yellow-dark) !important;
+}
+
+.zat-dark {
+  background-color: var(--color-gray-900) !important;
+  color: white !important;
+}
+.zat-dark:hover:not(:disabled) {
+  background-color: var(--color-gray-800) !important;
+}
+
+.zat-light {
+  background-color: white !important;
+  color: var(--color-gray-700) !important;
+  border: 1.5px solid var(--color-gray-300) !important;
+}
+.zat-light:hover:not(:disabled) {
+  background-color: var(--color-gray-100) !important;
+  border-color: var(--color-gray-400) !important;
+}
+
+.zat-danger {
+  background-color: var(--color-error) !important;
+  color: white !important;
+}
+.zat-danger:hover:not(:disabled) {
+  background-color: #D32F2F !important;
+}

@@ -71,8 +71,8 @@
             <Toggle bind:checked={useGray} size="small">灰度</Toggle>
             <Button
               pill
-              color="green"
               size="sm"
+              class="zat-lime"
               disabled={!connected || loading}
               onclick={refreshScreenshot}
             >
@@ -119,9 +119,9 @@
       <div class="clean-card p-5">
         <h3 class="text-base font-bold text-gray-900 mb-4">识别测试</h3>
         <div class="space-y-3">
-          <Button pill color="dark" class="w-full">🎯 模板匹配测试</Button>
-          <Button pill color="light" class="w-full">📝 OCR 测试</Button>
-          <Button pill color="light" class="w-full">🔍 特征匹配测试</Button>
+          <Button pill class="w-full zat-dark">🎯 模板匹配测试</Button>
+          <Button pill class="w-full zat-light">📝 OCR 测试</Button>
+          <Button pill class="w-full zat-light">🔍 特征匹配测试</Button>
         </div>
       </div>
       
@@ -129,9 +129,9 @@
       <div class="clean-card p-5">
         <h3 class="text-base font-bold text-gray-900 mb-4">ADB 工具</h3>
         <div class="space-y-3">
-          <Button pill color="green" class="w-full">📱 设备信息</Button>
-          <Button pill color="yellow" class="w-full">🎮 启动游戏</Button>
-          <Button pill color="light" class="w-full">🔄 重启 ADB</Button>
+          <Button pill class="w-full zat-lime">📱 设备信息</Button>
+          <Button pill class="w-full zat-yellow">🎮 启动游戏</Button>
+          <Button pill class="w-full zat-light">🔄 重启 ADB</Button>
         </div>
       </div>
       
@@ -139,9 +139,9 @@
       <div class="clean-card p-5">
         <h3 class="text-base font-bold text-gray-900 mb-4">快速操作</h3>
         <div class="space-y-3">
-          <Button pill color="dark" class="w-full">💾 保存截图</Button>
-          <Button pill color="light" class="w-full">📋 复制日志</Button>
-          <Button pill color="red" class="w-full">🗑️ 清空日志</Button>
+          <Button pill class="w-full zat-dark">💾 保存截图</Button>
+          <Button pill class="w-full zat-light">📋 复制日志</Button>
+          <Button pill class="w-full zat-danger">🗑️ 清空日志</Button>
         </div>
       </div>
     </div>
