@@ -43,6 +43,8 @@ body {
   background: var(--color-bg);
   min-height: 100vh;
   color: var(--color-gray-800);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* 渐变头部背景 */
