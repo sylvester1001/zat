@@ -16,23 +16,23 @@
 
   let { records }: Props = $props();
 
-  // 状态颜色映射
-  const getStatusColor = (status: TimelineRecord['status'], type: 'bg' | 'text' | 'line') => {
-    const map = {
-      completed: { bg: 'bg-green-100', text: 'text-green-500', line: 'bg-green-400' },
-      failed: { bg: 'bg-red-100', text: 'text-red-500', line: 'bg-red-300' },
-      running: { bg: 'bg-orange-100', text: 'text-orange-500', line: 'bg-orange-300' }
-    };
-    return map[status][type];
-  };
-
-  function getRankColor(rank: string | null) {
+  // 评级 badge 样式
+  function getRankBadge(rank: string | null) {
     switch (rank) {
-      case 'S': return 'text-yellow-500';
-      case 'A': return 'text-green-500';
-      case 'B': return 'text-blue-500';
-      case 'C': return 'text-gray-500';
-      default: return 'text-gray-300';
+      case 'S': return 'bg-yellow-100 text-yellow-600';
+      case 'A': return 'bg-green-100 text-green-600';
+      case 'B': return 'bg-blue-100 text-blue-600';
+      case 'C': return 'bg-gray-100 text-gray-600';
+      default: return 'bg-gray-100 text-gray-400';
+    }
+  }
+
+  // 难度 badge 样式
+  function getDifficultyBadge(difficulty: string) {
+    switch (difficulty) {
+      case '噩梦': return 'bg-red-50 text-red-500';
+      case '困难': return 'bg-orange-50 text-orange-500';
+      default: return 'bg-gray-50 text-gray-500';
     }
   }
 </script>
@@ -70,15 +70,16 @@
             <span class="text-xs font-bold text-gray-700 leading-tight truncate w-full px-1">
               {record.name}
             </span>
-            <div class="flex items-center gap-1 mt-0.5">
-              <span class="text-[10px] text-gray-400">{record.difficulty}</span>
-              <span class="text-gray-300 text-[10px]">|</span>
+            <div class="flex items-center gap-1 mt-1">
+              <span class={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getDifficultyBadge(record.difficulty)}`}>
+                {record.difficulty}
+              </span>
               {#if record.status === 'running'}
-                <span class="text-[10px] font-medium text-orange-500">进行中</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-orange-100 text-orange-500">进行中</span>
               {:else if record.status === 'failed'}
-                 <span class="text-[10px] font-medium text-red-500">失败</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-500">失败</span>
               {:else}
-                <span class={`text-[10px] font-bold ${getRankColor(record.rank)}`}>{record.rank}</span>
+                <span class={`text-[10px] px-1.5 py-0.5 rounded font-bold ${getRankBadge(record.rank)}`}>{record.rank}</span>
               {/if}
             </div>
           </div>
