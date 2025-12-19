@@ -43,15 +43,15 @@
   </div>
 
   {#if records.length > 0}
-    <div class="flex w-full px-2"> {#each records as record, index}
+    <div class="flex w-full px-5"> {#each records as record, index}
         {@const isLast = index === records.length - 1}
         
         <div class="relative flex flex-col items-center flex-none">
           
-          <div class={`relative z-10 flex items-center justify-center w-7 h-7 rounded-full border-2 transition-transform duration-300 ${
-            record.status === 'running' ? 'scale-110 border-orange-400 bg-orange-50' : 
-            record.status === 'failed' ? 'border-red-100 bg-red-50' :
-            'border-green-100 bg-green-50'
+          <div class={`relative z-10 flex items-center justify-center w-7 h-7 rounded-full transition-transform duration-300 ${
+            record.status === 'running' ? 'scale-110 bg-orange-50' : 
+            record.status === 'failed' ? 'border-2 border-red-100 bg-red-50' :
+            'border-2 border-green-100 bg-green-50'
           }`}>
             {#if record.status === 'running'}
               <span class="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-20 animate-ping"></span>
