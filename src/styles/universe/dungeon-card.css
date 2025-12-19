@@ -10,7 +10,7 @@
   justify-content: flex-start !important;
   align-items: flex-start !important;
   gap: 0.25rem !important;
-  padding: 1.25rem !important;
+  padding: 1.25rem 0.75rem !important;
   width: 100% !important;
   min-height: 14rem !important;
   background-color: var(--card-bg) !important;
@@ -128,19 +128,24 @@
 .dungeon-card .card-title {
   position: relative !important;
   z-index: 10 !important;
-  font-size: 0.95rem !important;
+  font-size: 1.1rem !important;
   color: var(--card-accent) !important;
   font-weight: 700 !important;
-  margin-top: 0.5rem !important;
+  margin-top: 1rem !important;
+  text-align: center !important;
+  width: 100% !important;
 }
 
 /* 描述 */
 .dungeon-card .card-desc {
   position: relative !important;
   z-index: 10 !important;
-  font-size: 0.75rem !important;
+  font-size: 0.6rem !important;
   color: var(--card-accent) !important;
-  opacity: 0.7 !important;
+  opacity: 1 !important;
+  line-height: 1.7 !important;
+  /* text-align: left !important; */
+  margin-top: 0.4rem !important;
 }
 
 /* 颜色变体 */
