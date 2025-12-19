@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Button, Spinner } from 'flowbite-svelte';
   import { api } from '$lib/api';
   import { appStore, setConnected, setGameRunning, type AppState } from '$lib/stores/appStore';
   import PageHeader from '$lib/components/PageHeader.svelte';
@@ -169,17 +170,18 @@
             {/if}
           </span>
         </button>
-        <button
-          class="stop-btn"
-          disabled={!gameRunning || stoppingGame}
+        <Button
+          pill
+          color="red"
+          class="p-2! w-9 h-9"
+          disabled={!gameRunning}
+          loading={stoppingGame}
           onclick={handleStopGame}
         >
-          {#if stoppingGame}
-            <span class="animate-spin">⏳</span>
-          {:else}
-            <span class="stop-icon"></span>
+          {#if !stoppingGame}
+            <span class="w-3 h-3 bg-white rounded-sm"></span>
           {/if}
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -221,40 +223,6 @@
   
   .play-btn-sm:hover:not(:disabled) .now-text {
     transform: translateX(12px) !important;
-  }
-  
-  .stop-btn {
-    height: 36px;
-    width: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #ef4444;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .stop-btn:hover:not(:disabled) {
-    background: #dc2626;
-  }
-  
-  .stop-btn:disabled {
-    background: var(--color-gray-200);
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .stop-icon {
-    width: 12px;
-    height: 12px;
-    background: white;
-    border-radius: 2px;
-  }
-  
-  .stop-btn:disabled .stop-icon {
-    background: var(--color-gray-400);
   }
   
   .tag-gray {
