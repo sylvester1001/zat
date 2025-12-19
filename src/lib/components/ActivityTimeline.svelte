@@ -37,7 +37,7 @@
   }
 </script>
 
-<div class="w-full bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+<div class="mini-card w-full p-5">
   <div class="flex items-center justify-between mb-8"> <h3 class="text-base font-bold text-gray-800">冒险记录</h3>
     <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">近 {records.length} 条</span>
   </div>
