@@ -31,7 +31,7 @@
 
 <div class="clean-card p-5">
   <div class="flex items-center justify-between mb-4">
-    <h3 class="text-base font-bold text-gray-900">活动记录</h3>
+    <h3 class="text-base font-bold text-gray-900">冒险记录</h3>
     <span class="text-xs text-gray-400">最近 {records.length} 条</span>
   </div>
   
@@ -42,7 +42,9 @@
         <div class="flex-1 flex flex-col items-center">
           <!-- 节点和连接线 -->
           <div class="flex items-center w-full">
-            <div class="flex-1 h-0.5 {index === 0 ? 'bg-transparent' : record.status === 'completed' ? 'bg-green-200' : record.status === 'failed' ? 'bg-red-200' : 'bg-orange-200'}"></div>
+            {#if index !== 0}
+              <div class="flex-1 h-0.5 {record.status === 'completed' ? 'bg-green-200' : record.status === 'failed' ? 'bg-red-200' : 'bg-orange-200'}"></div>
+            {/if}
             <div
               class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full {
                 record.status === 'completed' ? 'bg-green-100' :
@@ -58,7 +60,9 @@
                 <ClockSolid class="h-3.5 w-3.5 text-orange-500 animate-pulse" />
               {/if}
             </div>
-            <div class="flex-1 h-0.5 {isLast ? 'bg-transparent' : record.status === 'completed' ? 'bg-green-200' : record.status === 'failed' ? 'bg-red-200' : 'bg-orange-200'}"></div>
+            {#if !isLast}
+              <div class="flex-1 h-0.5 {record.status === 'completed' ? 'bg-green-200' : record.status === 'failed' ? 'bg-red-200' : 'bg-orange-200'}"></div>
+            {/if}
           </div>
           <!-- 内容 -->
           <div class="mt-2 text-center">
@@ -76,6 +80,8 @@
       {/each}
     </div>
   {:else}
-    <p class="text-center text-gray-400 text-sm py-4">暂无活动记录</p>
+    <p class="text-center text-gray-400 text-sm py-4">暂无冒险记录</p>
   {/if}
+
+  
 </div>
