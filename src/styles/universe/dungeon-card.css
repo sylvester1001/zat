@@ -97,7 +97,8 @@
   pointer-events: none !important;
 }
 
-.dungeon-card:hover .carousel {
+.dungeon-card:hover .carousel,
+.dungeon-card.selected .carousel {
   opacity: 1 !important;
   animation: dungeon-carousel 8s linear var(--carousel_direction, normal) infinite !important;
 }
