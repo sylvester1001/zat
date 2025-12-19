@@ -57,8 +57,35 @@
 }
 
 .dungeon-card.selected {
-  border-color: var(--card-accent) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  border-color: var(--color-lime) !important;
+  border-width: 3px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 选中角标 - 需要放在包裹层 .dungeon-card-wrapper 上 */
+.dungeon-card-wrapper {
+  position: relative;
+}
+
+.dungeon-card-wrapper .select-badge {
+  display: none;
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: white;
+  background-image: url('/assets/sword-border.png');
+  background-size: 65%;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  border: 3px solid var(--color-lime);
+  z-index: 20;
+}
+
+.dungeon-card-wrapper.selected .select-badge {
+  display: block;
 }
 
 /* 跑马灯文字 - 默认隐藏 */

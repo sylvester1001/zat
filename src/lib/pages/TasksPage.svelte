@@ -58,21 +58,24 @@
   <!-- 副本选择 -->
   <div class="grid grid-cols-4 gap-4">
     {#each dungeons as dungeon}
-      <button
-        class="dungeon-card {dungeon.color} {selectedDungeon === dungeon.id ? 'selected' : ''}"
-        onclick={() => selectDungeon(dungeon.id)}
-      >
-        <!-- 跑马灯 -->
-        <div class="carousel" data-position="top">
-          <span class="carousel-text">{dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • </span>
-        </div>
-        <div class="carousel" data-position="bottom" data-direction="right">
-          <span class="carousel-text">{dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • </span>
-        </div>
-        
-        <span class="card-title">{dungeon.name}</span>
-        <span class="card-desc">{dungeon.desc}</span>
-      </button>
+      <div class="dungeon-card-wrapper {selectedDungeon === dungeon.id ? 'selected' : ''}">
+        <div class="select-badge"></div>
+        <button
+          class="dungeon-card {dungeon.color} {selectedDungeon === dungeon.id ? 'selected' : ''}"
+          onclick={() => selectDungeon(dungeon.id)}
+        >
+          <!-- 跑马灯 -->
+          <div class="carousel" data-position="top">
+            <span class="carousel-text">{dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • </span>
+          </div>
+          <div class="carousel" data-position="bottom" data-direction="right">
+            <span class="carousel-text">{dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • </span>
+          </div>
+          
+          <span class="card-title">{dungeon.name}</span>
+          <span class="card-desc">{dungeon.desc}</span>
+        </button>
+      </div>
     {/each}
   </div>
 
