@@ -13,10 +13,10 @@
     "windows": [
       {
         "title": "ZAT",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 800,
-        "minHeight": 600
+        "width": 1000,
+        "height": 620,
+        "minWidth": 720,
+        "minHeight": 480
       }
     ],
     "security": {
