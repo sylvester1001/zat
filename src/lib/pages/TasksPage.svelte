@@ -25,6 +25,14 @@
   
   let selectedDungeon = $state<string | null>(null);
   let navigating = $state(false);
+  let testLoading = $state(false);
+  
+  // 测试按钮
+  async function handleTestLoading() {
+    testLoading = true;
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    testLoading = false;
+  }
   
   function selectDungeon(id: string) {
     selectedDungeon = selectedDungeon === id ? null : id;
@@ -77,10 +85,11 @@
   </div>
 
   <!-- 底部操作区 -->
-  <div class="mt-auto flex justify-end">
+  <div class="mt-auto flex justify-end gap-3">
     <Button
       pill
-      class="px-8 py-4 zat-lime"
+      size="md"
+      class="min-w-30 zat-lime"
       disabled={!selectedDungeon || !connected}
       loading={navigating}
       onclick={handleEnterDungeon}

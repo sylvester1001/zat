@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Spinner } from 'flowbite-svelte';
+  import { Button } from 'flowbite-svelte';
   import { api } from '$lib/api';
   import { appStore, setConnected, setGameRunning, type AppState } from '$lib/stores/appStore';
   import PageHeader from '$lib/components/PageHeader.svelte';
@@ -186,16 +186,6 @@
     </div>
   </div>
 
-  <!-- 实时日志 -->
-  <div class="clean-card p-5">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-base font-bold text-gray-900">实时日志</h3>
-      <span class="tag {gameRunning ? 'tag-lime' : 'tag-gray'}">{gameRunning ? '运行中' : '已停止'}</span>
-    </div>
-    <div class="bg-gray-50 rounded-2xl p-4 h-48 overflow-y-auto font-mono text-sm">
-      <p class="text-gray-400">暂无日志...</p>
-    </div>
-  </div>
 </div>
 
 <style>
@@ -225,8 +215,5 @@
     transform: translateX(12px) !important;
   }
   
-  .tag-gray {
-    background: var(--color-gray-100);
-    color: var(--color-gray-600);
-  }
+
 </style>
