@@ -326,15 +326,25 @@ body {
 }
 
 
-/* 去掉 toggle/checkbox/button 的 focus ring */
-input[type="checkbox"]:focus,
-input[type="checkbox"]:focus-visible,
+/* 全局禁用 focus ring */
+*:focus,
+*:focus-visible,
+*:focus-within {
+  outline: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-offset-color: transparent !important;
+}
+
 button:focus,
-button:focus-visible {
+button:focus-visible,
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible {
   outline: none !important;
   box-shadow: none !important;
-  --tw-ring-shadow: none !important;
-  --tw-ring-color: transparent !important;
 }
 
 /* 针对 flowbite toggle 的 focus ring */
