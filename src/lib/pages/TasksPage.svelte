@@ -17,22 +17,14 @@
   
   // 副本配置 (ID 需要和后端 scene_graph.py 一致)
   const dungeons = [
-    { id: 'world-tree', name: '世界之树', icon: '🌳', color: '' },
-    { id: 'mount-mechagod', name: '机神山', icon: '⛰️', color: 'yellow' },
-    { id: 'sea-palace', name: '海之宫遗迹', icon: '🏛️', color: 'with-bg sea-palace-bg' },
-    { id: 'mizumoto-shrine', name: '源水大社', icon: '⛩️', color: 'white' },
+    { id: 'world-tree', name: '世界之树', desc: '魔物隐藏于树荫之下，唯有深入才能将其消灭', color: 'with-bg world-tree-bg' },
+    { id: 'mount-mechagod', name: '机神山', desc: '向古老试炼之地发起挑战，只有胜者能获得一切', color: 'with-bg mount-mechagod-bg' },
+    { id: 'sea-palace', name: '海之宫遗迹', desc: '原本只存在于传说中的古之宫殿，埋藏着无数珍宝', color: 'with-bg sea-palace-bg' },
+    { id: 'mizumoto-shrine', name: '源水大社', desc: '供奉河川神明之所，最深处被强悍的古代构造体守护着', color: 'with-bg mizumoto-shrine-bg' },
   ];
   
   let selectedDungeon = $state<string | null>(null);
   let navigating = $state(false);
-  let testLoading = $state(false);
-  
-  // 测试按钮
-  async function handleTestLoading() {
-    testLoading = true;
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    testLoading = false;
-  }
   
   function selectDungeon(id: string) {
     selectedDungeon = selectedDungeon === id ? null : id;
@@ -78,8 +70,8 @@
           <span class="carousel-text">{dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • {dungeon.name} • </span>
         </div>
         
-        <div class="card-icon">{dungeon.icon}</div>
         <span class="card-title">{dungeon.name}</span>
+        <span class="card-desc">{dungeon.desc}</span>
       </button>
     {/each}
   </div>
