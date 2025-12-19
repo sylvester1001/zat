@@ -3,6 +3,16 @@
   import { api } from '$lib/api';
   import { appStore, setConnected, setGameRunning, type AppState } from '$lib/stores/appStore';
   import PageHeader from '$lib/components/PageHeader.svelte';
+  import ActivityTimeline, { type TimelineRecord } from '$lib/components/ActivityTimeline.svelte';
+
+  // 模拟时间线数据（后续接入真实数据）
+  let timelineRecords = $state<TimelineRecord[]>([
+    { id: 1, name: '世界之树', difficulty: '普通', rank: 'S', time: '10:23', status: 'completed' },
+    { id: 2, name: '机神山', difficulty: '困难', rank: 'A', time: '10:31', status: 'completed' },
+    { id: 3, name: '海之宫', difficulty: '普通', rank: null, time: '10:45', status: 'failed' },
+    { id: 4, name: '世界之树', difficulty: '噩梦', rank: 'B', time: '10:52', status: 'completed' },
+    { id: 5, name: '源水大社', difficulty: '普通', rank: null, time: '11:03', status: 'running' },
+  ]);
 
   let connecting = $state(false);
   let startingGame = $state(false);
@@ -185,6 +195,9 @@
       </div>
     </div>
   </div>
+
+  <!-- 活动时间线 -->
+  <ActivityTimeline records={timelineRecords} />
 
 </div>
 
