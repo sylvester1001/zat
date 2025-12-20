@@ -200,33 +200,3 @@
   <ActivityTimeline records={timelineRecords} />
 
 </div>
-
-<style>
-  /* 小尺寸 play-btn，和 connect-btn 一样高 (36px) */
-  .play-btn-sm {
-    height: 36px !important;
-    min-width: 100px !important;
-    padding: 0 12px !important;
-    font-size: 12px !important;
-    gap: 6px !important;
-  }
-  
-  .play-btn-sm .play-btn-img {
-    width: 20px !important;
-    height: 20px !important;
-  }
-  
-  .play-btn-sm:hover:not(:disabled) .play-btn-img {
-    transform: scale(1.3) translateX(35px) !important;
-  }
-  
-  .play-btn-sm .now-text {
-    font-size: 11px !important;
-  }
-  
-  .play-btn-sm:hover:not(:disabled) .now-text {
-    transform: translateX(12px) !important;
-  }
-  
-
-</style>
