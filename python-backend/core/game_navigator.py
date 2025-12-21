@@ -1,6 +1,6 @@
 """
-副本导航器
-基于场景图实现游戏导航
+游戏场景导航器
+负责场景检测和导航
 """
 import asyncio
 import logging
@@ -16,40 +16,28 @@ from core.scene_graph import (
     SCENES
 )
 
-logger = logging.getLogger("zat.dungeon")
+logger = logging.getLogger("zat.navigator")
 
 
 class GameNavigator:
-    """游戏导航器"""
+    """游戏场景导航器"""
     
     def __init__(self, adb: ADBController):
         self.adb = adb
-        # 设置操作处理器
         scene_navigator.set_action_handler(self._execute_transition)
     
     async def _execute_transition(self, transition: Transition, from_scene: Scene) -> bool:
-        """
-        执行场景转移操作
-        
-        Args:
-            transition: 转移定义
-            from_scene: 来源场景
-        
-        Returns:
-            成功返回 True
-        """
+        """执行场景转移操作"""
         try:
-            # 如果需要滑动，先滑动
             if transition.scroll:
                 await self._scroll(transition.scroll, transition.scroll_distance)
                 await asyncio.sleep(0.3)
             
-            # 执行操作
             if transition.action == ActionType.CLICK:
                 if not transition.template:
                     logger.error("CLICK 操作需要 template")
                     return False
-                success = await self._click_template(transition.template)
+                success = await self.click_template(transition.template)
                 
             elif transition.action == ActionType.CLICK_TEXT:
                 if not transition.text:
@@ -59,10 +47,9 @@ class GameNavigator:
                 
             elif transition.action == ActionType.BACK:
                 if transition.template:
-                    success = await self._click_template(transition.template)
+                    success = await self.click_template(transition.template)
                 else:
-                    # 默认点击返回按钮位置或使用系统返回
-                    success = await self._press_back()
+                    success = await self.press_back()
                     
             elif transition.action == ActionType.SWIPE:
                 await self._scroll(transition.scroll or "down", transition.scroll_distance)
@@ -80,14 +67,14 @@ class GameNavigator:
             logger.error(f"执行转移失败: {e}")
             return False
     
-    async def _click_template(self, template_name: str, timeout: float = 5.0) -> bool:
-        """点击模板"""
+    async def click_template(self, template_name: str, timeout: float = 5.0, threshold: float = 0.7) -> bool:
+        """等待并点击模板"""
         elapsed = 0
         interval = 0.3
         
         while elapsed < timeout:
             screen = await self.adb.screencap_array()
-            result = image_matcher.match_template(screen, template_name, threshold=0.7)
+            result = image_matcher.match_template(screen, template_name, threshold=threshold)
             
             if result:
                 x, y, confidence = result
@@ -99,6 +86,16 @@ class GameNavigator:
             elapsed += interval
         
         logger.warning(f"未找到模板: {template_name}")
+        return False
+    
+    async def click_template_if_exists(self, screen, template_name: str, threshold: float = 0.7) -> bool:
+        """检测模板存在则点击（单次检测，不等待）"""
+        result = image_matcher.match_template(screen, template_name, threshold=threshold)
+        if result:
+            x, y, confidence = result
+            await self.adb.tap(x, y)
+            logger.debug(f"点击: {template_name} at ({x}, {y})")
+            return True
         return False
     
     async def _click_text(self, text: str, timeout: float = 5.0) -> bool:
@@ -142,24 +139,18 @@ class GameNavigator:
         logger.debug(f"滑动: {direction} {distance}px")
         await asyncio.sleep(0.5)
     
-    async def _press_back(self) -> bool:
+    async def press_back(self) -> bool:
         """按返回键"""
-        # 使用 Android 系统返回键
         cmd = f'"{self.adb.adb_path}" -s {self.adb.device} shell input keyevent KEYCODE_BACK'
         await self.adb._run_command(cmd)
         logger.debug("按下返回键")
         return True
     
     async def detect_current_scene(self) -> Optional[str]:
-        """
-        检测当前场景
-        
-        Returns:
-            场景ID，如果无法识别返回 None
-        """
+        """检测当前场景"""
         screen = await self.adb.screencap_array()
         
-        # 优先检测底部导航栏（最可靠）
+        # 优先检测底部导航栏
         tab_scenes = ["home", "note", "character", "guild", "world"]
         for scene_id in tab_scenes:
             scene = SCENES.get(scene_id)
@@ -175,14 +166,12 @@ class GameNavigator:
             if scene_id in tab_scenes:
                 continue
             
-            # 检测模板
             for template in scene.detect_templates:
                 if image_matcher.match_template(screen, template, threshold=0.7):
                     logger.info(f"检测到场景: {scene.name}")
                     scene_navigator.current_scene = scene_id
                     return scene_id
             
-            # 检测文字
             for text in scene.detect_texts:
                 if image_matcher.ocr_find_text(screen, text):
                     logger.info(f"检测到场景: {scene.name}")
@@ -194,23 +183,13 @@ class GameNavigator:
         return None
     
     async def navigate_to(self, target_scene: str) -> bool:
-        """
-        导航到目标场景
-        
-        Args:
-            target_scene: 目标场景ID
-        
-        Returns:
-            成功返回 True
-        """
-        # 如果当前场景未知，先检测
+        """导航到目标场景"""
         if scene_navigator.current_scene is None:
             detected = await self.detect_current_scene()
             if not detected:
                 logger.error("无法检测当前场景，尝试返回主界面")
-                # 尝试多次按返回键回到主界面
                 for _ in range(5):
-                    await self._press_back()
+                    await self.press_back()
                     await asyncio.sleep(0.5)
                     detected = await self.detect_current_scene()
                     if detected:
@@ -222,26 +201,8 @@ class GameNavigator:
         
         return await scene_navigator.navigate_to(target_scene)
     
-    async def navigate_to_dungeon(self, dungeon_id: str) -> bool:
-        """
-        导航到指定副本
-        
-        Args:
-            dungeon_id: 副本ID (world_tree, mount_mechagod, sea_palace, mizumoto_shrine)
-        
-        Returns:
-            成功返回 True
-        """
-        target_scene = f"dungeon:{dungeon_id}"
-        
-        if target_scene not in SCENES:
-            logger.error(f"未知副本: {dungeon_id}")
-            return False
-        
-        return await self.navigate_to(target_scene)
-    
     def set_current_scene(self, scene_id: str):
-        """手动设置当前场景（用于已知状态时跳过检测）"""
+        """手动设置当前场景"""
         if scene_id in SCENES:
             scene_navigator.current_scene = scene_id
             logger.info(f"设置当前场景: {SCENES[scene_id].name}")

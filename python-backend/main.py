@@ -12,7 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.adb_controller import ADBController
 from core.task_engine import TaskEngine
-from core.dungeon_navigator import GameNavigator
+from core.game_navigator import GameNavigator
+from core.dungeon_runner import DungeonRunner
 from core.game_launcher import GameLauncher
 from core.scene_graph import SCENES
 from utils.logger import setup_logger, LogBroadcaster
@@ -21,6 +22,7 @@ from utils.logger import setup_logger, LogBroadcaster
 adb_controller: ADBController = None
 task_engine: TaskEngine = None
 game_navigator: GameNavigator = None
+dungeon_runner: DungeonRunner = None
 game_launcher: GameLauncher = None
 log_broadcaster = LogBroadcaster()
 logger = setup_logger("zat", log_broadcaster)
@@ -29,7 +31,7 @@ logger = setup_logger("zat", log_broadcaster)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    global adb_controller, task_engine, game_navigator, game_launcher
+    global adb_controller, task_engine, game_navigator, dungeon_runner, game_launcher
     
     logger.info("ZAT Backend 启动中...")
     
@@ -42,6 +44,9 @@ async def lifespan(app: FastAPI):
     # 初始化游戏导航器
     game_navigator = GameNavigator(adb_controller)
     
+    # 初始化副本执行器
+    dungeon_runner = DungeonRunner(adb_controller, game_navigator)
+    
     # 初始化游戏启动器
     game_launcher = GameLauncher(adb_controller)
     
@@ -51,6 +56,8 @@ async def lifespan(app: FastAPI):
     
     # 清理资源
     logger.info("ZAT Backend 关闭中...")
+    if dungeon_runner:
+        dungeon_runner.stop()
     if task_engine:
         await task_engine.stop()
     if game_launcher:
@@ -225,7 +232,7 @@ async def get_dungeons():
 @app.post("/navigate-to-dungeon")
 async def navigate_to_dungeon(dungeon_id: str, difficulty: str = "normal"):
     """
-    导航到指定副本
+    导航到指定副本（仅导航，不开始战斗）
     
     Args:
         dungeon_id: 副本ID (world_tree, mount_mechagod, sea_palace, mizumoto_shrine)
@@ -235,7 +242,8 @@ async def navigate_to_dungeon(dungeon_id: str, difficulty: str = "normal"):
         raise HTTPException(status_code=400, detail="设备未连接")
     
     try:
-        success = await game_navigator.navigate_to_dungeon(dungeon_id)
+        target_scene = f"dungeon:{dungeon_id}"
+        success = await game_navigator.navigate_to(target_scene)
         if success:
             return {"success": True, "dungeon": dungeon_id, "difficulty": difficulty}
         else:
@@ -243,6 +251,54 @@ async def navigate_to_dungeon(dungeon_id: str, difficulty: str = "normal"):
     except Exception as e:
         logger.error(f"导航到副本失败: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/run-dungeon")
+async def run_dungeon(dungeon_id: str, difficulty: str = "normal", count: int = 1):
+    """
+    执行副本
+    
+    Args:
+        dungeon_id: 副本ID (world_tree, mount_mechagod, sea_palace, mizumoto_shrine)
+        difficulty: 难度 (normal, hard, nightmare)
+        count: 执行次数
+    
+    Returns:
+        单次: {"success": bool, "rank": str | None, "message": str}
+        多次: {"total": int, "completed": int, "failed": int, "ranks": list}
+    """
+    if not adb_controller.is_connected():
+        raise HTTPException(status_code=400, detail="设备未连接")
+    
+    try:
+        if count == 1:
+            result = await dungeon_runner.run_once(dungeon_id, difficulty)
+            return {
+                "success": result.success,
+                "rank": result.rank,
+                "message": result.message
+            }
+        else:
+            result = await dungeon_runner.run(dungeon_id, difficulty, count)
+            return {
+                "total": result.total,
+                "completed": result.completed,
+                "failed": result.failed,
+                "ranks": result.ranks,
+                "success_rate": result.success_rate
+            }
+    except Exception as e:
+        logger.error(f"执行副本失败: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/stop-dungeon")
+async def stop_dungeon():
+    """停止副本运行"""
+    if dungeon_runner:
+        dungeon_runner.stop()
+        return {"success": True, "message": "已停止"}
+    return {"success": False, "message": "副本执行器未初始化"}
 
 
 @app.get("/scenes")

@@ -115,6 +115,31 @@ export const api = {
     const res = await fetch(`${API_BASE}/navigate-to-dungeon?${params}`, { method: 'POST' });
     return res.json();
   },
+
+  async runDungeon(dungeonId: string, difficulty: string = 'normal', count: number = 1): Promise<{
+    // 单次结果
+    success?: boolean;
+    rank?: string | null;
+    message?: string;
+    // 多次结果
+    total?: number;
+    completed?: number;
+    failed?: number;
+    ranks?: string[];
+    success_rate?: number;
+  }> {
+    const params = new URLSearchParams();
+    params.set('dungeon_id', dungeonId);
+    params.set('difficulty', difficulty);
+    params.set('count', String(count));
+    const res = await fetch(`${API_BASE}/run-dungeon?${params}`, { method: 'POST' });
+    return res.json();
+  },
+
+  async stopDungeon(): Promise<{ success: boolean; message?: string }> {
+    const res = await fetch(`${API_BASE}/stop-dungeon`, { method: 'POST' });
+    return res.json();
+  },
 };
 
 /**

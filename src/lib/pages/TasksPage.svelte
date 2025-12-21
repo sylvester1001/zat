@@ -19,7 +19,7 @@
   
   let selectedDungeon = $state<string | null>(null);
   let selectedDifficulties = $state<Record<string, DifficultyId>>({});
-  let navigating = $state(false);
+  let running = $state(false);
   
   let currentDifficulty = $derived(
     selectedDungeon ? (selectedDifficulties[selectedDungeon] || 'normal') : 'normal'
@@ -33,25 +33,35 @@
     selectedDifficulties[dungeonId] = difficulty;
   }
   
-  // 导航到副本
-  async function handleEnterDungeon() {
+  // 执行副本
+  async function handleStartDungeon() {
     if (!selectedDungeon || !connected) return;
     
-    navigating = true;
+    running = true;
     try {
-      const result = await api.navigateToDungeon(selectedDungeon, currentDifficulty);
+      const result = await api.runDungeon(selectedDungeon, currentDifficulty);
       if (result.success) {
         const dungeonName = DUNGEONS.find(d => d.id === selectedDungeon)?.name;
-        console.log(`已进入副本: ${dungeonName} (${currentDifficulty})`);
+        console.log(`副本完成: ${dungeonName} (${currentDifficulty}) - 评级: ${result.rank}`);
       } else {
-        alert('进入副本失败: ' + (result.message || '未知错误'));
+        console.warn('副本执行失败: ' + (result.message || '未知错误'));
       }
     } catch (error) {
-      console.error('进入副本失败:', error);
-      alert('进入副本失败：' + error);
+      console.error('副本执行失败:', error);
     } finally {
-      navigating = false;
+      running = false;
     }
+  }
+  
+  // 中断副本
+  async function handleStopDungeon() {
+    try {
+      await api.stopDungeon();
+      console.log('已发送中断请求');
+    } catch (error) {
+      console.error('中断失败:', error);
+    }
+    running = false;
   }
 </script>
 
@@ -97,19 +107,26 @@
 
   <!-- 底部操作区 -->
   <div class="mt-auto flex justify-end gap-3">
-    <Button
-      pill
-      size="md"
-      class="min-w-30 zat-lime"
-      disabled={!selectedDungeon || !connected}
-      loading={navigating}
-      onclick={handleEnterDungeon}
-    >
-      {#if navigating}
-        进入副本中...
-      {:else}
+    {#if running}
+      <Button
+        pill
+        size="md"
+        color="red"
+        class="min-w-30"
+        onclick={handleStopDungeon}
+      >
+        中断
+      </Button>
+    {:else}
+      <Button
+        pill
+        size="md"
+        class="min-w-30 zat-lime"
+        disabled={!selectedDungeon || !connected}
+        onclick={handleStartDungeon}
+      >
         进入副本
-      {/if}
-    </Button>
+      </Button>
+    {/if}
   </div>
 </div>
