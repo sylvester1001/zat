@@ -1,0 +1,46 @@
+/* Pill Selector 滑动选择器组件 */
+.pill-selector {
+  --pill-btn-width: 7rem;
+  --pill-padding: 0.1875rem;
+  
+  display: inline-flex;
+  position: relative;
+  background: var(--color-gray-900);
+  border-radius: 9999px;
+  padding: var(--pill-padding);
+}
+
+.pill-selector .pill-indicator {
+  position: absolute;
+  top: var(--pill-padding);
+  bottom: var(--pill-padding);
+  left: var(--pill-padding);
+  width: var(--pill-btn-width);
+  background: var(--color-lime);
+  border-radius: 9999px;
+  transition: transform 0.2s ease;
+}
+
+.pill-selector .pill-option {
+  position: relative;
+  z-index: 1;
+  width: var(--pill-btn-width);
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  text-align: center;
+}
+
+.pill-selector .pill-option:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pill-selector .pill-option.selected {
+  color: var(--color-gray-900);
+}

@@ -90,11 +90,13 @@
 
   <!-- 难度选择 -->
   {#if selectedDungeon}
-    <DifficultySelector
-      dungeonId={selectedDungeon}
-      selected={selectedDifficulties[selectedDungeon] || 'normal'}
-      onSelect={(diff) => handleDifficultySelect(selectedDungeon!, diff)}
-    />
+    <div>
+      <DifficultySelector
+        dungeonId={selectedDungeon}
+        selected={selectedDifficulties[selectedDungeon] || 'normal'}
+        onSelect={(diff) => handleDifficultySelect(selectedDungeon!, diff)}
+      />
+    </div>
   {/if}
 
   <!-- 底部操作区 -->

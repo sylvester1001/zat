@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { ButtonGroup, Button } from 'flowbite-svelte';
   import { getDungeonDifficulties, type DifficultyId } from '$lib/config/dungeonConfig';
 
   interface Props {
@@ -11,18 +10,20 @@
   let { dungeonId, selected, onSelect }: Props = $props();
 
   let difficulties = $derived(getDungeonDifficulties(dungeonId));
+  let selectedIndex = $derived(difficulties.findIndex(d => d.id === selected));
 </script>
 
-<div class="py-3">
-  <ButtonGroup>
-    {#each difficulties as diff}
-      <Button
-        color="dark"
-        class={selected === diff.id ? 'zat-lime' : ''}
-        onclick={() => onSelect(diff.id)}
-      >
-        {diff.name}
-      </Button>
-    {/each}
-  </ButtonGroup>
+<div class="pill-selector">
+  <div 
+    class="pill-indicator" 
+    style="transform: translateX(calc({selectedIndex} * var(--pill-btn-width)));"
+  ></div>
+  {#each difficulties as diff}
+    <button
+      class="pill-option {selected === diff.id ? 'selected' : ''}"
+      onclick={() => onSelect(diff.id)}
+    >
+      {diff.name}
+    </button>
+  {/each}
 </div>

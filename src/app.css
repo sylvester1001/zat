@@ -240,3 +240,6 @@ select:focus-visible {
 
 /* Universe 组件样式 */
 @import './styles/universe/index.css';
+
+/* 通用组件样式 */
+@import './styles/components/pill-selector.css';
