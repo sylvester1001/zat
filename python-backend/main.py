@@ -309,8 +309,10 @@ async def get_dungeon_history():
     if not dungeon_runner:
         return {"records": []}
     
+    # 获取历史记录（最新的在前面），然后反转使最早的在前面
+    history = dungeon_runner.history
     records = []
-    for record in dungeon_runner.history:
+    for record in history:
         records.append({
             "id": record.id,
             "name": record.dungeon_name,
@@ -319,6 +321,8 @@ async def get_dungeon_history():
             "time": record.time,
             "status": record.status,
         })
+    # 反转顺序，最早的在前面（时间线从左到右）
+    records.reverse()
     return {"records": records}
 
 
