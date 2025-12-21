@@ -4,13 +4,20 @@
 """
 import asyncio
 import logging
-from typing import Optional
+from typing import Optional, Callable
 from dataclasses import dataclass
+from enum import Enum
 
 from core.adb_controller import ADBController
 from core.image_matcher import image_matcher
 
 logger = logging.getLogger("zat.battle")
+
+
+class BattlePhase(str, Enum):
+    """战斗阶段"""
+    MATCHING = "matching"    # 匹配中（等待接受）
+    BATTLING = "battling"    # 进行中（已点击准备）
 
 
 @dataclass
@@ -36,6 +43,20 @@ class BattleLoop:
     def __init__(self, adb: ADBController):
         self.adb = adb
         self._running = False
+        self._phase = BattlePhase.MATCHING
+        self._on_phase_change: Optional[Callable[[BattlePhase], None]] = None
+    
+    def set_phase_callback(self, callback: Callable[[BattlePhase], None]):
+        """设置阶段变化回调"""
+        self._on_phase_change = callback
+    
+    def _set_phase(self, phase: BattlePhase):
+        """设置阶段并触发回调"""
+        if self._phase != phase:
+            self._phase = phase
+            logger.debug(f"战斗阶段: {phase.value}")
+            if self._on_phase_change:
+                self._on_phase_change(phase)
     
     async def _detect_and_click(self, screen, template: str, threshold: float = 0.7) -> bool:
         """检测模板并点击（单次检测）"""
@@ -58,10 +79,9 @@ class BattleLoop:
         """
         运行战斗循环
         
-        持续检测屏幕，按优先级处理：
-        1. 准备按钮 - 最高优先级（多个子地图都需要点击）
-        2. 接受按钮 - 匹配成功后出现
-        3. 评级 (S/A/B/C) - 战斗结束标志
+        阶段流转：
+        - MATCHING: 检测接受按钮，点击后可能被拒绝回到匹配
+        - BATTLING: 点击准备后进入，只检测准备按钮（多子地图）和评级
         
         Args:
             timeout: 总超时时间（秒），默认10分钟
@@ -71,31 +91,34 @@ class BattleLoop:
         """
         logger.info("进入战斗循环...")
         self._running = True
+        self._set_phase(BattlePhase.MATCHING)
         
         elapsed = 0
         interval = 1.5
         idle_time = 0
-        max_idle = 90  # 最大无操作时间
+        max_idle = 90
         
         while self._running and elapsed < timeout:
             screen = await self.adb.screencap_array()
             action_taken = False
             
-            # 优先级1: 检测准备按钮
+            # 优先级1: 检测准备按钮（点击后进入 BATTLING 阶段）
             if await self._detect_and_click(screen, "ready"):
                 logger.info("点击准备按钮")
+                self._set_phase(BattlePhase.BATTLING)
                 action_taken = True
                 idle_time = 0
                 await asyncio.sleep(1.0)
                 continue
             
-            # 优先级2: 检测接受按钮
-            if await self._detect_and_click(screen, "accept"):
-                logger.info("点击接受按钮")
-                action_taken = True
-                idle_time = 0
-                await asyncio.sleep(0.5)
-                continue
+            # 优先级2: 检测接受按钮（仅在 MATCHING 阶段）
+            if self._phase == BattlePhase.MATCHING:
+                if await self._detect_and_click(screen, "accept"):
+                    logger.info("点击接受按钮")
+                    action_taken = True
+                    idle_time = 0
+                    await asyncio.sleep(0.5)
+                    continue
             
             # 优先级3: 检测评级（战斗结束）
             rank = await self._detect_rank(screen)

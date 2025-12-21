@@ -2,7 +2,7 @@
   import { Button } from 'flowbite-svelte';
   import PageHeader from '$lib/components/PageHeader.svelte';
   import DifficultySelector from '$lib/components/DifficultySelector.svelte';
-  import { appStore, type AppState } from '$lib/stores/appStore';
+  import { appStore, type AppState, type DungeonState } from '$lib/stores/appStore';
   import { api } from '$lib/api';
   import { DUNGEONS, type DifficultyId } from '$lib/config/dungeonConfig';
   
@@ -16,14 +16,26 @@
   });
   
   let connected = $derived(storeValue?.connected ?? false);
+  let dungeonState = $derived(storeValue?.dungeonState ?? 'idle');
+  let dungeonRunning = $derived(storeValue?.dungeonRunning ?? false);
   
   let selectedDungeon = $state<string | null>(null);
   let selectedDifficulties = $state<Record<string, DifficultyId>>({});
-  let running = $state(false);
   
   let currentDifficulty = $derived(
     selectedDungeon ? (selectedDifficulties[selectedDungeon] || 'normal') : 'normal'
   );
+  
+  // 按钮文字
+  const stateLabels: Record<DungeonState, string> = {
+    idle: '进入副本',
+    navigating: '进入中...',
+    matching: '匹配中...',
+    battling: '进行中...',
+    finished: '完成',
+  };
+  
+  let buttonLabel = $derived(stateLabels[dungeonState] || '进入副本');
   
   function selectDungeon(id: string) {
     selectedDungeon = selectedDungeon === id ? null : id;
@@ -35,9 +47,8 @@
   
   // 执行副本
   async function handleStartDungeon() {
-    if (!selectedDungeon || !connected) return;
+    if (!selectedDungeon || !connected || dungeonRunning) return;
     
-    running = true;
     try {
       const result = await api.runDungeon(selectedDungeon, currentDifficulty);
       if (result.success) {
@@ -48,8 +59,6 @@
       }
     } catch (error) {
       console.error('副本执行失败:', error);
-    } finally {
-      running = false;
     }
   }
   
@@ -61,7 +70,6 @@
     } catch (error) {
       console.error('中断失败:', error);
     }
-    running = false;
   }
 </script>
 
@@ -107,25 +115,23 @@
 
   <!-- 底部操作区 -->
   <div class="mt-auto flex justify-end gap-3">
-    {#if running}
+    <Button
+      pill
+      size="md"
+      class="min-w-30 zat-lime"
+      disabled={!selectedDungeon || !connected || dungeonRunning}
+      onclick={handleStartDungeon}
+    >
+      {buttonLabel}
+    </Button>
+    {#if dungeonRunning}
       <Button
         pill
-        size="md"
         color="red"
-        class="min-w-30"
+        class="p-2! w-9 h-9"
         onclick={handleStopDungeon}
       >
-        中断
-      </Button>
-    {:else}
-      <Button
-        pill
-        size="md"
-        class="min-w-30 zat-lime"
-        disabled={!selectedDungeon || !connected}
-        onclick={handleStartDungeon}
-      >
-        进入副本
+        <span class="w-3 h-3 bg-white rounded-sm"></span>
       </Button>
     {/if}
   </div>

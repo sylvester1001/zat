@@ -6,17 +6,19 @@
   import HomePage from '$lib/pages/HomePage.svelte';
   import DebugPage from '$lib/pages/DebugPage.svelte';
   import TasksPage from '$lib/pages/TasksPage.svelte';
-  import { startHeartbeat, stopHeartbeat } from '$lib/stores/appStore';
+  import { startHeartbeat, stopHeartbeat, startStateWebSocket, stopStateWebSocket } from '$lib/stores/appStore';
   
   let currentPage = $state('home');
   
   onMount(() => {
     console.log('ZAT 已启动');
     startHeartbeat();
+    startStateWebSocket();
   });
   
   onDestroy(() => {
     stopHeartbeat();
+    stopStateWebSocket();
   });
 </script>
 

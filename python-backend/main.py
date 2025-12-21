@@ -128,6 +128,8 @@ async def get_status():
         "task_running": task_engine.is_running() if task_engine else False,
         "current_state": task_engine.current_state if task_engine else None,
         "game_running": game_running,
+        "dungeon_state": dungeon_runner.state.value if dungeon_runner else "idle",
+        "dungeon_running": dungeon_runner.is_running if dungeon_runner else False,
     }
 
 
@@ -439,21 +441,33 @@ async def websocket_log(websocket: WebSocket):
 
 @app.websocket("/ws/state")
 async def websocket_state(websocket: WebSocket):
-    """状态流"""
+    """状态流 - 推送副本和任务状态"""
     await websocket.accept()
     logger.info("状态 WebSocket 已连接")
     
+    last_dungeon_state = None
+    
     try:
         while True:
-            # 每秒推送一次状态
+            # 获取当前副本状态
+            current_dungeon_state = dungeon_runner.state.value if dungeon_runner else "idle"
+            dungeon_running = dungeon_runner.is_running if dungeon_runner else False
+            
+            # 状态变化时立即推送，否则每秒推送一次
             state = {
                 "type": "state",
+                "dungeon_state": current_dungeon_state,
+                "dungeon_running": dungeon_running,
+                "task_running": task_engine.is_running() if task_engine else False,
                 "current_state": task_engine.current_state if task_engine else None,
-                "is_running": task_engine.is_running() if task_engine else False,
-                "loop_count": task_engine.loop_count if task_engine else 0,
             }
             await websocket.send_json(state)
-            await asyncio.sleep(1)
+            
+            last_dungeon_state = current_dungeon_state
+            
+            # 如果副本正在运行，检测频率更高
+            interval = 0.3 if dungeon_running else 1.0
+            await asyncio.sleep(interval)
     except WebSocketDisconnect:
         logger.info("状态 WebSocket 已断开")
 

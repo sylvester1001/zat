@@ -4,12 +4,16 @@
 import { writable } from 'svelte/store';
 import { api } from '$lib/api';
 
+export type DungeonState = 'idle' | 'navigating' | 'matching' | 'battling' | 'finished';
+
 export interface AppState {
   connected: boolean;
   device: string;
   resolution: string;
   taskEngineRunning: boolean;
   gameRunning: boolean;
+  dungeonState: DungeonState;
+  dungeonRunning: boolean;
 }
 
 const initialState: AppState = {
@@ -18,6 +22,8 @@ const initialState: AppState = {
   resolution: '',
   taskEngineRunning: false,
   gameRunning: false,
+  dungeonState: 'idle',
+  dungeonRunning: false,
 };
 
 export const appStore = writable<AppState>(initialState);
@@ -40,6 +46,8 @@ export const setDisconnected = () => {
     resolution: '',
     taskEngineRunning: false,
     gameRunning: false,
+    dungeonState: 'idle',
+    dungeonRunning: false,
   }));
 };
 
@@ -57,9 +65,9 @@ export const setTaskEngineRunning = (running: boolean) => {
   }));
 };
 
-// 心跳检测
+// 心跳检测（仅检测连接状态，副本状态通过 WebSocket 推送）
 let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
-const HEARTBEAT_INTERVAL = 5000; // 5秒检测一次
+const HEARTBEAT_INTERVAL = 5000; // 5秒检测一次连接
 
 export const startHeartbeat = () => {
   if (heartbeatInterval) return;
@@ -68,7 +76,6 @@ export const startHeartbeat = () => {
     try {
       const status = await api.getStatus();
       appStore.update(state => {
-        // 如果之前是连接状态，现在断开了，更新状态
         if (state.connected && !status.connected) {
           console.log('检测到设备离线');
           return {
@@ -78,30 +85,26 @@ export const startHeartbeat = () => {
             resolution: '',
             taskEngineRunning: false,
             gameRunning: false,
+            dungeonState: 'idle',
+            dungeonRunning: false,
           };
         }
-        // 同步状态
-        const needsUpdate = 
-          state.taskEngineRunning !== status.task_running ||
-          state.gameRunning !== status.game_running;
-        
-        if (needsUpdate) {
-          return {
-            ...state,
-            taskEngineRunning: status.task_running,
-            gameRunning: status.game_running,
-          };
-        }
-        return state;
+        // 只更新连接和游戏状态，副本状态由 WebSocket 更新
+        return {
+          ...state,
+          connected: status.connected,
+          gameRunning: status.game_running,
+        };
       });
     } catch (error) {
-      // 后端不可用时，标记为断开
       console.error('心跳检测失败:', error);
       appStore.update(state => ({
         ...state,
         connected: false,
         taskEngineRunning: false,
         gameRunning: false,
+        dungeonState: 'idle',
+        dungeonRunning: false,
       }));
     }
   }, HEARTBEAT_INTERVAL);
@@ -111,5 +114,63 @@ export const stopHeartbeat = () => {
   if (heartbeatInterval) {
     clearInterval(heartbeatInterval);
     heartbeatInterval = null;
+  }
+};
+
+// WebSocket 状态推送
+let stateWs: WebSocket | null = null;
+let stateWsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+export const startStateWebSocket = () => {
+  if (stateWs?.readyState === WebSocket.OPEN) return;
+  
+  const url = 'ws://127.0.0.1:8000/ws/state';
+  stateWs = new WebSocket(url);
+  
+  stateWs.onopen = () => {
+    console.log('状态 WebSocket 已连接');
+    if (stateWsReconnectTimer) {
+      clearTimeout(stateWsReconnectTimer);
+      stateWsReconnectTimer = null;
+    }
+  };
+  
+  stateWs.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'state') {
+        appStore.update(state => ({
+          ...state,
+          dungeonState: data.dungeon_state || 'idle',
+          dungeonRunning: data.dungeon_running || false,
+          taskEngineRunning: data.task_running || false,
+        }));
+      }
+    } catch (e) {
+      console.error('解析状态消息失败:', e);
+    }
+  };
+  
+  stateWs.onclose = () => {
+    console.log('状态 WebSocket 已断开');
+    // 自动重连
+    stateWsReconnectTimer = setTimeout(() => {
+      startStateWebSocket();
+    }, 3000);
+  };
+  
+  stateWs.onerror = (error) => {
+    console.error('状态 WebSocket 错误:', error);
+  };
+};
+
+export const stopStateWebSocket = () => {
+  if (stateWsReconnectTimer) {
+    clearTimeout(stateWsReconnectTimer);
+    stateWsReconnectTimer = null;
+  }
+  if (stateWs) {
+    stateWs.close();
+    stateWs = null;
   }
 };

@@ -16,6 +16,8 @@ export interface Status {
   task_running: boolean;
   current_state: string | null;
   game_running: boolean;
+  dungeon_state: 'idle' | 'navigating' | 'matching' | 'battling' | 'finished';
+  dungeon_running: boolean;
 }
 
 export interface LogMessage {

@@ -4,15 +4,25 @@
 """
 import asyncio
 import logging
-from typing import Optional
+from typing import Optional, Callable
 from dataclasses import dataclass, field
+from enum import Enum
 
 from core.adb_controller import ADBController
 from core.game_navigator import GameNavigator
-from core.battle_loop import BattleLoop, BattleResult
+from core.battle_loop import BattleLoop, BattleResult, BattlePhase
 from core.image_matcher import image_matcher
 
 logger = logging.getLogger("zat.dungeon")
+
+
+class DungeonState(str, Enum):
+    """副本运行状态"""
+    IDLE = "idle"
+    NAVIGATING = "navigating"  # 进入中
+    MATCHING = "matching"      # 匹配中
+    BATTLING = "battling"      # 进行中
+    FINISHED = "finished"      # 已完成
 
 
 # 难度模板映射
@@ -58,6 +68,32 @@ class DungeonRunner:
         self.navigator = navigator
         self.battle_loop = BattleLoop(adb)
         self._running = False
+        self._state = DungeonState.IDLE
+        
+        # 设置战斗阶段回调
+        self.battle_loop.set_phase_callback(self._on_battle_phase_change)
+    
+    def _on_battle_phase_change(self, phase: BattlePhase):
+        """战斗阶段变化回调"""
+        if phase == BattlePhase.MATCHING:
+            self._set_state(DungeonState.MATCHING)
+        elif phase == BattlePhase.BATTLING:
+            self._set_state(DungeonState.BATTLING)
+    
+    @property
+    def state(self) -> DungeonState:
+        """获取当前状态"""
+        return self._state
+    
+    @property
+    def is_running(self) -> bool:
+        """是否正在运行"""
+        return self._running
+    
+    def _set_state(self, state: DungeonState):
+        """设置状态"""
+        self._state = state
+        logger.debug(f"状态变更: {state.value}")
     
     async def select_difficulty(self, difficulty: str) -> bool:
         """选择难度"""
@@ -102,33 +138,41 @@ class DungeonRunner:
         logger.info(f"开始副本: {dungeon_id} ({difficulty})")
         
         # 1. 导航到副本
+        self._set_state(DungeonState.NAVIGATING)
         target_scene = f"dungeon:{dungeon_id}"
         if not await self.navigator.navigate_to(target_scene):
+            self._set_state(DungeonState.IDLE)
             return DungeonResult(success=False, message="导航到副本失败")
         
         await asyncio.sleep(0.5)
         
         # 2. 选择难度
         if not await self.select_difficulty(difficulty):
+            self._set_state(DungeonState.IDLE)
             return DungeonResult(success=False, message="选择难度失败")
         
         await asyncio.sleep(0.3)
         
         # 3. 点击匹配
+        self._set_state(DungeonState.MATCHING)
         if not await self.click_match():
+            self._set_state(DungeonState.IDLE)
             return DungeonResult(success=False, message="点击匹配失败")
         
-        # 4. 战斗循环
+        # 4. 战斗循环（状态由 battle_loop 回调更新）
         battle_result = await self.battle_loop.run()
         if not battle_result.success:
+            self._set_state(DungeonState.IDLE)
             return DungeonResult(success=False, message=battle_result.message)
         
         await asyncio.sleep(1.0)
         
         # 5. 退出结算界面
+        self._set_state(DungeonState.FINISHED)
         await self.exit_result_screen()
         
         logger.info(f"副本完成: {dungeon_id} ({difficulty}) - 评级: {battle_result.rank}")
+        self._set_state(DungeonState.IDLE)
         return DungeonResult(success=True, rank=battle_result.rank, message="副本完成")
     
     async def run(self, dungeon_id: str, difficulty: str = "normal", count: int = 1) -> DungeonRunResult:
@@ -188,5 +232,6 @@ class DungeonRunner:
     def stop(self):
         """停止运行"""
         self._running = False
+        self._state = DungeonState.IDLE
         self.battle_loop.stop()
         logger.info("副本运行已停止")
