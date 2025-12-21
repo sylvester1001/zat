@@ -18,21 +18,15 @@
   let connected = $derived(storeValue?.connected ?? false);
   
   let selectedDungeon = $state<string | null>(null);
-  // 每个副本的难度选择状态
   let selectedDifficulties = $state<Record<string, DifficultyId>>({});
   let navigating = $state(false);
   
-  // 获取当前选中副本的难度
   let currentDifficulty = $derived(
     selectedDungeon ? (selectedDifficulties[selectedDungeon] || 'normal') : 'normal'
   );
   
   function selectDungeon(id: string) {
     selectedDungeon = selectedDungeon === id ? null : id;
-    // 初始化难度为 normal（如果还没选过）
-    if (selectedDungeon && !selectedDifficulties[selectedDungeon]) {
-      selectedDifficulties[selectedDungeon] = 'normal';
-    }
   }
   
   function handleDifficultySelect(dungeonId: string, difficulty: DifficultyId) {
@@ -91,11 +85,13 @@
   <!-- 难度选择 -->
   {#if selectedDungeon}
     <div>
-      <DifficultySelector
-        dungeonId={selectedDungeon}
-        selected={selectedDifficulties[selectedDungeon] || 'normal'}
-        onSelect={(diff) => handleDifficultySelect(selectedDungeon!, diff)}
-      />
+      {#key selectedDungeon}
+        <DifficultySelector
+          dungeonId={selectedDungeon}
+          selected={selectedDifficulties[selectedDungeon] || 'normal'}
+          onSelect={(diff) => handleDifficultySelect(selectedDungeon!, diff)}
+        />
+      {/key}
     </div>
   {/if}
 
