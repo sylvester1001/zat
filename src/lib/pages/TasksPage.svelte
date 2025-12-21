@@ -31,7 +31,7 @@
     idle: '进入副本',
     navigating: '进入中...',
     matching: '匹配中...',
-    battling: '进行中...',
+    battling: '战斗中...',
     finished: '完成',
   };
   

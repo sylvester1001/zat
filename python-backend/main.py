@@ -303,6 +303,25 @@ async def stop_dungeon():
     return {"success": False, "message": "副本执行器未初始化"}
 
 
+@app.get("/dungeon-history")
+async def get_dungeon_history():
+    """获取副本运行历史"""
+    if not dungeon_runner:
+        return {"records": []}
+    
+    records = []
+    for record in dungeon_runner.history:
+        records.append({
+            "id": record.id,
+            "name": record.dungeon_name,
+            "difficulty": record.difficulty_name,
+            "rank": record.rank,
+            "time": record.time,
+            "status": record.status,
+        })
+    return {"records": records}
+
+
 @app.get("/scenes")
 async def get_scenes():
     """获取所有场景"""

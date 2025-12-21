@@ -4,9 +4,10 @@
 """
 import asyncio
 import logging
-from typing import Optional, Callable
-from dataclasses import dataclass, field
+from typing import Optional, Callable, List
+from dataclasses import dataclass, field, asdict
 from enum import Enum
+from datetime import datetime
 
 from core.adb_controller import ADBController
 from core.game_navigator import GameNavigator
@@ -48,6 +49,19 @@ class DungeonResult:
 
 
 @dataclass
+class DungeonRecord:
+    """副本运行记录"""
+    id: int
+    dungeon_id: str
+    dungeon_name: str
+    difficulty: str
+    difficulty_name: str
+    rank: Optional[str]
+    time: str  # HH:MM 格式
+    status: str  # completed, failed, running
+
+
+@dataclass
 class DungeonRunResult:
     """多次副本运行结果"""
     total: int = 0
@@ -60,8 +74,26 @@ class DungeonRunResult:
         return self.completed / self.total if self.total > 0 else 0
 
 
+# 副本名称映射
+DUNGEON_NAMES = {
+    "world_tree": "世界之树",
+    "mount_mechagod": "机神山",
+    "sea_palace": "海之宫遗迹",
+    "mizumoto_shrine": "源水大社",
+}
+
+# 难度名称映射
+DIFFICULTY_NAMES = {
+    "normal": "普通",
+    "hard": "困难",
+    "nightmare": "噩梦",
+}
+
+
 class DungeonRunner:
     """副本执行器"""
+    
+    MAX_HISTORY = 10  # 最多保留的历史记录数
     
     def __init__(self, adb: ADBController, navigator: GameNavigator):
         self.adb = adb
@@ -69,6 +101,9 @@ class DungeonRunner:
         self.battle_loop = BattleLoop(adb)
         self._running = False
         self._state = DungeonState.IDLE
+        self._history: List[DungeonRecord] = []
+        self._record_id = 0
+        self._current_record: Optional[DungeonRecord] = None
         
         # 设置战斗阶段回调
         self.battle_loop.set_phase_callback(self._on_battle_phase_change)
@@ -90,10 +125,42 @@ class DungeonRunner:
         """是否正在运行"""
         return self._running
     
+    @property
+    def history(self) -> List[DungeonRecord]:
+        """获取历史记录"""
+        return self._history.copy()
+    
     def _set_state(self, state: DungeonState):
         """设置状态"""
         self._state = state
         logger.debug(f"状态变更: {state.value}")
+    
+    def _add_record(self, dungeon_id: str, difficulty: str, status: str = "running") -> DungeonRecord:
+        """添加一条记录"""
+        self._record_id += 1
+        record = DungeonRecord(
+            id=self._record_id,
+            dungeon_id=dungeon_id,
+            dungeon_name=DUNGEON_NAMES.get(dungeon_id, dungeon_id),
+            difficulty=difficulty,
+            difficulty_name=DIFFICULTY_NAMES.get(difficulty, difficulty),
+            rank=None,
+            time=datetime.now().strftime("%H:%M"),
+            status=status,
+        )
+        self._history.insert(0, record)
+        # 保持历史记录数量限制
+        if len(self._history) > self.MAX_HISTORY:
+            self._history = self._history[:self.MAX_HISTORY]
+        self._current_record = record
+        return record
+    
+    def _update_current_record(self, status: str, rank: Optional[str] = None):
+        """更新当前记录"""
+        if self._current_record:
+            self._current_record.status = status
+            if rank:
+                self._current_record.rank = rank
     
     async def select_difficulty(self, difficulty: str) -> bool:
         """选择难度"""
@@ -138,12 +205,16 @@ class DungeonRunner:
         logger.info(f"开始副本: {dungeon_id} ({difficulty})")
         self._running = True
         
+        # 添加记录
+        self._add_record(dungeon_id, difficulty, "running")
+        
         try:
             # 1. 导航到副本
             self._set_state(DungeonState.NAVIGATING)
             target_scene = f"dungeon:{dungeon_id}"
             if not await self.navigator.navigate_to(target_scene):
                 self._set_state(DungeonState.IDLE)
+                self._update_current_record("failed")
                 return DungeonResult(success=False, message="导航到副本失败")
             
             await asyncio.sleep(0.5)
@@ -151,6 +222,7 @@ class DungeonRunner:
             # 2. 选择难度
             if not await self.select_difficulty(difficulty):
                 self._set_state(DungeonState.IDLE)
+                self._update_current_record("failed")
                 return DungeonResult(success=False, message="选择难度失败")
             
             await asyncio.sleep(0.3)
@@ -159,12 +231,14 @@ class DungeonRunner:
             self._set_state(DungeonState.MATCHING)
             if not await self.click_match():
                 self._set_state(DungeonState.IDLE)
+                self._update_current_record("failed")
                 return DungeonResult(success=False, message="点击匹配失败")
             
             # 4. 战斗循环（状态由 battle_loop 回调更新）
             battle_result = await self.battle_loop.run()
             if not battle_result.success:
                 self._set_state(DungeonState.IDLE)
+                self._update_current_record("failed")
                 return DungeonResult(success=False, message=battle_result.message)
             
             await asyncio.sleep(1.0)
@@ -175,9 +249,11 @@ class DungeonRunner:
             
             logger.info(f"副本完成: {dungeon_id} ({difficulty}) - 评级: {battle_result.rank}")
             self._set_state(DungeonState.IDLE)
+            self._update_current_record("completed", battle_result.rank)
             return DungeonResult(success=True, rank=battle_result.rank, message="副本完成")
         finally:
             self._running = False
+            self._current_record = None
     
     async def run(self, dungeon_id: str, difficulty: str = "normal", count: int = 1) -> DungeonRunResult:
         """

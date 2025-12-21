@@ -142,6 +142,20 @@ export const api = {
     const res = await fetch(`${API_BASE}/stop-dungeon`, { method: 'POST' });
     return res.json();
   },
+
+  async getDungeonHistory(): Promise<{
+    records: Array<{
+      id: number;
+      name: string;
+      difficulty: string;
+      rank: string | null;
+      time: string;
+      status: 'completed' | 'failed' | 'running';
+    }>;
+  }> {
+    const res = await fetch(`${API_BASE}/dungeon-history`);
+    return res.json();
+  },
 };
 
 /**
