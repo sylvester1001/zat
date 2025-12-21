@@ -199,7 +199,6 @@ select:focus-visible {
 .zat-lime {
   background-color: var(--color-lime) !important;
   color: var(--color-gray-900) !important;
-  border-radius: 50px !important;
 }
 .zat-lime:hover:not(:disabled) {
   background-color: var(--color-lime-dark) !important;
@@ -225,7 +224,6 @@ select:focus-visible {
   background-color: white !important;
   color: var(--color-gray-700) !important;
   border: 1.5px solid var(--color-gray-300) !important;
-  border-radius: 50px !important;
 }
 .zat-light:hover:not(:disabled) {
   background-color: var(--color-gray-100) !important;
