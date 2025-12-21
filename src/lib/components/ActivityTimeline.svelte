@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Badge } from 'flowbite-svelte';
   import { CheckCircleSolid, CloseCircleSolid, ClockSolid } from 'flowbite-svelte-icons';
 
   export type TimelineRecord = {
@@ -16,34 +17,35 @@
 
   let { records }: Props = $props();
 
-  // 评级 badge 样式
-  function getRankBadge(rank: string | null) {
+  // 评级 badge 颜色
+  function getRankColor(rank: string | null): 'yellow' | 'green' | 'blue' | 'gray' {
     switch (rank) {
-      case 'S': return 'bg-yellow-100 text-yellow-600';
-      case 'A': return 'bg-green-100 text-green-600';
-      case 'B': return 'bg-blue-100 text-blue-600';
-      case 'C': return 'bg-gray-100 text-gray-600';
-      default: return 'bg-gray-100 text-gray-400';
+      case 'S': return 'yellow';
+      case 'A': return 'green';
+      case 'B': return 'blue';
+      default: return 'gray';
     }
   }
 
-  // 难度 badge 样式
-  function getDifficultyBadge(difficulty: string) {
+  // 难度 badge 颜色
+  function getDifficultyColor(difficulty: string): 'green' | 'yellow' | 'red' {
     switch (difficulty) {
-      case '噩梦': return 'bg-red-50 text-red-500';
-      case '困难': return 'bg-orange-50 text-orange-500';
-      default: return 'bg-gray-50 text-gray-500';
+      case '噩梦': return 'red';
+      case '困难': return 'yellow';
+      default: return 'green';
     }
   }
 </script>
 
 <div class="mini-card w-full p-5">
-  <div class="flex items-center justify-between mb-8"> <h3 class="text-base font-bold text-gray-800">冒险记录</h3>
-    <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">近 {records.length} 条</span>
+  <div class="flex items-center justify-between mb-8">
+    <h3 class="text-base font-bold text-gray-800">冒险记录</h3>
+    <Badge color="gray" class="text-xs">{records.length} 条</Badge>
   </div>
 
   {#if records.length > 0}
-    <div class="flex w-full px-5"> {#each records as record, index}
+    <div class="flex w-full px-5">
+      {#each records as record, index}
         {@const isLast = index === records.length - 1}
         
         <div class="relative flex flex-col items-center flex-none">
@@ -71,15 +73,13 @@
               {record.name}
             </span>
             <div class="flex items-center gap-1 mt-1">
-              <span class={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getDifficultyBadge(record.difficulty)}`}>
-                {record.difficulty}
-              </span>
+              <Badge color={getDifficultyColor(record.difficulty)} class="text-[10px]">{record.difficulty}</Badge>
               {#if record.status === 'running'}
-                <span class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-orange-100 text-orange-500">进行中</span>
+                <Badge color="yellow" class="text-[10px]">进行中</Badge>
               {:else if record.status === 'failed'}
-                <span class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-500">失败</span>
+                <Badge color="red" class="text-[10px]">失败</Badge>
               {:else}
-                <span class={`text-[10px] px-1.5 py-0.5 rounded font-bold ${getRankBadge(record.rank)}`}>{record.rank}</span>
+                <Badge color={getRankColor(record.rank)} class="text-[10px] font-bold">{record.rank}</Badge>
               {/if}
             </div>
           </div>
