@@ -168,7 +168,7 @@
           disabled={!connected || startingGame || gameRunning}
           onclick={handleStartGame}
         >
-          <img src="/assets/sword-border.png" alt="" class="play-btn-img" />
+          <img src="/assets/sword_border.png" alt="" class="play-btn-img" />
           <span class="now-text">Now!</span>
           <span class="play-text">
             {#if startingGame}

@@ -61,7 +61,7 @@ def define_scenes():
     register_scene(Scene(
         id="home",
         name="主界面",
-        detect_templates=["home-selected"],
+        detect_templates=["home_selected"],
         transitions={
             "note": Transition(
                 target="note",
@@ -95,12 +95,12 @@ def define_scenes():
     register_scene(Scene(
         id="note",
         name="笔记",
-        detect_templates=["note-selected"],
+        detect_templates=["note_selected"],
         transitions={
             "dungeon_list": Transition(
                 target="dungeon_list",
                 action=ActionType.CLICK,
-                template="daily-dungeon/daily-dungeon",
+                template="daily_dungeon/daily_dungeon",
                 wait_after=1.0
             ),
             "home": Transition(
@@ -118,7 +118,7 @@ def define_scenes():
     register_scene(Scene(
         id="character",
         name="角色",
-        detect_templates=["character-selected"],
+        detect_templates=["character_selected"],
         transitions={
             "home": Transition(
                 target="home",
@@ -135,7 +135,7 @@ def define_scenes():
     register_scene(Scene(
         id="guild",
         name="公会",
-        detect_templates=["guild-selected"],
+        detect_templates=["guild_selected"],
         transitions={
             "home": Transition(
                 target="home",
@@ -152,7 +152,7 @@ def define_scenes():
     register_scene(Scene(
         id="world",
         name="世界",
-        detect_templates=["world-selected"],
+        detect_templates=["world_selected"],
         transitions={
             "home": Transition(
                 target="home",
@@ -171,37 +171,37 @@ def define_scenes():
         id="dungeon_list",
         name="日常副本列表",
         detect_templates=[
-            "daily-dungeon/sea-palace",      # 默认可见的副本
-            "daily-dungeon/mizumoto-shrine", # 默认可见的副本
+            "daily_dungeon/sea_palace",      # 默认可见的副本
+            "daily_dungeon/mizumoto_shrine", # 默认可见的副本
         ],
         detect_texts=["日常副本"],
         transitions={
-            "dungeon:world-tree": Transition(
-                target="dungeon:world-tree",
+            "dungeon:world_tree": Transition(
+                target="dungeon:world_tree",
                 action=ActionType.CLICK,
-                template="daily-dungeon/world-tree",
+                template="daily_dungeon/world_tree",
                 scroll="down",
                 scroll_distance=500,
                 wait_after=0.8
             ),
-            "dungeon:mount-mechagod": Transition(
-                target="dungeon:mount-mechagod",
+            "dungeon:mount_mechagod": Transition(
+                target="dungeon:mount_mechagod",
                 action=ActionType.CLICK,
-                template="daily-dungeon/mount-mechagod",
+                template="daily_dungeon/mount_mechagod",
                 scroll="down",
                 scroll_distance=500,
                 wait_after=0.8
             ),
-            "dungeon:sea-palace": Transition(
-                target="dungeon:sea-palace",
+            "dungeon:sea_palace": Transition(
+                target="dungeon:sea_palace",
                 action=ActionType.CLICK,
-                template="daily-dungeon/sea-palace",
+                template="daily_dungeon/sea_palace",
                 wait_after=0.8
             ),
-            "dungeon:mizumoto-shrine": Transition(
-                target="dungeon:mizumoto-shrine",
+            "dungeon:mizumoto_shrine": Transition(
+                target="dungeon:mizumoto_shrine",
                 action=ActionType.CLICK,
-                template="daily-dungeon/mizumoto-shrine",
+                template="daily_dungeon/mizumoto_shrine",
                 wait_after=0.8
             ),
             "note": Transition(
@@ -218,15 +218,15 @@ def define_scenes():
     # 各个副本详情页
     # 点击返回按钮会回到 dungeon_list
     for dungeon_id, dungeon_name in [
-        ("world-tree", "世界之树"),
-        ("mount-mechagod", "机神山"),
-        ("sea-palace", "海之宫遗迹"),
-        ("mizumoto-shrine", "源水大社"),
+        ("world_tree", "世界之树"),
+        ("mount_mechagod", "机神山"),
+        ("sea_palace", "海之宫遗迹"),
+        ("mizumoto_shrine", "源水大社"),
     ]:
         register_scene(Scene(
             id=f"dungeon:{dungeon_id}",
             name=dungeon_name,
-            detect_templates=[f"daily-dungeon/{dungeon_id}"],
+            detect_templates=[f"daily_dungeon/{dungeon_id}"],
             transitions={
                 # 点击返回按钮回到副本列表
                 "dungeon_list": Transition(

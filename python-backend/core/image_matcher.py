@@ -46,7 +46,7 @@ class ImageMatcher:
         递归加载所有模板图片
         
         子目录中的模板会以 "目录名/文件名" 的格式命名
-        例如: daily-dungeon/world-tree
+        例如: daily_dungeon/world_tree
         """
         if directory is None:
             directory = TEMPLATES_DIR

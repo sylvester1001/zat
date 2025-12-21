@@ -17,10 +17,10 @@
   
   // 副本配置 (ID 需要和后端 scene_graph.py 一致)
   const dungeons = [
-    { id: 'world-tree', name: '世界之树', desc: '魔物隐藏于树荫之下，唯有深入才能将其消灭', color: 'with-bg world-tree-bg' },
-    { id: 'mount-mechagod', name: '机神山', desc: '向古老试炼之地发起挑战，只有胜者能获得一切', color: 'with-bg mount-mechagod-bg' },
-    { id: 'sea-palace', name: '海之宫遗迹', desc: '原本只存在于传说中的古之宫殿，埋藏着无数珍宝', color: 'with-bg sea-palace-bg' },
-    { id: 'mizumoto-shrine', name: '源水大社', desc: '供奉河川神明之所，最深处被强悍的古代构造体守护着', color: 'with-bg mizumoto-shrine-bg' },
+    { id: 'world_tree', name: '世界之树', desc: '魔物隐藏于树荫之下，唯有深入才能将其消灭', color: 'with-bg world_tree-bg' },
+    { id: 'mount_mechagod', name: '机神山', desc: '向古老试炼之地发起挑战，只有胜者能获得一切', color: 'with-bg mount_mechagod-bg' },
+    { id: 'sea_palace', name: '海之宫遗迹', desc: '原本只存在于传说中的古之宫殿，埋藏着无数珍宝', color: 'with-bg sea_palace-bg' },
+    { id: 'mizumoto_shrine', name: '源水大社', desc: '供奉河川神明之所，最深处被强悍的古代构造体守护着', color: 'with-bg mizumoto_shrine-bg' },
   ];
   
   let selectedDungeon = $state<string | null>(null);

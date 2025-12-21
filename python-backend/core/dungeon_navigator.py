@@ -227,7 +227,7 @@ class GameNavigator:
         导航到指定副本
         
         Args:
-            dungeon_id: 副本ID (world-tree, mount-mechagod, sea-palace, mizumoto-shrine)
+            dungeon_id: 副本ID (world_tree, mount_mechagod, sea_palace, mizumoto_shrine)
         
         Returns:
             成功返回 True

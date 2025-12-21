@@ -75,7 +75,7 @@
   width: 2.25rem;
   height: 2.25rem;
   background-color: white;
-  background-image: url('/assets/sword-border.png');
+  background-image: url('/assets/sword_border.png');
   background-size: 65%;
   background-position: center;
   background-repeat: no-repeat;
@@ -218,18 +218,18 @@
 }
 
 /* 副本背景图 */
-.dungeon-card.world-tree-bg {
-  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/world-tree.png') !important;
+.dungeon-card.world_tree-bg {
+  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/world_tree.png') !important;
 }
 
-.dungeon-card.mount-mechagod-bg {
-  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/mount-mechagod.png') !important;
+.dungeon-card.mount_mechagod-bg {
+  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/mount_mechagod.png') !important;
 }
 
-.dungeon-card.sea-palace-bg {
-  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/sea-palace.jpg') !important;
+.dungeon-card.sea_palace-bg {
+  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/sea_palace.jpg') !important;
 }
 
-.dungeon-card.mizumoto-shrine-bg {
-  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/mizumoto-shrine.jpg') !important;
+.dungeon-card.mizumoto_shrine-bg {
+  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/mizumoto_shrine.jpg') !important;
 }

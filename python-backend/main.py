@@ -201,16 +201,16 @@ async def get_dungeons():
     # 从场景图中获取副本场景
     dungeons = []
     dungeon_names = {
-        "world-tree": "世界之树",
-        "mount-mechagod": "机神山",
-        "sea-palace": "海之宫遗迹",
-        "mizumoto-shrine": "源水大社",
+        "world_tree": "世界之树",
+        "mount_mechagod": "机神山",
+        "sea_palace": "海之宫遗迹",
+        "mizumoto_shrine": "源水大社",
     }
     dungeon_difficulties = {
-        "world-tree": ["normal", "hard"],
-        "mount-mechagod": ["normal", "hard"],
-        "sea-palace": ["normal", "hard"],
-        "mizumoto-shrine": ["normal", "hard", "nightmare"],
+        "world_tree": ["normal", "hard"],
+        "mount_mechagod": ["normal", "hard"],
+        "sea_palace": ["normal", "hard"],
+        "mizumoto_shrine": ["normal", "hard", "nightmare"],
     }
     
     for dungeon_id, name in dungeon_names.items():
@@ -228,7 +228,7 @@ async def navigate_to_dungeon(dungeon_id: str, difficulty: str = "normal"):
     导航到指定副本
     
     Args:
-        dungeon_id: 副本ID (world-tree, mount-mechagod, sea-palace, mizumoto-shrine)
+        dungeon_id: 副本ID (world_tree, mount_mechagod, sea_palace, mizumoto_shrine)
         difficulty: 难度 (normal, hard, nightmare)
     """
     if not adb_controller.is_connected():
