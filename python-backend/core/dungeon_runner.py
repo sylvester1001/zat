@@ -136,44 +136,48 @@ class DungeonRunner:
         流程：导航 -> 选难度 -> 匹配 -> 战斗循环 -> 退出结算
         """
         logger.info(f"开始副本: {dungeon_id} ({difficulty})")
+        self._running = True
         
-        # 1. 导航到副本
-        self._set_state(DungeonState.NAVIGATING)
-        target_scene = f"dungeon:{dungeon_id}"
-        if not await self.navigator.navigate_to(target_scene):
+        try:
+            # 1. 导航到副本
+            self._set_state(DungeonState.NAVIGATING)
+            target_scene = f"dungeon:{dungeon_id}"
+            if not await self.navigator.navigate_to(target_scene):
+                self._set_state(DungeonState.IDLE)
+                return DungeonResult(success=False, message="导航到副本失败")
+            
+            await asyncio.sleep(0.5)
+            
+            # 2. 选择难度
+            if not await self.select_difficulty(difficulty):
+                self._set_state(DungeonState.IDLE)
+                return DungeonResult(success=False, message="选择难度失败")
+            
+            await asyncio.sleep(0.3)
+            
+            # 3. 点击匹配
+            self._set_state(DungeonState.MATCHING)
+            if not await self.click_match():
+                self._set_state(DungeonState.IDLE)
+                return DungeonResult(success=False, message="点击匹配失败")
+            
+            # 4. 战斗循环（状态由 battle_loop 回调更新）
+            battle_result = await self.battle_loop.run()
+            if not battle_result.success:
+                self._set_state(DungeonState.IDLE)
+                return DungeonResult(success=False, message=battle_result.message)
+            
+            await asyncio.sleep(1.0)
+            
+            # 5. 退出结算界面
+            self._set_state(DungeonState.FINISHED)
+            await self.exit_result_screen()
+            
+            logger.info(f"副本完成: {dungeon_id} ({difficulty}) - 评级: {battle_result.rank}")
             self._set_state(DungeonState.IDLE)
-            return DungeonResult(success=False, message="导航到副本失败")
-        
-        await asyncio.sleep(0.5)
-        
-        # 2. 选择难度
-        if not await self.select_difficulty(difficulty):
-            self._set_state(DungeonState.IDLE)
-            return DungeonResult(success=False, message="选择难度失败")
-        
-        await asyncio.sleep(0.3)
-        
-        # 3. 点击匹配
-        self._set_state(DungeonState.MATCHING)
-        if not await self.click_match():
-            self._set_state(DungeonState.IDLE)
-            return DungeonResult(success=False, message="点击匹配失败")
-        
-        # 4. 战斗循环（状态由 battle_loop 回调更新）
-        battle_result = await self.battle_loop.run()
-        if not battle_result.success:
-            self._set_state(DungeonState.IDLE)
-            return DungeonResult(success=False, message=battle_result.message)
-        
-        await asyncio.sleep(1.0)
-        
-        # 5. 退出结算界面
-        self._set_state(DungeonState.FINISHED)
-        await self.exit_result_screen()
-        
-        logger.info(f"副本完成: {dungeon_id} ({difficulty}) - 评级: {battle_result.rank}")
-        self._set_state(DungeonState.IDLE)
-        return DungeonResult(success=True, rank=battle_result.rank, message="副本完成")
+            return DungeonResult(success=True, rank=battle_result.rank, message="副本完成")
+        finally:
+            self._running = False
     
     async def run(self, dungeon_id: str, difficulty: str = "normal", count: int = 1) -> DungeonRunResult:
         """
