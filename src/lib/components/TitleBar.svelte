@@ -41,6 +41,11 @@
 </script>
 
 <div class="titlebar" data-tauri-drag-region>
+  <!-- macOS 红绿灯占位区域 -->
+  {#if isMacOS}
+    <div class="titlebar-macos-traffic" data-tauri-drag-region></div>
+  {/if}
+  
   <div class="titlebar-center" data-tauri-drag-region></div>
   
   {#if !isMacOS}

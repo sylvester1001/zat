@@ -20,7 +20,10 @@
         "minHeight": 480,
         "decorations": false,
         "visible": false,
-        "backgroundColor": "#F9FAF7"
+        "backgroundColor": "#F9FAF7",
+        "hiddenTitle": true,
+        "titleBarStyle": "overlay",
+        "shadow": true
       }
     ],
     "security": {

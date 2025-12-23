@@ -7,6 +7,13 @@
   -webkit-app-region: drag;
 }
 
+/* macOS 红绿灯占位区域 */
+.titlebar-macos-traffic {
+  width: 78px;
+  height: 100%;
+  -webkit-app-region: drag;
+}
+
 .titlebar-left {
   display: flex;
   align-items: center;
