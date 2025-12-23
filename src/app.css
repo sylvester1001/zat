@@ -9,8 +9,8 @@
   font-family: 'GenSenRounded2 TC', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
   /* 清爽现代配色 - 黄绿渐变风格 */
-  --color-bg: #FAFAFA;
-  --color-bg-secondary: #F5F5F5;
+  --color-bg: #F9FAF7;
+  --color-bg-secondary: #F3F5F0;
   
   /* 主色调 - 黄绿渐变 */
   --color-lime: #D4F542;
@@ -39,13 +39,13 @@
 
 /* 启动闪屏优化 - 硬编码背景色，必须与 tauri.conf.json 完全一致 */
 html, body {
-  background-color: #FAFAFA;
+  background-color: #F9FAF7;
   margin: 0;
   padding: 0;
 }
 
 body {
-  background-color: #FAFAFA;
+  background-color: #F9FAF7;
   min-height: 100vh;
   color: var(--color-gray-800);
   user-select: none;

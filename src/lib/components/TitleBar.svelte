@@ -36,15 +36,7 @@
 </script>
 
 <div class="titlebar" data-tauri-drag-region>
-  <!-- 左侧 Logo 区域 -->
-  <div class="titlebar-left" data-tauri-drag-region>
-    <div class="titlebar-logo">
-      <span>⚔️</span>
-    </div>
-    <span class="titlebar-title">ZAT</span>
-  </div>
-  
-  <!-- 中间拖拽区域 -->
+  <!-- 拖拽区域 -->
   <div class="titlebar-center" data-tauri-drag-region></div>
   
   <!-- 右侧窗口控制按钮 - 贴边 -->

@@ -25,7 +25,7 @@
   }
 </script>
 
-<aside class="w-64 bg-white flex flex-col border-r border-gray-100">
+<aside class="w-64 bg-white flex flex-col rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
   <!-- Logo -->
   <div class="p-5 mb-2">
     <div class="flex items-center gap-3">
