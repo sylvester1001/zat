@@ -37,10 +37,15 @@
   --color-error: #F44336;
 }
 
-body {
+/* 启动闪屏优化 - 硬编码背景色，必须与 tauri.conf.json 完全一致 */
+html, body {
+  background-color: #FAFAFA;
   margin: 0;
   padding: 0;
-  background: var(--color-bg);
+}
+
+body {
+  background-color: #FAFAFA;
   min-height: 100vh;
   color: var(--color-gray-800);
   user-select: none;

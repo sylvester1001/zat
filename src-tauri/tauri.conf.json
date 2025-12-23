@@ -12,12 +12,15 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "ZAT",
         "width": 1000,
         "height": 620,
         "minWidth": 720,
         "minHeight": 480,
-        "decorations": false
+        "decorations": false,
+        "visible": false,
+        "backgroundColor": "#FAFAFA"
       }
     ],
     "security": {
