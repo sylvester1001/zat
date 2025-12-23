@@ -7,6 +7,20 @@
   -webkit-app-region: drag;
 }
 
+/* macOS: 标题栏绝对定位，不占用空间 */
+.platform-macos .titlebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* macOS: 隐藏自定义控制按钮 */
+.platform-macos .titlebar-controls {
+  display: none;
+}
+
 .titlebar-center {
   flex: 1;
   height: 100%;
