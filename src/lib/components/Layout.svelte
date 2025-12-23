@@ -25,7 +25,7 @@
   <TitleBar />
   
   <!-- 主体内容 -->
-  <div class="flex-1 flex p-4 gap-1 overflow-hidden">
+  <div class="flex-1 flex px-4 pb-4 gap-1 overflow-hidden">
   <!-- Sidebar -->
   <Sidebar bind:currentPage />
   
