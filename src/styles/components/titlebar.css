@@ -21,6 +21,11 @@
   display: none;
 }
 
+/* macOS: 主体内容与标题栏之间的间距 */
+.platform-macos .app-layout > .flex-1 {
+  padding-top: 0.5rem;
+}
+
 .titlebar-center {
   flex: 1;
   height: 100%;
