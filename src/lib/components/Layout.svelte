@@ -10,13 +10,12 @@
   }
   
   let { currentPage = $bindable('home'), children }: Props = $props();
-  let isMacOS = $state(false);
   
   onMount(async () => {
+    // 检测平台，设置 CSS class
     try {
       const { platform } = await import('@tauri-apps/plugin-os');
-      isMacOS = platform() === 'macos';
-      if (isMacOS) {
+      if (platform() === 'macos') {
         document.documentElement.classList.add('platform-macos');
       }
     } catch (e) {
