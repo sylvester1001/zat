@@ -4,6 +4,18 @@
 
 const API_BASE = 'http://127.0.0.1:8000';
 
+// 封装 fetch，在 Tauri 环境中使用插件
+async function tauriFetch(url: string, options?: RequestInit): Promise<Response> {
+  try {
+    // 尝试使用 Tauri HTTP 插件
+    const { fetch: tFetch } = await import('@tauri-apps/plugin-http');
+    return tFetch(url, options);
+  } catch {
+    // 回退到原生 fetch（开发环境或浏览器）
+    return fetch(url, options);
+  }
+}
+
 export interface ApiResponse<T = any> {
   success?: boolean;
   data?: T;
@@ -51,24 +63,24 @@ export interface ConnectResponse {
  */
 export const api = {
   async connect(): Promise<ConnectResponse> {
-    const res = await fetch(`${API_BASE}/connect`, { method: 'POST' });
+    const res = await tauriFetch(`${API_BASE}/connect`, { method: 'POST' });
     return res.json();
   },
 
   async getStatus(): Promise<Status> {
-    const res = await fetch(`${API_BASE}/status`);
+    const res = await tauriFetch(`${API_BASE}/status`);
     return res.json();
   },
 
   async startTaskEngine(taskName: string = 'farming'): Promise<{ success: boolean }> {
-    const res = await fetch(`${API_BASE}/task-engine/start?task_name=${taskName}`, {
+    const res = await tauriFetch(`${API_BASE}/task-engine/start?task_name=${taskName}`, {
       method: 'POST',
     });
     return res.json();
   },
 
   async stopTaskEngine(): Promise<{ success: boolean }> {
-    const res = await fetch(`${API_BASE}/task-engine/stop`, { method: 'POST' });
+    const res = await tauriFetch(`${API_BASE}/task-engine/stop`, { method: 'POST' });
     return res.json();
   },
 
@@ -81,12 +93,12 @@ export const api = {
     const params = new URLSearchParams();
     params.set('wait_ready', String(waitReady));
     params.set('timeout', String(timeout));
-    const res = await fetch(`${API_BASE}/start-game?${params}`, { method: 'POST' });
+    const res = await tauriFetch(`${API_BASE}/start-game?${params}`, { method: 'POST' });
     return res.json();
   },
 
   async stopGame(): Promise<{ success: boolean }> {
-    const res = await fetch(`${API_BASE}/stop-game`, { method: 'POST' });
+    const res = await tauriFetch(`${API_BASE}/stop-game`, { method: 'POST' });
     return res.json();
   },
 
@@ -101,7 +113,7 @@ export const api = {
       difficulties: string[];
     }>;
   }> {
-    const res = await fetch(`${API_BASE}/dungeons`);
+    const res = await tauriFetch(`${API_BASE}/dungeons`);
     return res.json();
   },
 
@@ -114,7 +126,7 @@ export const api = {
     const params = new URLSearchParams();
     params.set('dungeon_id', dungeonId);
     params.set('difficulty', difficulty);
-    const res = await fetch(`${API_BASE}/navigate-to-dungeon?${params}`, { method: 'POST' });
+    const res = await tauriFetch(`${API_BASE}/navigate-to-dungeon?${params}`, { method: 'POST' });
     return res.json();
   },
 
@@ -134,12 +146,12 @@ export const api = {
     params.set('dungeon_id', dungeonId);
     params.set('difficulty', difficulty);
     params.set('count', String(count));
-    const res = await fetch(`${API_BASE}/run-dungeon?${params}`, { method: 'POST' });
+    const res = await tauriFetch(`${API_BASE}/run-dungeon?${params}`, { method: 'POST' });
     return res.json();
   },
 
   async stopDungeon(): Promise<{ success: boolean; message?: string }> {
-    const res = await fetch(`${API_BASE}/stop-dungeon`, { method: 'POST' });
+    const res = await tauriFetch(`${API_BASE}/stop-dungeon`, { method: 'POST' });
     return res.json();
   },
 
@@ -153,7 +165,7 @@ export const api = {
       status: 'completed' | 'failed' | 'running';
     }>;
   }> {
-    const res = await fetch(`${API_BASE}/dungeon-history`);
+    const res = await tauriFetch(`${API_BASE}/dungeon-history`);
     return res.json();
   },
 };
