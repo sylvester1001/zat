@@ -243,3 +243,4 @@ select:focus-visible {
 
 /* 通用组件样式 */
 @import './styles/components/pill-selector.css';
+@import './styles/components/titlebar.css';

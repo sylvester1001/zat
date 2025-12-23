@@ -1,0 +1,75 @@
+/* 自定义标题栏 */
+.titlebar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  background: white;
+  border-bottom: 1px solid var(--color-gray-100);
+  -webkit-app-region: drag;
+}
+
+.titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 100%;
+}
+
+.titlebar-logo {
+  width: 24px;
+  height: 24px;
+  background: var(--color-lime);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.titlebar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-gray-800);
+  letter-spacing: 0.5px;
+}
+
+.titlebar-center {
+  flex: 1;
+  height: 100%;
+}
+
+/* 窗口控制按钮组 - 贴边无间距 */
+.titlebar-controls {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-btn {
+  width: 46px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-gray-700);
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.titlebar-btn:hover {
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.titlebar-btn.close:hover {
+  background: var(--color-error);
+  color: white;
+}
+
+.titlebar-btn:active {
+  opacity: 0.8;
+}
