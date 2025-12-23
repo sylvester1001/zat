@@ -14,6 +14,19 @@
   -webkit-app-region: drag;
 }
 
+/* macOS overlay 模式下，内容需要延伸到标题栏下方 */
+.macos-layout {
+  padding-top: 0;
+}
+
+.macos-layout .titlebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
 .titlebar-left {
   display: flex;
   align-items: center;

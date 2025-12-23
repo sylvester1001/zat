@@ -10,8 +10,17 @@
   }
   
   let { currentPage = $bindable('home'), children }: Props = $props();
+  let isMacOS = $state(false);
   
-  onMount(() => {
+  onMount(async () => {
+    // 检测平台
+    try {
+      const { platform } = await import('@tauri-apps/plugin-os');
+      isMacOS = platform() === 'macos';
+    } catch (e) {
+      // 浏览器环境
+    }
+    
     // 显示窗口，等待 WebView 渲染完成
     setTimeout(async () => {
       try {
@@ -24,7 +33,7 @@
   });
 </script>
 
-<div class="h-screen flex flex-col bg-[var(--color-bg)]">
+<div class="h-screen flex flex-col bg-[var(--color-bg)]" class:macos-layout={isMacOS}>
   <!-- 自定义标题栏 -->
   <TitleBar />
   
