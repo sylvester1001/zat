@@ -11,10 +11,12 @@
   
   let { currentPage = $bindable('home'), children }: Props = $props();
   
-  onMount(async () => {
-    // 前端加载完成后显示窗口
-    const { getCurrentWindow } = await import('@tauri-apps/api/window');
-    await getCurrentWindow().show();
+  onMount(() => {
+    // 延迟显示窗口，等待 WebView 渲染完成
+    setTimeout(async () => {
+      const { getCurrentWindow } = await import('@tauri-apps/api/window');
+      await getCurrentWindow().show();
+    }, 250);
   });
 </script>
 
