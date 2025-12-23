@@ -12,20 +12,16 @@ pub fn run() {
         .setup(|app| {
             use tauri::Manager;
             
-            #[cfg(target_os = "macos")]
-            {
-                if let Some(window) = app.get_webview_window("main") {
-                    // macOS: 启用原生装饰和 overlay 标题栏样式
+            if let Some(window) = app.get_webview_window("main") {
+                #[cfg(target_os = "macos")]
+                {
                     window.set_decorations(true).ok();
                     use tauri::TitleBarStyle;
                     window.set_title_bar_style(TitleBarStyle::Overlay).ok();
                 }
-            }
-            
-            #[cfg(not(target_os = "macos"))]
-            {
-                // Windows/Linux: 保持无装饰
-                if let Some(window) = app.get_webview_window("main") {
+                
+                #[cfg(not(target_os = "macos"))]
+                {
                     window.set_decorations(false).ok();
                 }
             }

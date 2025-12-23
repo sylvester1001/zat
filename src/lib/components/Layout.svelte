@@ -10,37 +10,28 @@
   }
   
   let { currentPage = $bindable('home'), children }: Props = $props();
-  let isMacOS = $state(false);
   
   onMount(async () => {
-    // 检测平台
-    try {
-      const { platform } = await import('@tauri-apps/plugin-os');
-      isMacOS = platform() === 'macos';
-    } catch (e) {
-      // 浏览器环境
-    }
-    
     // 显示窗口，等待 WebView 渲染完成
     setTimeout(async () => {
       try {
         const { getCurrentWindow } = await import('@tauri-apps/api/window');
         await getCurrentWindow().show();
       } catch (e) {
-        console.log('Not in Tauri environment');
+        // 浏览器环境
       }
     }, 250);
   });
 </script>
 
-<div class="h-screen flex flex-col bg-[var(--color-bg)]" class:macos-layout={isMacOS}>
+<div class="app-layout h-screen flex flex-col bg-[var(--color-bg)]">
   <!-- 自定义标题栏 -->
   <TitleBar />
   
   <!-- 主体内容 -->
   <div class="flex-1 flex px-4 pb-4 gap-1 overflow-hidden">
-  <!-- Sidebar -->
-  <Sidebar bind:currentPage />
+    <!-- Sidebar -->
+    <Sidebar bind:currentPage />
   
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto">
