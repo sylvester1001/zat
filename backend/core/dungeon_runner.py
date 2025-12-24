@@ -213,29 +213,35 @@ class DungeonRunner:
         try:
             await self._check_stop()
             
-            # 1. 导航
+            # 1. 导航到副本列表
             if not skip_navigate:
                 self._set_state(DungeonState.NAVIGATING)
-                target_scene = f"dungeon:{dungeon_id}"
-                if not await self.navigator.navigate_to(target_scene):
-                    raise Exception("导航失败")
+                if not await self.navigator.navigate_to("dungeon_list"):
+                    raise Exception("导航到副本列表失败")
                 await asyncio.sleep(0.5)
             
             await self._check_stop()
             
-            # 2. 选难度
+            # 2. 确保进入副本详情页（幂等）
+            if not await self._ensure_in_dungeon_detail(dungeon_id):
+                raise Exception("进入副本详情页失败")
+            await asyncio.sleep(0.3)
+            
+            await self._check_stop()
+            
+            # 3. 选难度
             if not await self._select_difficulty(difficulty):
                 raise Exception("选择难度失败")
             await asyncio.sleep(0.3)
             
             await self._check_stop()
             
-            # 3. 匹配
+            # 4. 匹配
             self._set_state(DungeonState.MATCHING)
             if not await self._click_match():
                 raise Exception("点击匹配失败")
             
-            # 4. 战斗
+            # 5. 战斗
             battle_result = await self.battle_loop.run()
             
             await self._check_stop()
@@ -346,7 +352,14 @@ class DungeonRunner:
         # 点击确认跳过奖励弹窗（不是每次都有）
         return await self.navigator.click_template("daily_dungeon/confirm", timeout=2.0, threshold=0.6)
     
+    async def _click_dungeon(self, dungeon_id: str) -> bool:
+        # 在副本列表中点击指定副本进入详情页
+        template = f"daily_dungeon/{dungeon_id}"
+        logger.info(f"点击副本: {dungeon_id}")
+        return await self.navigator.click_template(template, timeout=5.0)
+    
     async def _exit_result_screen(self) -> bool:
+        # 退出结算界面，回到副本列表
         logger.info("退出结算界面")
         success = await self.navigator.click_template("back", timeout=5.0)
         if not success:
@@ -360,6 +373,20 @@ class DungeonRunner:
             await asyncio.sleep(0.5)
         
         return True
+    
+    async def _ensure_in_dungeon_detail(self, dungeon_id: str) -> bool:
+        # 确保当前在副本详情页（幂等操作）
+        # 无论当前在 dungeon_list 还是 dungeon:xxx，都能正确进入
+        template = f"daily_dungeon/{dungeon_id}"
+        screen = await self.adb.screencap_array()
+        
+        # 检查是否已在副本详情页（能看到匹配按钮）
+        if image_matcher.match_template(screen, "daily_dungeon/match", threshold=0.7):
+            logger.debug("已在副本详情页")
+            return True
+        
+        # 否则尝试点击副本进入
+        return await self._click_dungeon(dungeon_id)
     
     async def _try_recover(self):
         logger.info("尝试恢复...")
