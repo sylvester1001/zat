@@ -107,7 +107,7 @@
 
   <!-- 难度选择 -->
   {#if selectedDungeon}
-    <div class="pt-4">
+    <div>
       {#key selectedDungeon}
         <DifficultySelector
           dungeonId={selectedDungeon}

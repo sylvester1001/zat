@@ -53,6 +53,7 @@
         min={1}
         max={999}
         oninput={handleCountInput}
+        class="!bg-gray-900 !text-white !border-gray-700 w-20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
       />
     {/if}
   </div>
