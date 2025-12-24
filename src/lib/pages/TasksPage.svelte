@@ -2,6 +2,7 @@
   import { Button } from 'flowbite-svelte';
   import PageHeader from '$lib/components/PageHeader.svelte';
   import DifficultySelector from '$lib/components/DifficultySelector.svelte';
+  import LoopSelector from '$lib/components/LoopSelector.svelte';
   import { appStore, type AppState, type DungeonState } from '$lib/stores/appStore';
   import { api } from '$lib/api';
   import { DUNGEONS, type DifficultyId } from '$lib/config/dungeonConfig';
@@ -21,6 +22,10 @@
   
   let selectedDungeon = $state<string | null>(null);
   let selectedDifficulties = $state<Record<string, DifficultyId>>({});
+  
+  // 循环模式状态
+  let loopMode = $state('single');
+  let loopCount = $state(5);
   
   let currentDifficulty = $derived(
     selectedDungeon ? (selectedDifficulties[selectedDungeon] || 'normal') : 'normal'
@@ -102,7 +107,7 @@
 
   <!-- 难度选择 -->
   {#if selectedDungeon}
-    <div>
+    <div class="pt-4">
       {#key selectedDungeon}
         <DifficultySelector
           dungeonId={selectedDungeon}
@@ -110,6 +115,16 @@
           onSelect={(diff) => handleDifficultySelect(selectedDungeon!, diff)}
         />
       {/key}
+    </div>
+    
+    <!-- 循环次数选择 -->
+    <div>
+      <LoopSelector
+        mode={loopMode}
+        count={loopCount}
+        onModeChange={(m) => loopMode = m}
+        onCountChange={(c) => loopCount = c}
+      />
     </div>
   {/if}
 

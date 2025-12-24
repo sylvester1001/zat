@@ -1,6 +1,6 @@
 /* Pill Selector 滑动选择器组件 */
 .pill-selector {
-  --pill-btn-width: 7rem;
+  --pill-btn-width: 6rem;
   --pill-padding: 0.1875rem;
   
   display: inline-flex;
@@ -25,7 +25,7 @@
   position: relative;
   z-index: 1;
   width: var(--pill-btn-width);
-  padding: 0.5rem 0;
+  padding: 0.375rem 0;
   font-size: 0.875rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
