@@ -51,7 +51,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 pnpm install
 
 # Python 依赖
-cd python-backend
+cd backend
 python3 -m venv venv
 source venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
@@ -63,7 +63,7 @@ cd ..
 **终端 1：启动 Python 后端**
 
 ```bash
-cd python-backend
+cd backend
 source venv/bin/activate
 python main.py
 ```

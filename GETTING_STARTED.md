@@ -85,7 +85,7 @@ zat/
 ### 步骤 1: 安装 Python 依赖
 
 ```bash
-cd python-backend
+cd backend
 python3 -m venv venv
 source venv/bin/activate  # macOS/Linux
 # Windows: venv\Scripts\activate
@@ -138,7 +138,7 @@ python test_backend.py
 ### 步骤 3: 启动后端（终端 1）
 
 ```bash
-cd python-backend
+cd backend
 source venv/bin/activate
 python main.py
 ```

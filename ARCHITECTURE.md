@@ -417,7 +417,7 @@ test('完整任务流程', async () => {
 
 ```bash
 # 终端 1: Python 后端
-cd python-backend
+cd backend
 source venv/bin/activate
 python main.py
 

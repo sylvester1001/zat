@@ -307,14 +307,14 @@ vite: 6.4.1
 ### 立即开始（今天）
 1. ✅ 测试 Python 后端
    ```bash
-   cd python-backend
+   cd backend
    python test_backend.py
    ```
 
 2. ✅ 启动开发环境
    ```bash
    # 终端 1
-   cd python-backend
+   cd backend
    source venv/bin/activate
    python main.py
    

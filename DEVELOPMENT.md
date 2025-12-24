@@ -25,7 +25,7 @@
 ### 1. 安装 Python 依赖
 
 ```bash
-cd python-backend
+cd backend
 python3 -m venv venv
 source venv/bin/activate  # macOS/Linux
 # 或 Windows: venv\Scripts\activate
@@ -35,7 +35,7 @@ pip install -r requirements.txt
 ### 2. 启动后端（终端 1）
 
 ```bash
-cd python-backend
+cd backend
 source venv/bin/activate
 python main.py
 ```
