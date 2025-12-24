@@ -53,7 +53,7 @@
         min={1}
         max={999}
         oninput={handleCountInput}
-        class="!bg-gray-900 !text-white !border-gray-700 w-20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        class="!bg-gray-900 !text-white/60 !border-gray-700 w-14 !py-0 !px-2 !text-center !h-[calc(0.375rem*2+1.25rem+0.1875rem*2)] !rounded-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
       />
     {/if}
   </div>
