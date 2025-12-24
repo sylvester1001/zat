@@ -79,7 +79,7 @@
 </script>
 
 <div class="flex-1 overflow-auto px-5 pb-5 space-y-5 flex flex-col">
-  <PageHeader title="任务配置" subtitle="选择副本开始 🎮" />
+  <PageHeader title="任务配置" compact />
 
   <!-- 副本选择 -->
   <div class="grid grid-cols-4 gap-4">

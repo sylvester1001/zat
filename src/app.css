@@ -58,6 +58,11 @@ body {
   border-radius: 0 0 32px 32px;
 }
 
+.gradient-header-compact {
+  background: linear-gradient(135deg, var(--color-lime) 0%, var(--color-lime-light) 50%, var(--color-yellow) 100%);
+  border-radius: 0 18px 18px 18px;
+}
+
 /* 清爽卡片样式 */
 .clean-card {
   background: white;

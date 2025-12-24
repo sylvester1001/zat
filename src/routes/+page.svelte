@@ -31,7 +31,7 @@
     <TasksPage />
   {:else if currentPage === 'stats'}
     <div class="flex-1 overflow-auto px-5 pb-5 space-y-5">
-      <PageHeader title="统计分析" subtitle="查看任务执行统计 📊" />
+      <PageHeader title="统计分析" compact />
       <div class="clean-card text-center py-20">
         <div class="w-20 h-20 mx-auto mb-4 bg-[var(--color-lime)] rounded-3xl flex items-center justify-center text-4xl">📊</div>
         <h3 class="text-2xl font-bold text-gray-800 mb-2">统计分析</h3>
@@ -40,7 +40,7 @@
     </div>
   {:else if currentPage === 'settings'}
     <div class="flex-1 overflow-auto px-5 pb-5 space-y-5">
-      <PageHeader title="设置" subtitle="配置应用参数 ⚙️" />
+      <PageHeader title="设置" compact />
       <div class="clean-card text-center py-20">
         <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-3xl flex items-center justify-center text-4xl">⚙️</div>
         <h3 class="text-2xl font-bold text-gray-800 mb-2">设置</h3>
