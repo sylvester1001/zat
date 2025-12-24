@@ -1,158 +1,145 @@
-# ZAT
+<p align="center">
+  <img src="static/favicon.png" width="80" height="80" alt="ZAT Logo">
+</p>
 
-Zhangjianchuanshuo Automation Tool
+<h1 align="center">ZAT</h1>
 
-## 项目架构
+<p align="center">
+  <b>杖剑传说自动化工具</b><br>
+  <sub>Zhangjianchuanshuo Automation Tool</sub>
+</p>
 
-```
-ZAT (Desktop App)
-├─ UI: Svelte + TypeScript
-├─ Shell: Tauri (Rust)
-└─ Backend: Python (FastAPI)
-    ├─ ADB 控制
-    ├─ 图像识别
-    └─ 任务引擎
-```
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-macOS%20|%20Windows-blue?style=flat-square" alt="Platform">
+  <img src="https://img.shields.io/badge/Tauri-2.0-orange?style=flat-square" alt="Tauri">
+  <img src="https://img.shields.io/badge/Svelte-5-red?style=flat-square" alt="Svelte">
+  <img src="https://img.shields.io/badge/Python-3.10+-green?style=flat-square" alt="Python">
+  <img src="https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square" alt="License">
+</p>
 
-## 环境要求
+<p align="center">
+  <a href="#install">安装</a> •
+  <a href="#usage">使用</a> •
+  <a href="#features">特性</a> •
+  <a href="#contributing">贡献</a> •
+  <a href="./docs/">文档</a>
+</p>
 
-### 开发环境
+---
 
-- Node.js 18+
-- Rust 1.70+
-- Python 3.10+
-- ADB (Android Debug Bridge)
+## What
 
-### macOS 安装
+一个桌面端游戏辅助工具，通过 ADB 连接 Android 模拟器，实现副本自动化、场景导航、状态监控等功能。
+
+## Why
+
+手动刷副本太累了。
+
+## Install
+
+### 方式一：下载即用 
+
+前往 [Releases](https://github.com/your-repo/zat/releases) 下载对应平台的安装包：
+
+| 平台 | 文件 |
+|------|------|
+| macOS | `ZAT_x.x.x_aarch64.dmg` / `ZAT_x.x.x_x64.dmg` |
+| Windows | `ZAT_x.x.x_x64-setup.exe` |
+
+### 方式二：从源码构建
 
 ```bash
-# 安装 Homebrew（如果没有）
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# 安装 ADB
-brew install android-platform-tools
-
-# 安装 Python
-brew install python@3.10
-
-# 安装 Node.js
-brew install node
-
-# 安装 Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-## 快速开始
-
-### 1. 安装依赖
-
-```bash
-# 前端依赖
+# 1. 安装前端依赖
 pnpm install
 
-# Python 依赖
+# 2. 安装后端依赖
 cd backend
 python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 cd ..
-```
 
-### 2. 启动开发环境
-
-**终端 1：启动 Python 后端**
-
-```bash
+# 3. 启动后端
 cd backend
 source venv/bin/activate
 python main.py
-```
 
-**终端 2：启动 Tauri 前端**
-
-```bash
+# 4. 启动前端
 pnpm tauri dev
+或
+pnpm tauri build
 ```
 
-### 3. 连接模拟器
+## Usage
+
+1. 启动 ZAT 应用
+2. 启动 Android 模拟器（如 MuMu）
+3. 在 GUI 中点击「连接设备」
+4. 选择副本，设置次数，开刷
+
+## Features
+
+| 功能 | 描述 |
+|------|------|
+| 🎮 设备管理 | 自动发现并连接 Android 模拟器 |
+| 🗺️ 场景导航 | 基于场景图的智能路径规划 |
+| ⚔️ 副本自动化 | 支持单次 / 循环 / 无限刷本 |
+| 📊 实时监控 | WebSocket 推送日志与状态 |
+| 🖼️ 图像识别 | 模板匹配 + OCR 文字识别 |
+
+## Tech Stack
+
+```
+┌─────────────────────────────────────┐
+│           ZAT Desktop App           │
+├─────────────────────────────────────┤
+│  UI        │ Svelte 5 + TypeScript  │
+│  Shell     │ Tauri 2 (Rust)         │
+│  Backend   │ FastAPI + WebSocket    │
+│  Vision    │ OpenCV + OCR           │
+│  Control   │ ADB                    │
+└─────────────────────────────────────┘
+```
+
+## Contributing
+
+欢迎贡献代码！请先阅读以下文档：
+
+| 文档 | 说明 |
+|------|------|
+| [开发指南](./docs/development.md) | 环境配置、项目结构、开发流程 |
+| [API 文档](./docs/api.md) | HTTP / WebSocket 接口说明 |
+| [架构设计](./docs/architecture.md) | 系统架构、模块设计、状态机 |
 
 ```bash
-# 启动 MuMu 模拟器
+# Fork & Clone
+git clone https://github.com/your-username/zat.git
+cd zat
 
-# 连接 ADB
-adb connect 127.0.0.1:16384
+# 创建分支
+git checkout -b feature/your-feature
 
-# 验证连接
-adb devices
+# 提交 PR
 ```
 
-## 项目结构
-
-```
-zat/
-├─ src/                      # Svelte 前端
-│  ├─ routes/
-│  │  └─ +page.svelte       # 主页面
-│  └─ lib/
-│     ├─ api.ts             # API 客户端
-│     └─ components/        # UI 组件
-│        ├─ TaskControl.svelte
-│        ├─ LogViewer.svelte
-│        ├─ StatusBar.svelte
-│        └─ DebugPanel.svelte
-│
-├─ src-tauri/                # Tauri 壳
-│  └─ src/
-│     └─ main.rs
-│
-├─ python-backend/           # Python 后端
-│  ├─ main.py               # FastAPI 入口
-│  ├─ core/
-│  │  ├─ adb_controller.py  # ADB 控制
-│  │  └─ task_engine.py     # 任务引擎
-│  └─ utils/
-│     └─ logger.py          # 日志工具
-│
-└─ resources/                # 资源文件（待创建）
-   ├─ templates/            # 图像模板
-   └─ tasks/                # 任务配置
-```
-
-## API 端点
-
-### HTTP
-
-- `GET /` - 健康检查
-- `POST /connect` - 连接设备
-- `GET /status` - 获取状态
-- `POST /start` - 启动任务
-- `POST /stop` - 停止任务
-- `GET /debug/screenshot` - 获取截图（Debug）
-
-### WebSocket
-
-- `/ws/log` - 日志流
-- `/ws/state` - 状态流
-
-## 开发计划
+## Roadmap
 
 - [x] 基础框架搭建
 - [x] ADB 控制器
 - [x] WebSocket 日志流
 - [x] 前端 UI
-- [ ] 图像识别引擎
-- [ ] 任务配置系统
-- [ ] 状态机实现
-- [ ] 完整任务流程
-
-## 技术栈
-
-- **前端**: Svelte 5 + TypeScript + Vite
-- **桌面壳**: Tauri 2
-- **后端**: Python 3.10 + FastAPI + Uvicorn
-- **图像识别**: OpenCV
-- **通信**: WebSocket + HTTP
+- [x] 图像识别引擎
+- [x] 场景导航系统
+- [x] 副本自动化
+- [ ] 任务调度系统
+- [ ] 自定义脚本
 
 ## License
 
-MIT
+[MIT](./LICENSE) © 2024
+
+---
+
+<p align="center">
+  <sub>一起来冒险吧！ 🗡️</sub>
+</p>
