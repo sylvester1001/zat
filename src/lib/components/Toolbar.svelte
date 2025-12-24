@@ -15,7 +15,7 @@
   <div>
     <h2 class="text-xl font-bold text-gray-800">{title}</h2>
     {#if subtitle}
-      <p class="text-sm text-[var(--color-purple)]">{subtitle}</p>
+      <p class="text-sm text-(--color-purple)">{subtitle}</p>
     {/if}
   </div>
   

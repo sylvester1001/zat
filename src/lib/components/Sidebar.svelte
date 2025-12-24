@@ -29,7 +29,7 @@
   <!-- Logo -->
   <div class="p-5 mb-2">
     <div class="flex items-center gap-3">
-      <div class="w-12 h-12 bg-[var(--color-lime)] rounded-2xl flex items-center justify-center text-2xl">
+      <div class="w-12 h-12 bg-(--color-lime) rounded-2xl flex items-center justify-center text-2xl">
         ⚔️
       </div>
       <div>

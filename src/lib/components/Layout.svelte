@@ -34,7 +34,7 @@
   });
 </script>
 
-<div class="app-layout h-screen flex flex-col bg-[var(--color-bg)]">
+<div class="app-layout h-screen flex flex-col bg-(--color-bg)">
   <!-- 自定义标题栏（macOS 上通过 CSS 绝对定位） -->
   <TitleBar />
   

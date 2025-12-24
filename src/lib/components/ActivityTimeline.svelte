@@ -86,7 +86,7 @@
         </div>
 
         {#if !isLast}
-          <div class="flex-1 h-[2px] mt-[13px] bg-gray-100 relative mx-[-2px]"> 
+          <div class="flex-1 h-0.5 mt-3.25 bg-gray-100 relative -mx-0.5">
             <div class={`h-full transition-all duration-500 ${
                record.status === 'completed' ? 'bg-green-400' : 
                record.status === 'failed' ? 'bg-red-200' : 
