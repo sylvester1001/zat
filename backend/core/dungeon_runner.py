@@ -18,7 +18,7 @@ logger = logging.getLogger("zat.dungeon")
 
 
 class DungeonState(str, Enum):
-    """副本运行状态"""
+    # 副本运行状态
     IDLE = "idle"
     NAVIGATING = "navigating"  # 进入中
     MATCHING = "matching"      # 匹配中
@@ -42,7 +42,7 @@ DIFFICULTY_SELECTED_TEMPLATES = {
 
 @dataclass
 class DungeonResult:
-    """单次副本结果"""
+    # 单次副本结果
     success: bool
     rank: Optional[str] = None
     message: str = ""
@@ -50,7 +50,7 @@ class DungeonResult:
 
 @dataclass
 class DungeonRecord:
-    """副本运行记录"""
+    # 副本运行记录
     id: int
     dungeon_id: str
     dungeon_name: str
@@ -63,7 +63,7 @@ class DungeonRecord:
 
 @dataclass
 class DungeonRunResult:
-    """多次副本运行结果"""
+    # 多次副本运行结果
     total: int = 0
     completed: int = 0
     failed: int = 0
@@ -91,7 +91,7 @@ DIFFICULTY_NAMES = {
 
 
 class DungeonRunner:
-    """副本执行器"""
+    # 副本执行器
     
     MAX_HISTORY = 10  # 最多保留的历史记录数
     
@@ -100,6 +100,7 @@ class DungeonRunner:
         self.navigator = navigator
         self.battle_loop = BattleLoop(adb)
         self._running = False
+        self._stop_requested = False  # 新增：停止请求标志
         self._state = DungeonState.IDLE
         self._history: List[DungeonRecord] = []
         self._record_id = 0
@@ -109,7 +110,7 @@ class DungeonRunner:
         self.battle_loop.set_phase_callback(self._on_battle_phase_change)
     
     def _on_battle_phase_change(self, phase: BattlePhase):
-        """战斗阶段变化回调"""
+        # 战斗阶段变化回调
         if phase == BattlePhase.MATCHING:
             self._set_state(DungeonState.MATCHING)
         elif phase == BattlePhase.BATTLING:
@@ -117,26 +118,26 @@ class DungeonRunner:
     
     @property
     def state(self) -> DungeonState:
-        """获取当前状态"""
+        # 获取当前状态
         return self._state
     
     @property
     def is_running(self) -> bool:
-        """是否正在运行"""
+        # 是否正在运行
         return self._running
     
     @property
     def history(self) -> List[DungeonRecord]:
-        """获取历史记录"""
+        # 获取历史记录
         return self._history.copy()
     
     def _set_state(self, state: DungeonState):
-        """设置状态"""
+        # 设置状态
         self._state = state
         logger.debug(f"状态变更: {state.value}")
     
     def _add_record(self, dungeon_id: str, difficulty: str, status: str = "running") -> DungeonRecord:
-        """添加一条记录"""
+        # 添加一条记录
         self._record_id += 1
         record = DungeonRecord(
             id=self._record_id,
@@ -156,14 +157,14 @@ class DungeonRunner:
         return record
     
     def _update_current_record(self, status: str, rank: Optional[str] = None):
-        """更新当前记录"""
+        # 更新当前记录
         if self._current_record:
             self._current_record.status = status
             if rank:
                 self._current_record.rank = rank
     
     async def select_difficulty(self, difficulty: str) -> bool:
-        """选择难度"""
+        # 选择难度
         template = DIFFICULTY_TEMPLATES.get(difficulty)
         if not template:
             logger.error(f"未知难度: {difficulty}")
@@ -183,12 +184,12 @@ class DungeonRunner:
         return success
     
     async def click_match(self) -> bool:
-        """点击匹配按钮"""
+        # 点击匹配按钮
         logger.info("点击匹配按钮")
         return await self.navigator.click_template("daily_dungeon/match", timeout=5.0)
     
     async def exit_result_screen(self) -> bool:
-        """退出结算界面"""
+        # 退出结算界面
         logger.info("退出结算界面")
         success = await self.navigator.click_template("back", timeout=5.0)
         if not success:
@@ -196,28 +197,48 @@ class DungeonRunner:
             await self.navigator.press_back()
         return True
     
-    async def run_once(self, dungeon_id: str, difficulty: str = "normal") -> DungeonResult:
-        """
-        执行单次副本
+    async def run_once(self, dungeon_id: str, difficulty: str = "normal", skip_navigate: bool = False) -> DungeonResult:
+        # 执行单次副本
+        # 
+        # 流程：导航 -> 选难度 -> 匹配 -> 战斗循环 -> 退出结算
+        # 
+        # Args:
+        #     dungeon_id: 副本ID
+        #     difficulty: 难度
+        #     skip_navigate: 是否跳过导航（循环时已在副本列表）
+        logger.info(f"开始副本: {dungeon_id} ({difficulty})" + (" [跳过导航]" if skip_navigate else ""))
         
-        流程：导航 -> 选难度 -> 匹配 -> 战斗循环 -> 退出结算
-        """
-        logger.info(f"开始副本: {dungeon_id} ({difficulty})")
-        self._running = True
+        # 设置运行状态（单次执行也需要显示终止按钮）
+        was_running = self._running
+        if not was_running:
+            self._running = True
+            self._stop_requested = False
         
         # 添加记录
         self._add_record(dungeon_id, difficulty, "running")
         
         try:
-            # 1. 导航到副本
-            self._set_state(DungeonState.NAVIGATING)
-            target_scene = f"dungeon:{dungeon_id}"
-            if not await self.navigator.navigate_to(target_scene):
+            # 检查是否被终止
+            if self._stop_requested:
                 self._set_state(DungeonState.IDLE)
                 self._update_current_record("failed")
-                return DungeonResult(success=False, message="导航到副本失败")
+                return DungeonResult(success=False, message="已终止")
             
-            await asyncio.sleep(0.5)
+            # 1. 导航到副本（如果不跳过）
+            if not skip_navigate:
+                self._set_state(DungeonState.NAVIGATING)
+                target_scene = f"dungeon:{dungeon_id}"
+                if not await self.navigator.navigate_to(target_scene):
+                    self._set_state(DungeonState.IDLE)
+                    self._update_current_record("failed")
+                    return DungeonResult(success=False, message="导航到副本失败")
+                
+                await asyncio.sleep(0.5)
+            
+            if self._stop_requested:
+                self._set_state(DungeonState.IDLE)
+                self._update_current_record("failed")
+                return DungeonResult(success=False, message="已终止")
             
             # 2. 选择难度
             if not await self.select_difficulty(difficulty):
@@ -226,6 +247,11 @@ class DungeonRunner:
                 return DungeonResult(success=False, message="选择难度失败")
             
             await asyncio.sleep(0.3)
+            
+            if self._stop_requested:
+                self._set_state(DungeonState.IDLE)
+                self._update_current_record("failed")
+                return DungeonResult(success=False, message="已终止")
             
             # 3. 点击匹配
             self._set_state(DungeonState.MATCHING)
@@ -243,7 +269,12 @@ class DungeonRunner:
             
             await asyncio.sleep(1.0)
             
-            # 5. 退出结算界面
+            if self._stop_requested:
+                self._set_state(DungeonState.IDLE)
+                self._update_current_record("failed")
+                return DungeonResult(success=False, message="已终止")
+            
+            # 5. 退出结算界面（退出后会回到副本列表）
             self._set_state(DungeonState.FINISHED)
             await self.exit_result_screen()
             
@@ -252,54 +283,70 @@ class DungeonRunner:
             self._update_current_record("completed", battle_result.rank)
             return DungeonResult(success=True, rank=battle_result.rank, message="副本完成")
         finally:
-            self._running = False
             self._current_record = None
+            # 如果是单次调用（不是从run()调用），需要清理状态
+            if not was_running:
+                self._running = False
+                self._stop_requested = False
     
     async def run(self, dungeon_id: str, difficulty: str = "normal", count: int = 1) -> DungeonRunResult:
-        """
-        执行多次副本
+        # 执行多次副本
+        # 
+        # Args:
+        #     dungeon_id: 副本ID
+        #     difficulty: 难度
+        #     count: 执行次数，-1 表示无限循环
+        # 
+        # Returns:
+        #     DungeonRunResult
+        is_infinite = count == -1
+        display_count = "无限" if is_infinite else str(count)
+        logger.info(f"开始刷副本: {dungeon_id} ({difficulty}) x {display_count}")
         
-        Args:
-            dungeon_id: 副本ID
-            difficulty: 难度
-            count: 执行次数
-        
-        Returns:
-            DungeonRunResult
-        """
-        logger.info(f"开始刷副本: {dungeon_id} ({difficulty}) x {count}")
         self._running = True
+        self._stop_requested = False
+        result = DungeonRunResult(total=0 if is_infinite else count)
+        need_navigate = True  # 第一次需要导航
         
-        result = DungeonRunResult(total=count)
-        
-        for i in range(count):
-            if not self._running:
-                logger.info("副本运行被中断")
+        i = 0
+        while not self._stop_requested:
+            # 非无限模式时检查是否达到次数
+            if not is_infinite and i >= count:
                 break
             
-            logger.info(f"=== 第 {i + 1}/{count} 次 ===")
+            i += 1
+            logger.info(f"=== 第 {i}" + (f"/{count}" if not is_infinite else "") + " 次 ===")
             
-            dungeon_result = await self.run_once(dungeon_id, difficulty)
+            # 根据 need_navigate 决定是否跳过导航
+            dungeon_result = await self.run_once(dungeon_id, difficulty, skip_navigate=not need_navigate)
+            
+            if is_infinite:
+                result.total = i
             
             if dungeon_result.success:
                 result.completed += 1
                 result.ranks.append(dungeon_result.rank)
+                # 成功后退出结算会回到副本列表，下次不需要导航
+                need_navigate = False
             else:
                 result.failed += 1
-                logger.error(f"第 {i + 1} 次失败: {dungeon_result.message}")
+                logger.error(f"第 {i} 次失败: {dungeon_result.message}")
                 # 失败后尝试恢复到安全状态
                 await self._try_recover()
+                # 恢复后下一次需要重新导航
+                need_navigate = True
             
             # 两次之间稍作等待
-            if i < count - 1 and self._running:
-                await asyncio.sleep(2.0)
+            if not self._stop_requested:
+                await asyncio.sleep(1.5)
         
         self._running = False
+        self._stop_requested = False
         logger.info(f"副本运行完成: {result.completed}/{result.total} 成功")
         return result
     
     async def _try_recover(self):
-        """尝试恢复到安全状态"""
+        # 尝试恢复到安全状态
         logger.info("尝试恢复...")
         # 多次按返回键
         for _ in range(3):
@@ -310,8 +357,8 @@ class DungeonRunner:
         await self.navigator.detect_current_scene()
     
     def stop(self):
-        """停止运行"""
-        self._running = False
+        # 停止运行
+        self._stop_requested = True
         self._state = DungeonState.IDLE
         self.battle_loop.stop()
         logger.info("副本运行已停止")

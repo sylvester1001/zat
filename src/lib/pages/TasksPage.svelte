@@ -54,13 +54,29 @@
   async function handleStartDungeon() {
     if (!selectedDungeon || !connected || dungeonRunning) return;
     
+    // 根据循环模式确定执行次数
+    let count = 1;
+    if (loopMode === 'loop') {
+      count = loopCount;
+    } else if (loopMode === 'infinite') {
+      count = -1; // -1 表示无限循环
+    }
+    
     try {
-      const result = await api.runDungeon(selectedDungeon, currentDifficulty);
-      if (result.success) {
+      const result = await api.runDungeon(selectedDungeon, currentDifficulty, count);
+      
+      // 单次结果
+      if (count === 1 && result.success !== undefined) {
         const dungeonName = DUNGEONS.find(d => d.id === selectedDungeon)?.name;
         console.log(`副本完成: ${dungeonName} (${currentDifficulty}) - 评级: ${result.rank}`);
-      } else {
-        console.warn('副本执行失败: ' + (result.message || '未知错误'));
+      } 
+      // 多次结果
+      else if (result.total !== undefined) {
+        console.log(`副本运行完成: ${result.completed}/${result.total} 成功`);
+      }
+      
+      if (!result.success && result.message) {
+        console.warn('副本执行失败: ' + result.message);
       }
     } catch (error) {
       console.error('副本执行失败:', error);

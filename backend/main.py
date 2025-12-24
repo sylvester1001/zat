@@ -257,18 +257,16 @@ async def navigate_to_dungeon(dungeon_id: str, difficulty: str = "normal"):
 
 @app.post("/run-dungeon")
 async def run_dungeon(dungeon_id: str, difficulty: str = "normal", count: int = 1):
-    """
-    执行副本
-    
-    Args:
-        dungeon_id: 副本ID (world_tree, mount_mechagod, sea_palace, mizumoto_shrine)
-        difficulty: 难度 (normal, hard, nightmare)
-        count: 执行次数
-    
-    Returns:
-        单次: {"success": bool, "rank": str | None, "message": str}
-        多次: {"total": int, "completed": int, "failed": int, "ranks": list}
-    """
+    # 执行副本
+    # 
+    # Args:
+    #     dungeon_id: 副本ID (world_tree, mount_mechagod, sea_palace, mizumoto_shrine)
+    #     difficulty: 难度 (normal, hard, nightmare)
+    #     count: 执行次数，1 为单次，>1 为循环，-1 为无限循环
+    # 
+    # Returns:
+    #     单次: {"success": bool, "rank": str | None, "message": str}
+    #     多次: {"total": int, "completed": int, "failed": int, "ranks": list}
     if not adb_controller.is_connected():
         raise HTTPException(status_code=400, detail="设备未连接")
     
@@ -281,7 +279,8 @@ async def run_dungeon(dungeon_id: str, difficulty: str = "normal", count: int = 
                 "message": result.message
             }
         else:
-            result = await dungeon_runner.run(dungeon_id, difficulty, count)
+            # count > 1 或 count == -1（无限循环）
+            result = await dungeon_runner.run_loop(dungeon_id, difficulty, count)
             return {
                 "total": result.total,
                 "completed": result.completed,
