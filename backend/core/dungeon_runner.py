@@ -376,17 +376,21 @@ class DungeonRunner:
     
     async def _ensure_in_dungeon_detail(self, dungeon_id: str) -> bool:
         # 确保当前在副本详情页（幂等操作）
-        # 无论当前在 dungeon_list 还是 dungeon:xxx，都能正确进入
-        template = f"daily_dungeon/{dungeon_id}"
-        screen = await self.adb.screencap_array()
+        # 使用新的导航系统，直接导航到 dungeon:xxx
+        target_scene = f"dungeon:{dungeon_id}"
         
-        # 检查是否已在副本详情页（能看到匹配按钮）
-        if image_matcher.match_template(screen, "daily_dungeon/match", threshold=0.7):
+        # 先检测当前场景
+        current = await self.navigator.detect_current_scene()
+        if current == target_scene:
             logger.debug("已在副本详情页")
             return True
         
-        # 否则尝试点击副本进入
-        return await self._click_dungeon(dungeon_id)
+        # 如果在副本列表，点击进入
+        if current == "dungeon_list":
+            return await self._click_dungeon(dungeon_id)
+        
+        # 否则导航过去
+        return await self.navigator.navigate_to(target_scene)
     
     async def _try_recover(self):
         logger.info("尝试恢复...")
