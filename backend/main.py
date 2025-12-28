@@ -62,6 +62,8 @@ async def lifespan(app: FastAPI):
         await task_engine.stop()
     if game_launcher:
         await game_launcher.stop()
+    if adb_controller:
+        await adb_controller.stop_capture()
     logger.info("ZAT Backend 已关闭")
 
 
@@ -86,11 +88,18 @@ async def root():
 
 @app.post("/connect")
 async def connect_device():
-    """连接 ADB 设备"""
+    # 连接 ADB 设备并启动屏幕捕获
     try:
         device = await adb_controller.auto_discover()
         if device:
             logger.info(f"已连接设备: {device}")
+            
+            # 启动屏幕捕获
+            try:
+                await adb_controller.start_capture()
+                logger.info("屏幕捕获已启动")
+            except Exception as e:
+                logger.warning(f"启动屏幕捕获失败: {e}")
             
             # 获取屏幕分辨率
             try:
@@ -113,7 +122,7 @@ async def connect_device():
 
 @app.get("/status")
 async def get_status():
-    """获取当前状态（实时检测设备连接）"""
+    # 获取当前状态（实时检测设备连接）
     # 实时检查设备是否在线
     is_online = await adb_controller.check_device_online() if adb_controller else False
     
@@ -125,6 +134,8 @@ async def get_status():
     return {
         "connected": is_online,
         "device": adb_controller.device if adb_controller else None,
+        "capture_running": adb_controller.capture_running if adb_controller else False,
+        "capture_fps": adb_controller.capture_fps if adb_controller else 0,
         "task_running": task_engine.is_running() if task_engine else False,
         "current_state": task_engine.current_state if task_engine else None,
         "game_running": game_running,
@@ -192,9 +203,12 @@ async def stop_game():
 
 @app.get("/debug/screenshot")
 async def get_screenshot(gray: bool = False):
-    """获取当前截图（仅 Debug 模式）"""
+    # 获取当前截图
     if not adb_controller.is_connected():
         raise HTTPException(status_code=400, detail="设备未连接")
+    
+    if not adb_controller.capture_running:
+        raise HTTPException(status_code=400, detail="屏幕捕获未启动，请先连接设备")
     
     try:
         screenshot = await adb_controller.screencap(gray=gray)

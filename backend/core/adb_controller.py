@@ -20,7 +20,7 @@ class ADBError(Exception):
 
 class ADBController:
     # ADB 控制器
-    # 支持 scrcpy 高速屏幕捕获和传统 adb screencap
+    # 使用 screenrecord H.264 流实现高速屏幕捕获
     
     # 常见模拟器端口
     COMMON_PORTS = [
@@ -37,102 +37,79 @@ class ADBController:
     def __init__(
         self,
         adb_path: str = "adb",
-        use_scrcpy: bool = True,
-        scrcpy_path: Optional[str] = None,
-        scrcpy_max_size: int = 1080,
-        scrcpy_bit_rate: str = '8M',
-        scrcpy_max_fps: int = 30,
+        bit_rate: str = '8M',
     ):
         # 初始化 ADB 控制器
         # 
         # Args:
         #     adb_path: ADB 可执行文件路径
-        #     use_scrcpy: 是否使用 scrcpy 进行屏幕捕获（推荐）
-        #     scrcpy_path: scrcpy 可执行文件路径
-        #     scrcpy_max_size: scrcpy 最大分辨率
-        #     scrcpy_bit_rate: scrcpy 视频码率
-        #     scrcpy_max_fps: scrcpy 最大帧率
+        #     bit_rate: 视频码率
         
         self.adb_path = adb_path
         self.device: Optional[str] = None
         self.screen_resolution: Optional[tuple[int, int]] = None
+        self.bit_rate = bit_rate
         
-        # scrcpy 配置
-        self.use_scrcpy = use_scrcpy
-        self.scrcpy_path = scrcpy_path
-        self.scrcpy_max_size = scrcpy_max_size
-        self.scrcpy_bit_rate = scrcpy_bit_rate
-        self.scrcpy_max_fps = scrcpy_max_fps
-        
-        # scrcpy 捕获器实例
-        self._scrcpy_capture: Optional[ScrcpyCapture] = None
-        self._async_scrcpy: Optional[AsyncScrcpyCapture] = None
+        # 屏幕捕获器实例
+        self._capture: Optional[ScrcpyCapture] = None
+        self._async_capture: Optional[AsyncScrcpyCapture] = None
         
         # 检查 ADB 是否可用
         if not shutil.which(self.adb_path):
             raise ADBError(f"未找到 ADB: {self.adb_path}")
         
-        logger.info(f"ADB 控制器已初始化: {self.adb_path}, scrcpy模式: {use_scrcpy}")
+        logger.info(f"ADB 控制器已初始化: {self.adb_path}")
     
     def is_connected(self) -> bool:
         # 检查是否已连接设备（仅检查本地状态）
         return self.device is not None
     
-    # ==================== scrcpy 相关方法 ====================
+    # ==================== 屏幕捕获方法 ====================
     
-    async def start_scrcpy(self):
-        # 启动 scrcpy 屏幕捕获
+    async def start_capture(self):
+        # 启动屏幕捕获
         # 需要先连接设备
         if not self.is_connected():
-            raise ADBError("设备未连接，无法启动 scrcpy")
+            raise ADBError("设备未连接，无法启动屏幕捕获")
         
-        if not self.use_scrcpy:
-            logger.warning("scrcpy 模式未启用")
-            return
-        
-        if self._scrcpy_capture and self._scrcpy_capture.is_running:
-            logger.warning("scrcpy 已在运行")
+        if self._capture and self._capture.is_running:
+            logger.warning("屏幕捕获已在运行")
             return
         
         try:
-            self._scrcpy_capture = ScrcpyCapture(
+            self._capture = ScrcpyCapture(
                 device=self.device,
-                max_size=self.scrcpy_max_size,
-                bit_rate=self.scrcpy_bit_rate,
-                max_fps=self.scrcpy_max_fps,
-                scrcpy_path=self.scrcpy_path,
+                bit_rate=self.bit_rate,
                 adb_path=self.adb_path,
             )
-            self._async_scrcpy = AsyncScrcpyCapture(self._scrcpy_capture)
-            await self._async_scrcpy.start()
-            logger.info("scrcpy 屏幕捕获已启动")
+            self._async_capture = AsyncScrcpyCapture(self._capture)
+            await self._async_capture.start()
+            logger.info("屏幕捕获已启动")
         except ScrcpyError as e:
-            logger.error(f"启动 scrcpy 失败: {e}")
-            self._scrcpy_capture = None
-            self._async_scrcpy = None
-            raise ADBError(f"启动 scrcpy 失败: {e}")
+            logger.error(f"启动屏幕捕获失败: {e}")
+            self._capture = None
+            self._async_capture = None
+            raise ADBError(f"启动屏幕捕获失败: {e}")
     
-    async def stop_scrcpy(self):
-        # 停止 scrcpy 屏幕捕获
-        if self._async_scrcpy:
-            await self._async_scrcpy.stop()
-            self._scrcpy_capture = None
-            self._async_scrcpy = None
-            logger.info("scrcpy 屏幕捕获已停止")
-    
-    @property
-    def scrcpy_running(self) -> bool:
-        # 检查 scrcpy 是否正在运行
-        return self._scrcpy_capture is not None and self._scrcpy_capture.is_running
+    async def stop_capture(self):
+        # 停止屏幕捕获
+        if self._async_capture:
+            await self._async_capture.stop()
+            self._capture = None
+            self._async_capture = None
+            logger.info("屏幕捕获已停止")
     
     @property
-    def scrcpy_fps(self) -> float:
-        # 获取 scrcpy 当前帧率
-        if self._scrcpy_capture:
-            return self._scrcpy_capture.fps
+    def capture_running(self) -> bool:
+        # 检查屏幕捕获是否正在运行
+        return self._capture is not None and self._capture.is_running
+    
+    @property
+    def capture_fps(self) -> float:
+        # 获取当前帧率
+        if self._capture:
+            return self._capture.fps
         return 0.0
-    
-    # ==================== 屏幕捕获方法 ====================
     
     async def check_device_online(self) -> bool:
         # 实时检查设备是否在线
@@ -149,7 +126,7 @@ class ADBController:
             else:
                 # 设备离线，清除状态
                 logger.warning(f"设备已离线: {self.device}")
-                await self.stop_scrcpy()  # 停止 scrcpy
+                await self.stop_capture()
                 self.device = None
                 self.screen_resolution = None
                 return False
@@ -248,7 +225,6 @@ class ADBController:
     
     async def screencap(self, gray: bool = False, quality: int = 65) -> bytes:
         # 截图并返回 JPEG 字节
-        # 优先使用 scrcpy，fallback 到 adb screencap
         # 
         # Args:
         #     gray: 是否转换为灰度图
@@ -259,89 +235,34 @@ class ADBController:
         if not self.is_connected():
             raise ADBError("设备未连接")
         
-        # 优先使用 scrcpy
-        if self.use_scrcpy and self._async_scrcpy and self._scrcpy_capture.is_running:
-            img = self._async_scrcpy.get_latest_frame()
-            if img is not None:
-                if gray:
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                encode_param = [cv2.IMWRITE_JPEG_QUALITY, quality]
-                _, buffer = cv2.imencode(".jpg", img, encode_param)
-                return buffer.tobytes()
+        if not self._capture or not self._capture.is_running:
+            raise ADBError("屏幕捕获未启动，请先调用 start_capture()")
         
-        # fallback 到 adb screencap
-        return await self._screencap_adb(gray, quality)
-    
-    async def _screencap_adb(self, gray: bool = False, quality: int = 65) -> bytes:
-        # 使用 adb screencap 截图（传统方式）
-        cmd = f'"{self.adb_path}" -s {self.device} exec-out screencap -p'
-        
-        proc = await asyncio.create_subprocess_shell(
-            cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        
-        stdout, stderr = await proc.communicate()
-        
-        if proc.returncode != 0:
-            raise ADBError(f"截图失败: {stderr.decode()}")
-        
-        # 解码 PNG
-        nparr = np.frombuffer(stdout, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
+        img = self._async_capture.get_latest_frame()
         if img is None:
-            raise ADBError("解码截图失败")
+            raise ADBError("无法获取屏幕帧")
         
-        # 可选：转换为灰度图
         if gray:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
-        # 编码为 JPEG
         encode_param = [cv2.IMWRITE_JPEG_QUALITY, quality]
         _, buffer = cv2.imencode(".jpg", img, encode_param)
-        
         return buffer.tobytes()
     
     async def screencap_array(self) -> np.ndarray:
         # 截图并返回 numpy 数组（用于图像识别）
-        # 优先使用 scrcpy，fallback 到 adb screencap
         # 
         # Returns:
         #     BGR 格式的 numpy 数组
         if not self.is_connected():
             raise ADBError("设备未连接")
         
-        # 优先使用 scrcpy
-        if self.use_scrcpy and self._async_scrcpy and self._scrcpy_capture.is_running:
-            img = self._async_scrcpy.get_latest_frame()
-            if img is not None:
-                return img
+        if not self._capture or not self._capture.is_running:
+            raise ADBError("屏幕捕获未启动，请先调用 start_capture()")
         
-        # fallback 到 adb screencap
-        return await self._screencap_array_adb()
-    
-    async def _screencap_array_adb(self) -> np.ndarray:
-        # 使用 adb screencap 截图并返回数组（传统方式）
-        cmd = f'"{self.adb_path}" -s {self.device} exec-out screencap -p'
-        
-        proc = await asyncio.create_subprocess_shell(
-            cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        
-        stdout, stderr = await proc.communicate()
-        
-        if proc.returncode != 0:
-            raise ADBError(f"截图失败: {stderr.decode()}")
-        
-        nparr = np.frombuffer(stdout, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
+        img = self._async_capture.get_latest_frame()
         if img is None:
-            raise ADBError("解码截图失败")
+            raise ADBError("无法获取屏幕帧")
         
         return img
     
@@ -480,7 +401,7 @@ class ADBController:
     
     async def disconnect(self):
         # 断开设备连接并清理资源
-        await self.stop_scrcpy()
+        await self.stop_capture()
         self.device = None
         self.screen_resolution = None
         logger.info("已断开设备连接")
