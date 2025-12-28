@@ -6,9 +6,40 @@
   import HomePage from '$lib/pages/HomePage.svelte';
   import DebugPage from '$lib/pages/DebugPage.svelte';
   import TasksPage from '$lib/pages/TasksPage.svelte';
-  import { startHeartbeat, stopHeartbeat, startStateWebSocket, stopStateWebSocket } from '$lib/stores/appStore';
+  import NavigationErrorModal from '$lib/components/NavigationErrorModal.svelte';
+  import { startHeartbeat, stopHeartbeat, startStateWebSocket, stopStateWebSocket, navigationFailure } from '$lib/stores/appStore';
+  import { api } from '$lib/api';
   
   let currentPage = $state('home');
+  let showNavErrorModal = $state(false);
+  let navErrorTarget = $state('');
+  let navErrorMessage = $state('');
+  
+  // 监听导航失败事件
+  $effect(() => {
+    const failure = $navigationFailure;
+    if (failure) {
+      navErrorTarget = failure.target;
+      navErrorMessage = failure.message;
+      showNavErrorModal = true;
+      // 清除事件
+      navigationFailure.set(null);
+    }
+  });
+  
+  async function handleRetry() {
+    if (navErrorTarget) {
+      try {
+        await api.navigateToDungeon(navErrorTarget.replace('dungeon:', ''));
+      } catch (e) {
+        console.error('重试失败:', e);
+      }
+    }
+  }
+  
+  function handleCancel() {
+    // 用户取消，不做任何操作
+  }
   
   onMount(() => {
     console.log('ZAT 已启动');
@@ -49,3 +80,10 @@
     </div>
   {/if}
 </Layout>
+
+<NavigationErrorModal 
+  bind:open={showNavErrorModal}
+  message={navErrorMessage}
+  onRetry={handleRetry}
+  onCancel={handleCancel}
+/>

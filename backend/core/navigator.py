@@ -19,6 +19,18 @@ import scenes
 logger = logging.getLogger("zat.navigator")
 
 
+# 导航失败回调类型
+NavigationFailureCallback = Optional[callable]
+
+
+class NavigationError(Exception):
+    # 导航错误
+    def __init__(self, message: str, current_scene: str = "unknown"):
+        self.message = message
+        self.current_scene = current_scene
+        super().__init__(message)
+
+
 class Navigator:
     # 场景导航器：基于观察的贪婪导航策略
     
@@ -26,6 +38,11 @@ class Navigator:
         self.adb = adb
         self.matcher = matcher
         self.observer = SceneObserver(adb, matcher)
+        self._on_failure_callback: NavigationFailureCallback = None
+    
+    def set_failure_callback(self, callback: NavigationFailureCallback):
+        # 设置导航失败回调
+        self._on_failure_callback = callback
     
     def find_path(self, from_scene: str, to_scene: str) -> Optional[list[str]]:
         # 使用 BFS 寻找最短路径
@@ -134,6 +151,43 @@ class Navigator:
             max_retry -= 1
         
         logger.error(f"导航失败: 无法到达 {target}")
+        
+        # 尝试回到 home
+        await self._fallback_to_home()
+        
+        # 触发失败回调
+        if self._on_failure_callback:
+            try:
+                await self._on_failure_callback(target, "navigation_failed")
+            except Exception as e:
+                logger.error(f"失败回调执行异常: {e}")
+        
+        return False
+    
+    async def _fallback_to_home(self):
+        # 回退到主界面
+        logger.info("尝试回退到主界面...")
+        
+        for _ in range(5):
+            current = await self.observer.observe()
+            if current == "home":
+                logger.info("已回到主界面")
+                return True
+            
+            # 尝试点击 home 按钮
+            screen = await self.adb.screencap_array()
+            result = self.matcher.match_template(screen, "home", threshold=0.7)
+            if result:
+                x, y, _ = result
+                await self.adb.tap(x, y)
+                await asyncio.sleep(0.8)
+                continue
+            
+            # 否则按返回键
+            await self._press_back()
+            await asyncio.sleep(0.5)
+        
+        logger.warning("无法回到主界面")
         return False
     
     async def detect_current_scene(self) -> str:

@@ -121,6 +121,15 @@ export const stopHeartbeat = () => {
 let stateWs: WebSocket | null = null;
 let stateWsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
+// 导航失败事件
+export interface NavigationFailureEvent {
+  target: string;
+  reason: string;
+  message: string;
+}
+
+export const navigationFailure = writable<NavigationFailureEvent | null>(null);
+
 export const startStateWebSocket = () => {
   if (stateWs?.readyState === WebSocket.OPEN) return;
   
@@ -145,6 +154,13 @@ export const startStateWebSocket = () => {
           dungeonRunning: data.dungeon_running || false,
           taskEngineRunning: data.task_running || false,
         }));
+      } else if (data.type === 'navigation_failure') {
+        // 导航失败事件
+        navigationFailure.set({
+          target: data.target,
+          reason: data.reason,
+          message: data.message,
+        });
       }
     } catch (e) {
       console.error('解析状态消息失败:', e);

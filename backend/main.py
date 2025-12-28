@@ -28,6 +28,34 @@ game_launcher: GameLauncher = None
 log_broadcaster = LogBroadcaster()
 logger = setup_logger("zat", log_broadcaster)
 
+# 事件广播器（用于推送导航失败等事件）
+event_clients: set[WebSocket] = set()
+
+
+async def broadcast_event(event_type: str, data: dict):
+    # 广播事件到所有连接的客户端
+    message = {"type": event_type, **data}
+    dead_clients = set()
+    
+    for client in event_clients:
+        try:
+            await client.send_json(message)
+        except Exception:
+            dead_clients.add(client)
+    
+    for client in dead_clients:
+        event_clients.discard(client)
+
+
+async def on_navigation_failure(target: str, reason: str):
+    # 导航失败回调
+    logger.warning(f"导航失败事件: target={target}, reason={reason}")
+    await broadcast_event("navigation_failure", {
+        "target": target,
+        "reason": reason,
+        "message": f"无法导航到 {target}，已回退到主界面"
+    })
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -44,6 +72,7 @@ async def lifespan(app: FastAPI):
     
     # 初始化游戏导航器
     navigator = Navigator(adb_controller, image_matcher)
+    navigator.set_failure_callback(on_navigation_failure)
     
     # 初始化副本执行器
     dungeon_runner = DungeonRunner(adb_controller, navigator)
@@ -482,6 +511,9 @@ async def websocket_state(websocket: WebSocket):
     await websocket.accept()
     logger.info("状态 WebSocket 已连接")
     
+    # 注册到事件广播
+    event_clients.add(websocket)
+    
     last_dungeon_state = None
     
     try:
@@ -507,6 +539,8 @@ async def websocket_state(websocket: WebSocket):
             await asyncio.sleep(interval)
     except WebSocketDisconnect:
         logger.info("状态 WebSocket 已断开")
+    finally:
+        event_clients.discard(websocket)
 
 
 if __name__ == "__main__":
