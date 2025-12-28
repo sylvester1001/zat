@@ -99,6 +99,7 @@ class Navigator:
         
         stuck_count = 0
         unknown_count = 0
+        transition_fail_count = 0  # 转移失败计数
         last_scene = None
         
         while max_retry > 0:
@@ -171,7 +172,24 @@ class Navigator:
             
             if transition:
                 logger.info(f"执行: {current_scene_obj.name} -> {registry.get(next_scene).name}")
-                await self._execute_transition(transition)
+                success = await self._execute_transition(transition)
+                
+                if not success:
+                    transition_fail_count += 1
+                    logger.warning(f"转移执行失败 ({transition_fail_count}/3)")
+                    
+                    # 连续 3 次转移失败，触发导航失败
+                    if transition_fail_count >= 3:
+                        logger.error(f"连续多次转移失败，无法从 {current_scene_obj.name} 到达目标")
+                        await self._fallback_to_home()
+                        if self._on_failure_callback:
+                            try:
+                                await self._on_failure_callback(target, "transition_failed")
+                            except Exception as e:
+                                logger.error(f"失败回调执行异常: {e}")
+                        return False
+                else:
+                    transition_fail_count = 0  # 成功则重置计数
             
             max_retry -= 1
         

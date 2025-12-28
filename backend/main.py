@@ -56,6 +56,8 @@ async def on_navigation_failure(target: str, reason: str):
         message = "无法识别游戏界面，请确保已进入游戏后再试"
     elif reason == "scene_unrecognized":
         message = "连续多次无法识别场景，请确保游戏在正常界面"
+    elif reason == "transition_failed":
+        message = "无法执行场景转移，可能是界面元素未找到，请返回主界面重试"
     else:
         message = f"无法导航到目标场景，已回退到主界面"
     

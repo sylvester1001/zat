@@ -209,39 +209,41 @@ class DungeonRunner:
         # 不包含 while 循环，不包含 running 状态的开启/关闭（由调用者负责）
         
         self._add_record(dungeon_id, difficulty, "running")
+        target_scene = f"dungeon:{dungeon_id}"
         
         try:
             await self._check_stop()
             
-            # 1. 导航到副本列表
+            # 1. 导航到副本详情页（由 Navigator 负责所有场景转移）
             if not skip_navigate:
                 self._set_state(DungeonState.NAVIGATING)
-                if not await self.navigator.navigate_to("dungeon_list"):
-                    raise Exception("导航到副本列表失败")
+                if not await self.navigator.navigate_to(target_scene):
+                    raise Exception("导航到副本详情页失败")
                 await asyncio.sleep(0.5)
+            else:
+                # 即使跳过导航，也要确认当前在正确的场景
+                current = await self.navigator.detect_current_scene()
+                if current != target_scene:
+                    self._set_state(DungeonState.NAVIGATING)
+                    if not await self.navigator.navigate_to(target_scene):
+                        raise Exception("导航到副本详情页失败")
+                    await asyncio.sleep(0.5)
             
             await self._check_stop()
             
-            # 2. 确保进入副本详情页（幂等）
-            if not await self._ensure_in_dungeon_detail(dungeon_id):
-                raise Exception("进入副本详情页失败")
-            await asyncio.sleep(0.3)
-            
-            await self._check_stop()
-            
-            # 3. 选难度
+            # 2. 选难度（场景内操作）
             if not await self._select_difficulty(difficulty):
                 raise Exception("选择难度失败")
             await asyncio.sleep(0.3)
             
             await self._check_stop()
             
-            # 4. 匹配
+            # 3. 匹配（场景内操作）
             self._set_state(DungeonState.MATCHING)
             if not await self._click_match():
                 raise Exception("点击匹配失败")
             
-            # 5. 战斗
+            # 4. 战斗
             battle_result = await self.battle_loop.run()
             
             await self._check_stop()
@@ -348,16 +350,6 @@ class DungeonRunner:
         logger.info("点击匹配按钮")
         return await self.navigator.click_template("daily_dungeon/match", timeout=5.0)
     
-    async def _click_confirm_skip_reward(self) -> bool:
-        # 点击确认跳过奖励弹窗（不是每次都有）
-        return await self.navigator.click_template("daily_dungeon/confirm", timeout=2.0, threshold=0.6)
-    
-    async def _click_dungeon(self, dungeon_id: str) -> bool:
-        # 在副本列表中点击指定副本进入详情页
-        template = f"daily_dungeon/{dungeon_id}"
-        logger.info(f"点击副本: {dungeon_id}")
-        return await self.navigator.click_template(template, timeout=5.0)
-    
     async def _exit_result_screen(self) -> bool:
         # 退出结算界面，回到副本列表
         logger.info("退出结算界面")
@@ -368,29 +360,12 @@ class DungeonRunner:
         
         # 等待动画，处理可能出现的跳过奖励弹窗
         await asyncio.sleep(1.0)
-        if await self._click_confirm_skip_reward():
+        screen = await self.adb.screencap_array()
+        if await self.navigator.click_template_if_exists(screen, "daily_dungeon/confirm", threshold=0.6):
             logger.info("已确认跳过奖励")
             await asyncio.sleep(0.5)
         
         return True
-    
-    async def _ensure_in_dungeon_detail(self, dungeon_id: str) -> bool:
-        # 确保当前在副本详情页（幂等操作）
-        # 使用新的导航系统，直接导航到 dungeon:xxx
-        target_scene = f"dungeon:{dungeon_id}"
-        
-        # 先检测当前场景
-        current = await self.navigator.detect_current_scene()
-        if current == target_scene:
-            logger.debug("已在副本详情页")
-            return True
-        
-        # 如果在副本列表，点击进入
-        if current == "dungeon_list":
-            return await self._click_dungeon(dungeon_id)
-        
-        # 否则导航过去
-        return await self.navigator.navigate_to(target_scene)
     
     async def _try_recover(self):
         # Navigator 已经有 fallback 机制，这里只做简单的场景检测
