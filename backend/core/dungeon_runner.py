@@ -393,8 +393,6 @@ class DungeonRunner:
         return await self.navigator.navigate_to(target_scene)
     
     async def _try_recover(self):
+        # Navigator 已经有 fallback 机制，这里只做简单的场景检测
         logger.info("尝试恢复...")
-        for _ in range(3):
-            await self.navigator.press_back()
-            await asyncio.sleep(0.5)
         await self.navigator.detect_current_scene()
