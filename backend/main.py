@@ -50,10 +50,19 @@ async def broadcast_event(event_type: str, data: dict):
 async def on_navigation_failure(target: str, reason: str):
     # 导航失败回调
     logger.warning(f"导航失败事件: target={target}, reason={reason}")
+    
+    # 根据原因生成不同的提示信息
+    if reason == "not_in_game":
+        message = "无法识别游戏界面，请确保已进入游戏后再试"
+    elif reason == "scene_unrecognized":
+        message = "连续多次无法识别场景，请确保游戏在正常界面"
+    else:
+        message = f"无法导航到目标场景，已回退到主界面"
+    
     await broadcast_event("navigation_failure", {
         "target": target,
         "reason": reason,
-        "message": f"无法导航到 {target}，已回退到主界面"
+        "message": message
     })
 
 

@@ -86,7 +86,19 @@ class Navigator:
         # 导航到目标场景（贪婪策略：每步重新观察）
         # Returns: 成功返回 True
         
+        # 先检测当前是否在游戏内
+        initial_check = await self._check_in_game()
+        if not initial_check:
+            logger.error("无法识别游戏界面，请确保已进入游戏")
+            if self._on_failure_callback:
+                try:
+                    await self._on_failure_callback(target, "not_in_game")
+                except Exception as e:
+                    logger.error(f"失败回调执行异常: {e}")
+            return False
+        
         stuck_count = 0
+        unknown_count = 0
         last_scene = None
         
         while max_retry > 0:
@@ -112,11 +124,24 @@ class Navigator:
                 stuck_count = 0
             last_scene = current
             
-            # 4. 无法识别？尝试处理
+            # 4. 无法识别？
             if current == "unknown":
+                unknown_count += 1
+                # 连续 5 次无法识别，提前失败
+                if unknown_count >= 5:
+                    logger.error("连续多次无法识别场景，可能不在游戏内")
+                    if self._on_failure_callback:
+                        try:
+                            await self._on_failure_callback(target, "scene_unrecognized")
+                        except Exception as e:
+                            logger.error(f"失败回调执行异常: {e}")
+                    return False
+                
                 await self._handle_unknown()
                 max_retry -= 1
                 continue
+            else:
+                unknown_count = 0  # 识别成功，重置计数
             
             # 5. 计算路径
             path = self.find_path(current, target)
@@ -232,6 +257,17 @@ class Navigator:
     def get_current_scene(self) -> Optional[str]:
         # 获取当前场景（新架构不缓存状态，返回 None 让调用方使用 detect_current_scene）
         return None
+    
+    async def _check_in_game(self, max_attempts: int = 3) -> bool:
+        # 检测是否在游戏内（尝试识别任意已知场景）
+        for i in range(max_attempts):
+            current = await self.observer.observe()
+            if current != "unknown":
+                logger.debug(f"检测到游戏场景: {current}")
+                return True
+            if i < max_attempts - 1:
+                await asyncio.sleep(0.5)
+        return False
     
     # ==================== 内部方法 ====================
     
