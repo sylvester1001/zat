@@ -21,6 +21,7 @@ class ScrcpyError(Exception):
 class ScrcpyCapture:
     # 屏幕捕获器
     # 通过 adb screenrecord 的 H.264 流实现低延迟屏幕捕获
+    # 自动处理 screenrecord 的时间限制，流结束后自动重启
     
     def __init__(
         self,
@@ -50,6 +51,7 @@ class ScrcpyCapture:
         self._proc: Optional[subprocess.Popen] = None
         self._decoder_thread: Optional[threading.Thread] = None
         self._running = False
+        self._should_restart = False
         self._latest_frame: Optional[np.ndarray] = None
         self._frame_lock = threading.Lock()
         self._on_frame_callback: Optional[Callable[[np.ndarray], None]] = None
@@ -58,6 +60,7 @@ class ScrcpyCapture:
         self._frame_count = 0
         self._start_time = 0.0
         self._last_frame_time = 0.0
+        self._restart_count = 0
     
     def _build_command(self) -> list[str]:
         # 构建命令
@@ -74,45 +77,85 @@ class ScrcpyCapture:
         ]
         return cmd
     
+    def _start_process(self):
+        # 启动 screenrecord 进程
+        cmd = self._build_command()
+        logger.debug(f"命令: {' '.join(cmd)}")
+        
+        self._proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    
     def _decoder_loop(self):
-        # 解码线程主循环
+        # 解码线程主循环，支持自动重启
         try:
             import av
         except ImportError:
             logger.error("请安装 PyAV: pip install av")
             return
         
-        logger.info("解码线程启动")
-        
-        try:
-            container = av.open(self._proc.stdout, format='h264')
-            logger.info("容器已打开，开始解码")
+        while self._running:
+            logger.info(f"解码线程启动 (重启次数: {self._restart_count})")
             
-            for frame in container.decode(video=0):
-                if not self._running:
-                    break
+            try:
+                if self._proc is None or self._proc.poll() is not None:
+                    # 进程不存在或已退出，重新启动
+                    self._start_process()
                 
-                # 转换为 numpy 数组 (BGR)
-                img = frame.to_ndarray(format='bgr24')
+                container = av.open(self._proc.stdout, format='h264')
+                logger.info("容器已打开，开始解码")
                 
-                # 更新最新帧
-                with self._frame_lock:
-                    self._latest_frame = img
-                    self._frame_count += 1
-                    self._last_frame_time = time.time()
-                
-                # 回调
-                if self._on_frame_callback:
-                    try:
-                        self._on_frame_callback(img)
-                    except Exception as e:
-                        logger.error(f"帧回调错误: {e}")
+                for frame in container.decode(video=0):
+                    if not self._running:
+                        break
                     
-        except Exception as e:
-            if self._running:
-                logger.error(f"解码错误: {e}")
-        finally:
-            logger.info("解码线程退出")
+                    # 转换为 numpy 数组 (BGR)
+                    img = frame.to_ndarray(format='bgr24')
+                    
+                    # 更新最新帧
+                    with self._frame_lock:
+                        self._latest_frame = img
+                        self._frame_count += 1
+                        self._last_frame_time = time.time()
+                    
+                    # 回调
+                    if self._on_frame_callback:
+                        try:
+                            self._on_frame_callback(img)
+                        except Exception as e:
+                            logger.error(f"帧回调错误: {e}")
+                
+                # 流结束，准备重启
+                if self._running:
+                    logger.info("视频流结束，准备重启...")
+                    self._restart_count += 1
+                    # 清理旧进程
+                    if self._proc:
+                        self._proc.terminate()
+                        try:
+                            self._proc.wait(timeout=1)
+                        except:
+                            self._proc.kill()
+                        self._proc = None
+                    time.sleep(0.1)  # 短暂等待
+                        
+            except Exception as e:
+                if self._running:
+                    logger.error(f"解码错误: {e}, 将在 1 秒后重试...")
+                    self._restart_count += 1
+                    # 清理
+                    if self._proc:
+                        try:
+                            self._proc.terminate()
+                            self._proc.wait(timeout=1)
+                        except:
+                            pass
+                        self._proc = None
+                    time.sleep(1)
+        
+        logger.info("解码线程退出")
     
     def start(self):
         # 启动屏幕捕获
@@ -122,15 +165,8 @@ class ScrcpyCapture:
         
         logger.info(f"启动屏幕捕获: {self.device}")
         
-        cmd = self._build_command()
-        logger.debug(f"命令: {' '.join(cmd)}")
-        
         try:
-            self._proc = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
+            self._start_process()
         except FileNotFoundError:
             raise ScrcpyError(f"adb 不存在: {self.adb_path}")
         except Exception as e:
@@ -139,6 +175,7 @@ class ScrcpyCapture:
         self._running = True
         self._start_time = time.time()
         self._frame_count = 0
+        self._restart_count = 0
         
         # 启动解码线程
         self._decoder_thread = threading.Thread(

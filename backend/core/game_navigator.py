@@ -68,24 +68,36 @@ class GameNavigator:
             return False
     
     async def click_template(self, template_name: str, timeout: float = 5.0, threshold: float = 0.7) -> bool:
-        """等待并点击模板"""
+        # 等待并点击模板
         elapsed = 0
         interval = 0.3
+        attempt = 0
         
         while elapsed < timeout:
+            attempt += 1
             screen = await self.adb.screencap_array()
+            
+            # 调试：每次都输出状态
+            logger.debug(f"[{template_name}] 尝试 {attempt}, 帧率: {self.adb.capture_fps:.1f}")
+            
             result = image_matcher.match_template(screen, template_name, threshold=threshold)
             
             if result:
                 x, y, confidence = result
                 await self.adb.tap(x, y)
-                logger.debug(f"点击模板: {template_name} at ({x}, {y})")
+                logger.info(f"点击模板: {template_name} at ({x}, {y}), 置信度: {confidence:.3f}")
                 return True
             
             await asyncio.sleep(interval)
             elapsed += interval
         
-        logger.warning(f"未找到模板: {template_name}")
+        # 匹配失败时保存当前帧用于调试
+        import cv2
+        import os
+        debug_dir = os.path.dirname(os.path.dirname(__file__))
+        debug_path = os.path.join(debug_dir, f"debug_fail_{template_name.replace('/', '_')}.png")
+        cv2.imwrite(debug_path, screen)
+        logger.warning(f"未找到模板: {template_name}, 已保存: {debug_path}")
         return False
     
     async def click_template_if_exists(self, screen, template_name: str, threshold: float = 0.7) -> bool:
