@@ -19,7 +19,7 @@ registry.register(Scene(
         "dungeon:mizumoto_shrine": Transition(
             target="dungeon:mizumoto_shrine",
             action=ActionType.CLICK,
-            template="daily_dungeon/mizumoto_shrine",
+            template="daily_dungeon/mizumoto_shirine",
             wait_after=0.8
         ),
         "dungeon:world_tree": Transition(
