@@ -90,50 +90,55 @@ class BattleLoop:
         idle_time = 0
         max_idle = 90
         
-        while self._running and elapsed < timeout:
-            screen = await self.adb.screencap_array()
-            action_taken = False
-            
-            # 优先级1: 检测准备按钮（点击后进入 BATTLING 阶段）
-            if await self._detect_and_click(screen, "ready"):
-                logger.info("点击准备按钮")
-                self._set_phase(BattlePhase.BATTLING)
-                action_taken = True
-                idle_time = 0
-                await asyncio.sleep(1.0)
-                continue
-            
-            # 优先级2: 检测接受按钮（仅在 MATCHING 阶段）
-            if self._phase == BattlePhase.MATCHING:
-                if await self._detect_and_click(screen, "accept"):
-                    logger.info("点击接受按钮")
+        try:
+            while self._running and elapsed < timeout:
+                screen = await self.adb.screencap_array()
+                action_taken = False
+                
+                # 优先级1: 检测准备按钮（点击后进入 BATTLING 阶段）
+                if await self._detect_and_click(screen, "ready"):
+                    logger.info("点击准备按钮")
+                    self._set_phase(BattlePhase.BATTLING)
                     action_taken = True
                     idle_time = 0
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(1.0)
                     continue
+                
+                # 优先级2: 检测接受按钮（仅在 MATCHING 阶段）
+                if self._phase == BattlePhase.MATCHING:
+                    if await self._detect_and_click(screen, "accept"):
+                        logger.info("点击接受按钮")
+                        action_taken = True
+                        idle_time = 0
+                        await asyncio.sleep(0.5)
+                        continue
+                
+                # 优先级3: 检测评级（战斗结束）
+                rank = await self._detect_rank(screen)
+                if rank:
+                    logger.info(f"战斗完成，评级: {rank}")
+                    self._running = False
+                    return BattleResult(success=True, rank=rank, message="战斗完成")
+                
+                # 无操作，累计空闲时间
+                if not action_taken:
+                    idle_time += interval
+                    if idle_time >= max_idle:
+                        logger.warning(f"超过 {max_idle} 秒无操作")
+                
+                await asyncio.sleep(interval)
+                elapsed += interval
             
-            # 优先级3: 检测评级（战斗结束）
-            rank = await self._detect_rank(screen)
-            if rank:
-                logger.info(f"战斗完成，评级: {rank}")
-                self._running = False
-                return BattleResult(success=True, rank=rank, message="战斗完成")
+            if elapsed >= timeout:
+                return BattleResult(success=False, message="战斗超时")
             
-            # 无操作，累计空闲时间
-            if not action_taken:
-                idle_time += interval
-                if idle_time >= max_idle:
-                    logger.warning(f"超过 {max_idle} 秒无操作")
-            
-            await asyncio.sleep(interval)
-            elapsed += interval
+            return BattleResult(success=False, message="战斗被中断")
         
-        self._running = False
-        
-        if elapsed >= timeout:
-            return BattleResult(success=False, message="战斗超时")
-        
-        return BattleResult(success=False, message="战斗被中断")
+        except asyncio.CancelledError:
+            logger.info("战斗循环被取消")
+            raise
+        finally:
+            self._running = False
     
     def stop(self):
         # 停止战斗循环

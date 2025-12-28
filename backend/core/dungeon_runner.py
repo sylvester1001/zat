@@ -98,11 +98,11 @@ class DungeonRunner:
         self.battle_loop = BattleLoop(adb)
         
         self._running = False
-        self._stop_requested = False
         self._state = DungeonState.IDLE
         self._history: List[DungeonRecord] = []
         self._record_id = 0
         self._current_record: Optional[DungeonRecord] = None
+        self._current_task: Optional[asyncio.Task] = None
         
         self.battle_loop.set_phase_callback(self._on_battle_phase_change)
     
@@ -159,15 +159,9 @@ class DungeonRunner:
     
     def stop(self):
         # 外部调用此方法终止运行
-        if self._running:
-            logger.info("收到停止指令...")
-            self._stop_requested = True
-            self.battle_loop.stop()
-    
-    async def _check_stop(self):
-        # 内部检查点，如果收到停止请求则抛出异常中断流程
-        if self._stop_requested:
-            raise asyncio.CancelledError("用户终止操作")
+        if self._running and self._current_task and not self._current_task.done():
+            logger.info("收到停止指令，取消任务...")
+            self._current_task.cancel()
     
     # ============================================================
     #  上下文管理器 - 统一管理 running 状态
@@ -176,25 +170,20 @@ class DungeonRunner:
     @asynccontextmanager
     async def _run_context(self):
         # 核心上下文管理器：负责统一管理 running 状态
-        # 无论单次还是多次，都必须在这个上下文中运行
         if self._running:
             logger.warning("任务已在运行中，忽略新请求")
             yield False
             return
         
         self._running = True
-        self._stop_requested = False
+        self._current_task = asyncio.current_task()
         logger.info("任务启动")
         
         try:
             yield True
-        except asyncio.CancelledError:
-            logger.info("任务被用户终止")
-        except Exception as e:
-            logger.error(f"任务发生未捕获异常: {e}", exc_info=True)
         finally:
             self._running = False
-            self._stop_requested = False
+            self._current_task = None
             self._set_state(DungeonState.IDLE)
             self._current_record = None
             logger.info("任务结束，状态已重置")
@@ -212,8 +201,6 @@ class DungeonRunner:
         target_scene = f"dungeon:{dungeon_id}"
         
         try:
-            await self._check_stop()
-            
             # 1. 导航到副本详情页（由 Navigator 负责所有场景转移）
             if not skip_navigate:
                 self._set_state(DungeonState.NAVIGATING)
@@ -227,13 +214,9 @@ class DungeonRunner:
                     if not await self.navigator.navigate_to(target_scene):
                         raise Exception("导航到副本详情页失败")
             
-            await self._check_stop()
-            
             # 2. 选难度（场景内操作）
             if not await self._select_difficulty(difficulty):
                 raise Exception("选择难度失败")
-            
-            await self._check_stop()
             
             # 3. 匹配（场景内操作）
             self._set_state(DungeonState.MATCHING)
@@ -242,8 +225,6 @@ class DungeonRunner:
             
             # 4. 战斗
             battle_result = await self.battle_loop.run()
-            
-            await self._check_stop()
             
             if not battle_result.success:
                 raise Exception(f"战斗失败: {battle_result.message}")
@@ -259,13 +240,13 @@ class DungeonRunner:
             return DungeonResult(success=True, rank=battle_result.rank)
             
         except asyncio.CancelledError:
+            # 重新抛出，让上层 _run_context 处理
             self._update_current_record("failed")
-            return DungeonResult(success=False, message="用户终止")
+            raise
         except Exception as e:
             logger.error(f"单次流程异常: {e}")
             self._update_current_record("failed")
-            if not self._stop_requested:
-                await self._try_recover()
+            await self._try_recover()
             return DungeonResult(success=False, message=str(e))
 
     
@@ -278,7 +259,10 @@ class DungeonRunner:
         async with self._run_context() as active:
             if not active:
                 return DungeonResult(success=False, message="任务正在运行中")
-            return await self._execute_dungeon_flow(dungeon_id, difficulty, skip_navigate=False)
+            try:
+                return await self._execute_dungeon_flow(dungeon_id, difficulty, skip_navigate=False)
+            except asyncio.CancelledError:
+                return DungeonResult(success=False, message="用户终止")
     
     async def run_loop(self, dungeon_id: str, difficulty: str = "normal", count: int = -1) -> DungeonRunResult:
         # 多次/无限循环入口
@@ -291,31 +275,33 @@ class DungeonRunner:
             need_navigate = True
             i = 0
             
-            while not self._stop_requested:
-                if not is_infinite and i >= count:
-                    break
-                
-                i += 1
-                logger.info(f"=== 第 {i}" + (f"/{count}" if not is_infinite else "") + " 次 ===")
-                
-                step_res = await self._execute_dungeon_flow(dungeon_id, difficulty, skip_navigate=not need_navigate)
-                
-                if self._stop_requested:
-                    break
-                
-                if is_infinite:
-                    result.total = i
-                
-                if step_res.success:
-                    result.completed += 1
-                    result.ranks.append(step_res.rank)
-                    need_navigate = False
-                else:
-                    result.failed += 1
-                    need_navigate = True
-                
-                if not self._stop_requested:
+            try:
+                while True:
+                    if not is_infinite and i >= count:
+                        break
+                    
+                    i += 1
+                    logger.info(f"=== 第 {i}" + (f"/{count}" if not is_infinite else "") + " 次 ===")
+                    
+                    step_res = await self._execute_dungeon_flow(dungeon_id, difficulty, skip_navigate=not need_navigate)
+                    
+                    if is_infinite:
+                        result.total = i
+                    
+                    if step_res.success:
+                        result.completed += 1
+                        result.ranks.append(step_res.rank)
+                        need_navigate = False
+                    else:
+                        result.failed += 1
+                        need_navigate = True
+                    
                     await asyncio.sleep(1.5)
+            except asyncio.CancelledError:
+                pass
+            
+            logger.info(f"副本运行完成: {result.completed}/{result.total} 成功")
+            return result
             
             logger.info(f"副本运行完成: {result.completed}/{result.total} 成功")
             return result

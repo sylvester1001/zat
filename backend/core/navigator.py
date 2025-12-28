@@ -91,110 +91,122 @@ class Navigator:
         transition_fail_count = 0  # 转移失败计数
         last_scene = None
         
-        while max_retry > 0:
-            # 1. 每次都重新观察当前位置
-            current = await self.observer.observe()
-            
-            # 2. 到达目标？
-            if current == target:
-                scene = registry.get(target)
-                logger.info(f"成功到达: {scene.name if scene else target}")
-                return True
-            
-            # 3. 检测是否卡住
-            if current == last_scene and current != "unknown":
-                stuck_count += 1
-                if stuck_count >= 3:
-                    logger.warning(f"卡在 {current}，尝试返回")
-                    await self._press_back()
+        try:
+            while max_retry > 0:
+                # 1. 每次都重新观察当前位置
+                current = await self.observer.observe()
+                
+                # 2. 到达目标？
+                if current == target:
+                    scene = registry.get(target)
+                    logger.info(f"成功到达: {scene.name if scene else target}")
+                    return True
+                
+                # 3. 检测是否卡住
+                if current == last_scene and current != "unknown":
+                    stuck_count += 1
+                    if stuck_count >= 3:
+                        logger.warning(f"卡在 {current}，尝试返回")
+                        await self._press_back()
+                        stuck_count = 0
+                        max_retry -= 1
+                        continue
+                else:
                     stuck_count = 0
-                    max_retry -= 1
-                    continue
-            else:
-                stuck_count = 0
-            last_scene = current
-            
-            # 4. 无法识别？
-            if current == "unknown":
-                unknown_count += 1
-                # 连续 5 次无法识别，提前失败
-                if unknown_count >= 5:
-                    logger.error("连续多次无法识别场景，可能不在游戏内")
-                    if self._on_failure_callback:
-                        try:
-                            await self._on_failure_callback(target, "scene_unrecognized")
-                        except Exception as e:
-                            logger.error(f"失败回调执行异常: {e}")
-                    return False
+                last_scene = current
                 
-                await self._handle_unknown()
-                max_retry -= 1
-                continue
-            else:
-                unknown_count = 0  # 识别成功，重置计数
-            
-            # 5. 计算路径
-            path = self.find_path(current, target)
-            if not path or len(path) < 2:
-                logger.warning(f"无法从 {current} 到达 {target}")
-                await self._handle_unknown()
-                max_retry -= 1
-                continue
-            
-            # 6. 只执行第一步
-            next_scene = path[1]
-            current_scene_obj = registry.get(current)
-            
-            if not current_scene_obj:
-                max_retry -= 1
-                continue
-            
-            # 获取转移定义
-            transition = current_scene_obj.transitions.get(next_scene)
-            if not transition and current_scene_obj.back_to == next_scene:
-                # 使用返回操作
-                transition = Transition(
-                    target=next_scene,
-                    action=ActionType.BACK,
-                    template=current_scene_obj.back_template,
-                )
-            
-            if transition:
-                logger.info(f"执行: {current_scene_obj.name} -> {registry.get(next_scene).name}")
-                success = await self._execute_transition(transition)
-                
-                if not success:
-                    transition_fail_count += 1
-                    logger.warning(f"转移执行失败 ({transition_fail_count}/3)")
-                    
-                    # 连续 3 次转移失败，触发导航失败
-                    if transition_fail_count >= 3:
-                        logger.error(f"连续多次转移失败，无法从 {current_scene_obj.name} 到达目标")
-                        await self._fallback_to_home()
+                # 4. 无法识别？
+                if current == "unknown":
+                    unknown_count += 1
+                    # 连续 5 次无法识别，提前失败
+                    if unknown_count >= 5:
+                        logger.error("连续多次无法识别场景，可能不在游戏内")
                         if self._on_failure_callback:
                             try:
-                                await self._on_failure_callback(target, "transition_failed")
+                                await self._on_failure_callback(target, "scene_unrecognized")
+                            except asyncio.CancelledError:
+                                raise
                             except Exception as e:
                                 logger.error(f"失败回调执行异常: {e}")
                         return False
+                    
+                    await self._handle_unknown()
+                    max_retry -= 1
+                    continue
                 else:
-                    transition_fail_count = 0  # 成功则重置计数
+                    unknown_count = 0  # 识别成功，重置计数
+                
+                # 5. 计算路径
+                path = self.find_path(current, target)
+                if not path or len(path) < 2:
+                    logger.warning(f"无法从 {current} 到达 {target}")
+                    await self._handle_unknown()
+                    max_retry -= 1
+                    continue
+                
+                # 6. 只执行第一步
+                next_scene = path[1]
+                current_scene_obj = registry.get(current)
+                
+                if not current_scene_obj:
+                    max_retry -= 1
+                    continue
+                
+                # 获取转移定义
+                transition = current_scene_obj.transitions.get(next_scene)
+                if not transition and current_scene_obj.back_to == next_scene:
+                    # 使用返回操作
+                    transition = Transition(
+                        target=next_scene,
+                        action=ActionType.BACK,
+                        template=current_scene_obj.back_template,
+                    )
+                
+                if transition:
+                    logger.info(f"执行: {current_scene_obj.name} -> {registry.get(next_scene).name}")
+                    success = await self._execute_transition(transition)
+                    
+                    if not success:
+                        transition_fail_count += 1
+                        logger.warning(f"转移执行失败 ({transition_fail_count}/3)")
+                        
+                        # 连续 3 次转移失败，触发导航失败
+                        if transition_fail_count >= 3:
+                            logger.error(f"连续多次转移失败，无法从 {current_scene_obj.name} 到达目标")
+                            await self._fallback_to_home()
+                            if self._on_failure_callback:
+                                try:
+                                    await self._on_failure_callback(target, "transition_failed")
+                                except asyncio.CancelledError:
+                                    raise
+                                except Exception as e:
+                                    logger.error(f"失败回调执行异常: {e}")
+                            return False
+                    else:
+                        transition_fail_count = 0  # 成功则重置计数
+                
+                max_retry -= 1
             
-            max_retry -= 1
+            logger.error(f"导航失败: 无法到达 {target}")
+            
+            # 尝试回到 home
+            await self._fallback_to_home()
+            
+            # 触发失败回调
+            if self._on_failure_callback:
+                try:
+                    await self._on_failure_callback(target, "navigation_failed")
+                except asyncio.CancelledError:
+                    raise
+                except Exception as e:
+                    logger.error(f"失败回调执行异常: {e}")
+            
+            return False
         
-        logger.error(f"导航失败: 无法到达 {target}")
-        
-        # 尝试回到 home
-        await self._fallback_to_home()
-        
-        # 触发失败回调
-        if self._on_failure_callback:
-            try:
-                await self._on_failure_callback(target, "navigation_failed")
-            except Exception as e:
-                logger.error(f"失败回调执行异常: {e}")
-        
-        return False
+        except asyncio.CancelledError:
+            # 让取消异常传播，实现立即中断
+            logger.info("导航被取消")
+            raise
     
     async def _fallback_to_home(self):
         # 回退到主界面
@@ -310,7 +322,10 @@ class Navigator:
                 await asyncio.sleep(transition.wait_after)
             
             return success
-            
+        
+        except asyncio.CancelledError:
+            # 让取消异常传播，实现立即中断
+            raise
         except Exception as e:
             logger.error(f"执行转移失败: {e}")
             return False
