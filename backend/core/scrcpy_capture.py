@@ -1,15 +1,12 @@
-# scrcpy 屏幕捕获模块
-# 使用 scrcpy 的 H.264 视频流实现低延迟屏幕捕获
+# 屏幕捕获模块
+# 使用 adb screenrecord 的 H.264 视频流实现低延迟屏幕捕获
 
 import asyncio
 import logging
 import subprocess
-import sys
 import threading
 import time
-from pathlib import Path
 from typing import Optional, Callable
-from queue import Queue, Empty
 
 import numpy as np
 
@@ -22,8 +19,8 @@ class ScrcpyError(Exception):
 
 
 class ScrcpyCapture:
-    # scrcpy 屏幕捕获器
-    # 通过 scrcpy 的 H.264 流实现低延迟屏幕捕获
+    # 屏幕捕获器
+    # 通过 adb screenrecord 的 H.264 流实现低延迟屏幕捕获
     
     def __init__(
         self,
@@ -34,27 +31,25 @@ class ScrcpyCapture:
         scrcpy_path: Optional[str] = None,
         adb_path: Optional[str] = None,
     ):
-        # 初始化 scrcpy 捕获器
+        # 初始化捕获器
         # 
         # Args:
         #     device: ADB 设备地址
         #     max_size: 最大分辨率（短边）
         #     bit_rate: 视频码率
-        #     max_fps: 最大帧率
-        #     scrcpy_path: scrcpy 可执行文件路径
+        #     max_fps: 最大帧率（screenrecord 不支持，保留参数）
+        #     scrcpy_path: 已废弃，保留兼容
         #     adb_path: adb 可执行文件路径
         
         self.device = device
         self.max_size = max_size
         self.bit_rate = bit_rate
         self.max_fps = max_fps
-        self.scrcpy_path = scrcpy_path or self._find_scrcpy()
         self.adb_path = adb_path or 'adb'
         
         self._proc: Optional[subprocess.Popen] = None
         self._decoder_thread: Optional[threading.Thread] = None
         self._running = False
-        self._frame_queue: Queue = Queue(maxsize=2)  # 只保留最新帧
         self._latest_frame: Optional[np.ndarray] = None
         self._frame_lock = threading.Lock()
         self._on_frame_callback: Optional[Callable[[np.ndarray], None]] = None
@@ -64,49 +59,18 @@ class ScrcpyCapture:
         self._start_time = 0.0
         self._last_frame_time = 0.0
     
-    def _find_scrcpy(self) -> str:
-        # 查找 scrcpy 可执行文件
-        
-        # 1. 检查打包后的路径
-        if getattr(sys, 'frozen', False):
-            base = Path(sys._MEIPASS)
-        else:
-            base = Path(__file__).parent.parent
-        
-        vendor_path = base / 'vendor' / 'scrcpy'
-        if sys.platform == 'win32':
-            scrcpy_exe = vendor_path / 'scrcpy.exe'
-        else:
-            scrcpy_exe = vendor_path / 'scrcpy'
-        
-        if scrcpy_exe.exists():
-            return str(scrcpy_exe)
-        
-        # 2. 检查系统 PATH
-        import shutil
-        system_scrcpy = shutil.which('scrcpy')
-        if system_scrcpy:
-            return system_scrcpy
-        
-        raise ScrcpyError(
-            "未找到 scrcpy，请安装 scrcpy 或将其放置在 vendor/scrcpy/ 目录下"
-        )
-    
     def _build_command(self) -> list[str]:
-        # 构建 scrcpy 命令
+        # 构建命令
+        # 使用 adb screenrecord 输出 h264 流
+        bit_rate = self.bit_rate.replace('M', '000000').replace('m', '000000')
         cmd = [
-            self.scrcpy_path,
-            '--serial', self.device,
-            '--no-window',           # 不显示窗口
-            '--no-audio',            # 不捕获音频
-            '--no-control',          # 不发送控制事件（控制用 adb）
-            '--video-codec=h264',    # 使用 H.264 编码
-            f'--max-size={self.max_size}',
-            f'--video-bit-rate={self.bit_rate}',
-            f'--max-fps={self.max_fps}',
-            '--video-source=display',
-            '--record=-',            # 输出到 stdout
-            '--record-format=h264',  # H.264 格式
+            self.adb_path,
+            '-s', self.device,
+            'exec-out',
+            'screenrecord',
+            '--output-format=h264',
+            f'--bit-rate={bit_rate}',
+            '-',  # 输出到 stdout
         ]
         return cmd
     
@@ -121,11 +85,8 @@ class ScrcpyCapture:
         logger.info("解码线程启动")
         
         try:
-            container = av.open(
-                self._proc.stdout,
-                format='h264',
-                options={'flags': 'low_delay'}
-            )
+            container = av.open(self._proc.stdout, format='h264')
+            logger.info("容器已打开，开始解码")
             
             for frame in container.decode(video=0):
                 if not self._running:
@@ -146,18 +107,6 @@ class ScrcpyCapture:
                         self._on_frame_callback(img)
                     except Exception as e:
                         logger.error(f"帧回调错误: {e}")
-                
-                # 放入队列（非阻塞，丢弃旧帧）
-                try:
-                    # 清空队列中的旧帧
-                    while not self._frame_queue.empty():
-                        try:
-                            self._frame_queue.get_nowait()
-                        except Empty:
-                            break
-                    self._frame_queue.put_nowait(img)
-                except:
-                    pass
                     
         except Exception as e:
             if self._running:
@@ -166,15 +115,15 @@ class ScrcpyCapture:
             logger.info("解码线程退出")
     
     def start(self):
-        # 启动 scrcpy 捕获
+        # 启动屏幕捕获
         if self._running:
-            logger.warning("scrcpy 已在运行")
+            logger.warning("捕获已在运行")
             return
         
-        logger.info(f"启动 scrcpy 捕获: {self.device}")
+        logger.info(f"启动屏幕捕获: {self.device}")
         
         cmd = self._build_command()
-        logger.debug(f"scrcpy 命令: {' '.join(cmd)}")
+        logger.debug(f"命令: {' '.join(cmd)}")
         
         try:
             self._proc = subprocess.Popen(
@@ -183,9 +132,9 @@ class ScrcpyCapture:
                 stderr=subprocess.PIPE,
             )
         except FileNotFoundError:
-            raise ScrcpyError(f"scrcpy 不存在: {self.scrcpy_path}")
+            raise ScrcpyError(f"adb 不存在: {self.adb_path}")
         except Exception as e:
-            raise ScrcpyError(f"启动 scrcpy 失败: {e}")
+            raise ScrcpyError(f"启动捕获失败: {e}")
         
         self._running = True
         self._start_time = time.time()
@@ -198,14 +147,14 @@ class ScrcpyCapture:
         )
         self._decoder_thread.start()
         
-        logger.info("scrcpy 捕获已启动")
+        logger.info("屏幕捕获已启动")
     
     def stop(self):
-        # 停止 scrcpy 捕获
+        # 停止屏幕捕获
         if not self._running:
             return
         
-        logger.info("停止 scrcpy 捕获")
+        logger.info("停止屏幕捕获")
         self._running = False
         
         if self._proc:
@@ -220,33 +169,17 @@ class ScrcpyCapture:
             self._decoder_thread.join(timeout=2)
             self._decoder_thread = None
         
-        # 清空队列
-        while not self._frame_queue.empty():
-            try:
-                self._frame_queue.get_nowait()
-            except Empty:
-                break
-        
-        logger.info("scrcpy 捕获已停止")
+        logger.info("屏幕捕获已停止")
     
     def get_frame(self, timeout: float = 1.0) -> Optional[np.ndarray]:
-        # 获取最新一帧
+        # 获取最新一帧（同 get_latest_frame）
         # 
         # Args:
-        #     timeout: 超时时间（秒）
+        #     timeout: 已废弃，保留兼容
         # 
         # Returns:
-        #     BGR 格式的 numpy 数组，如果超时返回 None
-        
-        if not self._running:
-            return None
-        
-        try:
-            return self._frame_queue.get(timeout=timeout)
-        except Empty:
-            # 如果队列为空，返回缓存的最新帧
-            with self._frame_lock:
-                return self._latest_frame
+        #     BGR 格式的 numpy 数组，如果没有帧返回 None
+        return self.get_latest_frame()
     
     def get_latest_frame(self) -> Optional[np.ndarray]:
         # 获取缓存的最新帧（非阻塞）
