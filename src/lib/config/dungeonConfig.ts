@@ -50,10 +50,10 @@ export const DUNGEONS: Dungeon[] = [
     difficulties: ['normal', 'hard'],
   },
   {
-    id: 'mizumoto_shrine',
+    id: 'mizumoto_shirine',
     name: '源水大社',
     desc: '供奉河川神明之所，最深处被强悍的古代构造体守护着',
-    bgClass: 'mizumoto_shrine-bg',
+    bgClass: 'mizumoto_shirine-bg',
     difficulties: ['normal', 'hard', 'nightmare'],
   },
 ];

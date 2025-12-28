@@ -265,13 +265,13 @@ async def get_dungeons():
         "world_tree": "世界之树",
         "mount_mechagod": "机神山",
         "sea_palace": "海之宫遗迹",
-        "mizumoto_shrine": "源水大社",
+        "mizumoto_shirine": "源水大社",
     }
     dungeon_difficulties = {
         "world_tree": ["normal", "hard"],
         "mount_mechagod": ["normal", "hard"],
         "sea_palace": ["normal", "hard"],
-        "mizumoto_shrine": ["normal", "hard", "nightmare"],
+        "mizumoto_shirine": ["normal", "hard", "nightmare"],
     }
     
     for dungeon_id, name in dungeon_names.items():

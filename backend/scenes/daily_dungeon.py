@@ -16,8 +16,8 @@ registry.register(Scene(
             template="daily_dungeon/sea_palace",
             wait_after=0.8
         ),
-        "dungeon:mizumoto_shrine": Transition(
-            target="dungeon:mizumoto_shrine",
+        "dungeon:mizumoto_shirine": Transition(
+            target="dungeon:mizumoto_shirine",
             action=ActionType.CLICK,
             template="daily_dungeon/mizumoto_shirine",
             wait_after=0.8
@@ -55,15 +55,14 @@ registry.register(Scene(
 # 副本详情页定义
 DUNGEONS = [
     ("sea_palace", "海之宫遗迹"),
-    ("mizumoto_shrine", "源水大社"),
+    ("mizumoto_shirine", "源水大社"),
     ("world_tree", "世界之树"),
     ("mount_mechagod", "机神山"),
     ("huangquan_pavilion", "黄泉楼"),
 ]
 
 for dungeon_id, dungeon_name in DUNGEONS:
-    # 指纹文件名处理（mizumoto_shrine 的指纹文件拼写是 mizumoto_shirine）
-    fingerprint_name = "mizumoto_shirine" if dungeon_id == "mizumoto_shrine" else dungeon_id
+    fingerprint_name = dungeon_id
     
     registry.register(Scene(
         id=f"dungeon:{dungeon_id}",

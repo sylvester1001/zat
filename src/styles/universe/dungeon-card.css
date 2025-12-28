@@ -230,6 +230,6 @@
   background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/sea_palace.jpg') !important;
 }
 
-.dungeon-card.mizumoto_shrine-bg {
-  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/mizumoto_shrine.jpg') !important;
+.dungeon-card.mizumoto_shirine-bg {
+  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('/assets/mizumoto_shirine.jpg') !important;
 }

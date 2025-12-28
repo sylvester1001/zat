@@ -77,7 +77,7 @@ DUNGEON_NAMES = {
     "world_tree": "世界之树",
     "mount_mechagod": "机神山",
     "sea_palace": "海之宫遗迹",
-    "mizumoto_shrine": "源水大社",
+    "mizumoto_shirine": "源水大社",
 }
 
 DIFFICULTY_NAMES = {
