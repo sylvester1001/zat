@@ -1,7 +1,6 @@
-"""
-图像识别工具
-使用 PaddleOCR 进行文字识别，OpenCV 进行模板匹配
-"""
+# 图像识别工具
+# 使用 PaddleOCR 进行文字识别，OpenCV 进行模板匹配
+
 import os
 import logging
 from typing import Optional, Tuple, List
@@ -21,7 +20,7 @@ _ocr_instance = None
 
 
 def get_ocr():
-    """获取 OCR 实例（延迟加载）"""
+    # 获取 OCR 实例（延迟加载）
     global _ocr_instance
     if _ocr_instance is None:
         logger.info("正在初始化 PaddleOCR（首次运行需要下载模型，请稍候）...")
@@ -35,19 +34,17 @@ def get_ocr():
 
 
 class ImageMatcher:
-    """图像匹配器"""
+    # 图像匹配器
     
     def __init__(self):
         self.templates: dict[str, np.ndarray] = {}
         self._load_templates()
     
     def _load_templates(self, directory: str = None, prefix: str = ""):
-        """
-        递归加载所有模板图片
-        
-        子目录中的模板会以 "目录名/文件名" 的格式命名
-        例如: daily_dungeon/world_tree
-        """
+        # 递归加载所有模板图片
+        # 
+        # 子目录中的模板会以 "目录名/文件名" 的格式命名
+        # 例如: daily_dungeon/world_tree
         if directory is None:
             directory = TEMPLATES_DIR
             
@@ -80,7 +77,7 @@ class ImageMatcher:
         template_name: str,
         threshold: float = 0.8,
     ) -> Optional[Tuple[int, int, float]]:
-        """模板匹配"""
+        # 模板匹配
         if template_name not in self.templates:
             logger.debug(f"模板不存在: {template_name}")
             return None
@@ -111,18 +108,16 @@ class ImageMatcher:
         region: Optional[Tuple[int, int, int, int]] = None,
         confidence_threshold: float = 0.5
     ) -> Optional[Tuple[int, int, float]]:
-        """
-        使用 OCR 查找指定文字的位置
-        
-        Args:
-            screen: 屏幕截图 (BGR)
-            target_text: 要查找的文字（支持部分匹配）
-            region: 搜索区域 (x, y, w, h)，可选，限制搜索范围提高速度
-            confidence_threshold: 置信度阈值
-        
-        Returns:
-            找到返回 (center_x, center_y, confidence)，否则返回 None
-        """
+        # 使用 OCR 查找指定文字的位置
+        # 
+        # Args:
+        #     screen: 屏幕截图 (BGR)
+        #     target_text: 要查找的文字（支持部分匹配）
+        #     region: 搜索区域 (x, y, w, h)，可选，限制搜索范围提高速度
+        #     confidence_threshold: 置信度阈值
+        # 
+        # Returns:
+        #     找到返回 (center_x, center_y, confidence)，否则返回 None
         ocr = get_ocr()
         
         # 如果指定了区域，裁剪图片
@@ -175,12 +170,10 @@ class ImageMatcher:
         screen: np.ndarray,
         region: Optional[Tuple[int, int, int, int]] = None
     ) -> List[Tuple[str, float, Tuple[int, int]]]:
-        """
-        获取屏幕上所有识别到的文字
-        
-        Returns:
-            列表 [(text, confidence, (center_x, center_y)), ...]
-        """
+        # 获取屏幕上所有识别到的文字
+        # 
+        # Returns:
+        #     列表 [(text, confidence, (center_x, center_y)), ...]
         ocr = get_ocr()
         
         offset_x, offset_y = 0, 0
