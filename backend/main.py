@@ -99,8 +99,7 @@ async def lifespan(app: FastAPI):
         dungeon_runner.stop()
     if task_engine:
         await task_engine.stop()
-    if game_launcher:
-        await game_launcher.stop()
+    # 注意：不关闭游戏，让用户自己决定
     if adb_controller:
         await adb_controller.stop_capture()
     logger.info("ZAT Backend 已关闭")
