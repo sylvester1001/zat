@@ -10,7 +10,7 @@ from enum import Enum
 from datetime import datetime
 
 from core.adb_controller import ADBController
-from core.game_navigator import GameNavigator
+from core.navigator import Navigator
 from core.battle_loop import BattleLoop, BattlePhase
 from core.image_matcher import image_matcher
 
@@ -92,7 +92,7 @@ class DungeonRunner:
     
     MAX_HISTORY = 10
     
-    def __init__(self, adb: ADBController, navigator: GameNavigator):
+    def __init__(self, adb: ADBController, navigator: Navigator):
         self.adb = adb
         self.navigator = navigator
         self.battle_loop = BattleLoop(adb)

@@ -1,5 +1,5 @@
 # 场景导航器
-# 负责寻路和导航，使用"只走一步"的贪婪策略
+# 负责场景识别、寻路和导航
 
 import asyncio
 import logging
@@ -13,10 +13,13 @@ if TYPE_CHECKING:
 from core.scene_registry import registry, Scene, Transition, ActionType
 from core.scene_observer import SceneObserver
 
-logger = logging.getLogger("zat.scene_navigator")
+# 导入场景定义（触发注册）
+import scenes
+
+logger = logging.getLogger("zat.navigator")
 
 
-class SceneNavigator:
+class Navigator:
     # 场景导航器：基于观察的贪婪导航策略
     
     def __init__(self, adb: "ADBController", matcher: "ImageMatcher"):
@@ -132,6 +135,51 @@ class SceneNavigator:
         
         logger.error(f"导航失败: 无法到达 {target}")
         return False
+    
+    async def detect_current_scene(self) -> str:
+        # 检测当前场景
+        return await self.observer.observe()
+    
+    async def click_template(self, template_name: str, timeout: float = 5.0, threshold: float = 0.7) -> bool:
+        # 等待并点击模板（对外 API）
+        return await self._click_template(template_name, timeout, threshold)
+    
+    async def click_template_if_exists(self, screen, template_name: str, threshold: float = 0.7) -> bool:
+        # 检测模板存在则点击（单次检测，不等待）
+        result = self.matcher.match_template(screen, template_name, threshold=threshold)
+        if result:
+            x, y, _ = result
+            await self.adb.tap(x, y)
+            logger.debug(f"点击: {template_name} at ({x}, {y})")
+            return True
+        return False
+    
+    async def press_back(self) -> bool:
+        # 按返回键（对外 API）
+        return await self._press_back()
+    
+    def get_scene_info(self, scene_id: str) -> Optional[dict]:
+        # 获取场景信息
+        scene = registry.get(scene_id)
+        if scene:
+            return {
+                "id": scene.id,
+                "name": scene.name,
+                "fingerprint": scene.fingerprint,
+                "transitions": list(scene.transitions.keys()),
+                "back_to": scene.back_to,
+            }
+        return None
+    
+    def get_all_scenes(self) -> list[str]:
+        # 获取所有已注册的场景ID
+        return list(registry.get_all().keys())
+    
+    def get_current_scene(self) -> Optional[str]:
+        # 获取当前场景（新架构不缓存状态，返回 None 让调用方使用 detect_current_scene）
+        return None
+    
+    # ==================== 内部方法 ====================
     
     async def _execute_transition(self, transition: Transition) -> bool:
         # 执行场景转移操作

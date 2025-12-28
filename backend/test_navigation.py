@@ -15,7 +15,7 @@ logging.basicConfig(
 # 导入模块
 from core.adb_controller import ADBController
 from core.image_matcher import image_matcher
-from core.scene_navigator import SceneNavigator
+from core.navigator import Navigator
 from core.scene_registry import registry
 
 # 导入场景定义（触发注册）
@@ -38,7 +38,7 @@ async def test_observe():
     await adb.start_capture()
     await asyncio.sleep(1)
     
-    navigator = SceneNavigator(adb, image_matcher)
+    navigator = Navigator(adb, image_matcher)
     
     # 识别当前场景
     current = await navigator.observer.observe()
@@ -70,7 +70,7 @@ async def test_navigate(target: str):
     await adb.start_capture()
     await asyncio.sleep(1)
     
-    navigator = SceneNavigator(adb, image_matcher)
+    navigator = Navigator(adb, image_matcher)
     
     # 先识别当前位置
     current = await navigator.observer.observe()

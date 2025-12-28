@@ -12,16 +12,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.adb_controller import ADBController
 from core.task_engine import TaskEngine
-from core.game_navigator import GameNavigator
+from core.navigator import Navigator
 from core.dungeon_runner import DungeonRunner
 from core.game_launcher import GameLauncher
 from core.scene_graph import SCENES
+from core.image_matcher import image_matcher
 from utils.logger import setup_logger, LogBroadcaster
 
 # 全局实例
 adb_controller: ADBController = None
 task_engine: TaskEngine = None
-game_navigator: GameNavigator = None
+navigator: Navigator = None
 dungeon_runner: DungeonRunner = None
 game_launcher: GameLauncher = None
 log_broadcaster = LogBroadcaster()
@@ -31,7 +32,7 @@ logger = setup_logger("zat", log_broadcaster)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
-    global adb_controller, task_engine, game_navigator, dungeon_runner, game_launcher
+    global adb_controller, task_engine, navigator, dungeon_runner, game_launcher
     
     logger.info("ZAT Backend 启动中...")
     
@@ -42,10 +43,10 @@ async def lifespan(app: FastAPI):
     task_engine = TaskEngine(adb_controller, log_broadcaster)
     
     # 初始化游戏导航器
-    game_navigator = GameNavigator(adb_controller)
+    navigator = Navigator(adb_controller, image_matcher)
     
     # 初始化副本执行器
-    dungeon_runner = DungeonRunner(adb_controller, game_navigator)
+    dungeon_runner = DungeonRunner(adb_controller, navigator)
     
     # 初始化游戏启动器
     game_launcher = GameLauncher(adb_controller)
@@ -259,7 +260,7 @@ async def navigate_to_dungeon(dungeon_id: str, difficulty: str = "normal"):
     
     try:
         target_scene = f"dungeon:{dungeon_id}"
-        success = await game_navigator.navigate_to(target_scene)
+        success = await navigator.navigate_to(target_scene)
         if success:
             return {"success": True, "dungeon": dungeon_id, "difficulty": difficulty}
         else:
@@ -359,7 +360,7 @@ async def get_current_scene():
     if not adb_controller.is_connected():
         raise HTTPException(status_code=400, detail="设备未连接")
     
-    current = game_navigator.get_current_scene()
+    current = navigator.get_current_scene()
     if current:
         scene = SCENES.get(current)
         return {
@@ -369,7 +370,7 @@ async def get_current_scene():
         }
     
     # 如果当前场景未知，尝试检测
-    detected = await game_navigator.detect_current_scene()
+    detected = await navigator.detect_current_scene()
     if detected:
         scene = SCENES.get(detected)
         return {
@@ -396,7 +397,7 @@ async def navigate_to_scene(scene_id: str):
         raise HTTPException(status_code=400, detail=f"未知场景: {scene_id}")
     
     try:
-        success = await game_navigator.navigate_to(scene_id)
+        success = await navigator.navigate_to(scene_id)
         if success:
             return {"success": True, "scene": scene_id}
         else:
