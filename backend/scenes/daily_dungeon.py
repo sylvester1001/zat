@@ -14,13 +14,13 @@ registry.register(Scene(
             target="dungeon:sea_palace",
             action=ActionType.CLICK,
             template="daily_dungeon/sea_palace",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "dungeon:mizumoto_shirine": Transition(
             target="dungeon:mizumoto_shirine",
             action=ActionType.CLICK,
             template="daily_dungeon/mizumoto_shirine",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "dungeon:world_tree": Transition(
             target="dungeon:world_tree",
@@ -28,7 +28,7 @@ registry.register(Scene(
             template="daily_dungeon/world_tree",
             scroll="down",
             scroll_distance=500,
-            wait_after=0.8
+            wait_after=0.5
         ),
         "dungeon:mount_mechagod": Transition(
             target="dungeon:mount_mechagod",
@@ -36,7 +36,7 @@ registry.register(Scene(
             template="daily_dungeon/mount_mechagod",
             scroll="down",
             scroll_distance=500,
-            wait_after=0.8
+            wait_after=0.5
         ),
         "dungeon:huangquan_pavilion": Transition(
             target="dungeon:huangquan_pavilion",
@@ -44,7 +44,7 @@ registry.register(Scene(
             template="daily_dungeon/huangquan_pavilion",
             scroll="down",
             scroll_distance=500,
-            wait_after=0.8
+            wait_after=0.5
         ),
     },
     back_to="note",

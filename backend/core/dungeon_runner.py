@@ -219,7 +219,6 @@ class DungeonRunner:
                 self._set_state(DungeonState.NAVIGATING)
                 if not await self.navigator.navigate_to(target_scene):
                     raise Exception("导航到副本详情页失败")
-                await asyncio.sleep(0.5)
             else:
                 # 即使跳过导航，也要确认当前在正确的场景
                 current = await self.navigator.detect_current_scene()
@@ -227,14 +226,12 @@ class DungeonRunner:
                     self._set_state(DungeonState.NAVIGATING)
                     if not await self.navigator.navigate_to(target_scene):
                         raise Exception("导航到副本详情页失败")
-                    await asyncio.sleep(0.5)
             
             await self._check_stop()
             
             # 2. 选难度（场景内操作）
             if not await self._select_difficulty(difficulty):
                 raise Exception("选择难度失败")
-            await asyncio.sleep(0.3)
             
             await self._check_stop()
             

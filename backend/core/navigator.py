@@ -86,17 +86,6 @@ class Navigator:
         # 导航到目标场景（贪婪策略：每步重新观察）
         # Returns: 成功返回 True
         
-        # 先检测当前是否在游戏内
-        initial_check = await self._check_in_game()
-        if not initial_check:
-            logger.error("无法识别游戏界面，请确保已进入游戏")
-            if self._on_failure_callback:
-                try:
-                    await self._on_failure_callback(target, "not_in_game")
-                except Exception as e:
-                    logger.error(f"失败回调执行异常: {e}")
-            return False
-        
         stuck_count = 0
         unknown_count = 0
         transition_fail_count = 0  # 转移失败计数
@@ -329,7 +318,7 @@ class Navigator:
     async def _click_template(self, template_name: str, timeout: float = 5.0, threshold: float = 0.7) -> bool:
         # 等待并点击模板
         elapsed = 0
-        interval = 0.3
+        interval = 0.1
         
         while elapsed < timeout:
             screen = await self.adb.screencap_array()
@@ -394,21 +383,20 @@ class Navigator:
         return True
     
     async def _handle_unknown(self):
-        # 处理未知状态：尝试关闭弹窗或返回
+        # 处理未知状态：等待一下让动画完成，不主动按返回键
+        # 因为可能只是场景转移动画还没完成
         logger.info("尝试处理未知状态...")
         
         screen = await self.adb.screencap_array()
         
-        # 尝试点击关闭按钮
-        for close_template in ["close", "back"]:
-            result = self.matcher.match_template(screen, close_template, threshold=0.7)
-            if result:
-                x, y, _ = result
-                await self.adb.tap(x, y)
-                logger.debug(f"点击关闭: {close_template}")
-                await asyncio.sleep(0.5)
-                return
+        # 只尝试点击关闭按钮（处理弹窗）
+        result = self.matcher.match_template(screen, "close", threshold=0.7)
+        if result:
+            x, y, _ = result
+            await self.adb.tap(x, y)
+            logger.debug("点击关闭弹窗")
+            await asyncio.sleep(0.3)
+            return
         
-        # 尝试按返回键
-        await self._press_back()
+        # 不按返回键，只等待一下让动画完成
         await asyncio.sleep(0.5)

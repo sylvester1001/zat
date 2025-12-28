@@ -14,25 +14,25 @@ registry.register(Scene(
             target="note",
             action=ActionType.CLICK,
             template="note",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "character": Transition(
             target="character",
             action=ActionType.CLICK,
             template="character",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "guild": Transition(
             target="guild",
             action=ActionType.CLICK,
             template="guild",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "world": Transition(
             target="world",
             action=ActionType.CLICK,
             template="world",
-            wait_after=0.8
+            wait_after=0.5
         ),
     },
     back_to=None,
@@ -48,37 +48,37 @@ registry.register(Scene(
             target="home",
             action=ActionType.CLICK,
             template="home",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "character": Transition(
             target="character",
             action=ActionType.CLICK,
             template="character",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "guild": Transition(
             target="guild",
             action=ActionType.CLICK,
             template="guild",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "world": Transition(
             target="world",
             action=ActionType.CLICK,
             template="world",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "dungeon_list": Transition(
             target="dungeon_list",
             action=ActionType.CLICK,
             template="daily_dungeon/daily_dungeon",
-            wait_after=1.0
+            wait_after=0.5
         ),
         "daily_activity_list": Transition(
             target="daily_activity_list",
             action=ActionType.CLICK,
             template="daily_activity",
-            wait_after=1.0
+            wait_after=0.5
         ),
     },
     back_to=None,
@@ -94,25 +94,25 @@ registry.register(Scene(
             target="home",
             action=ActionType.CLICK,
             template="home",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "note": Transition(
             target="note",
             action=ActionType.CLICK,
             template="note",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "guild": Transition(
             target="guild",
             action=ActionType.CLICK,
             template="guild",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "world": Transition(
             target="world",
             action=ActionType.CLICK,
             template="world",
-            wait_after=0.8
+            wait_after=0.5
         ),
     },
     back_to=None,
@@ -128,25 +128,25 @@ registry.register(Scene(
             target="home",
             action=ActionType.CLICK,
             template="home",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "note": Transition(
             target="note",
             action=ActionType.CLICK,
             template="note",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "character": Transition(
             target="character",
             action=ActionType.CLICK,
             template="character",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "world": Transition(
             target="world",
             action=ActionType.CLICK,
             template="world",
-            wait_after=0.8
+            wait_after=0.5
         ),
     },
     back_to=None,
@@ -162,25 +162,25 @@ registry.register(Scene(
             target="home",
             action=ActionType.CLICK,
             template="home",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "note": Transition(
             target="note",
             action=ActionType.CLICK,
             template="note",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "character": Transition(
             target="character",
             action=ActionType.CLICK,
             template="character",
-            wait_after=0.8
+            wait_after=0.5
         ),
         "guild": Transition(
             target="guild",
             action=ActionType.CLICK,
             template="guild",
-            wait_after=0.8
+            wait_after=0.5
         ),
     },
     back_to=None,
