@@ -2,33 +2,16 @@
 
 旧方案（错误的）: scene_navigator.current_scene。这是在读内存里的变量。
 
-Claude 方案: await self.observer.observe()。
+新方案: await self.observer.observe()。
 
-我的方案: Observer.get_current_scene()。
-
-共同点: 都不相信“上一秒的状态”，每一帧操作前，必须重新截图识别。这解决了“用户乱点”或“游戏弹窗”导致状态不同步的问题。
+不相信“上一秒的状态”，每一帧操作前，必须重新截图识别。这解决了“用户乱点”或“游戏弹窗”导致状态不同步的问题。
 
 2. 核心共识：导航是“动态计算”的
 
 Claude 方案: path = self.find_path(current, target)。
 
-我的方案: Graph.get_next_action(start, end)。
+不再写死 click_A_then_click_B。你只需要告诉脚本“我现在在哪”和“我要去哪”，中间的路径是算法算出来的（通常是 BFS/Dijkstra 算法）。
 
-共同点: 你不再写死 click_A_then_click_B。你只需要告诉脚本“我现在在哪”和“我要去哪”，中间的路径是算法算出来的（通常是 BFS/Dijkstra 算法）。
-
-细微的优化建议（基于 Claude 的代码）
-
-虽然大方向一致，但我建议对 Claude 的 Maps_to 逻辑做一个更极致的优化。
-
-Claude 的逻辑是：
-
-看一眼起点。
-
-算出整条路径 (A -> B -> C -> D)。
-
-循环执行每一步，每一步执行完检查一下是否到了下一步。
-
-潜在风险： 游戏是动态的。当你从 A 走到 B 的过程中，可能突然弹出了一个“限时礼包”。 如果你的代码还在执着地执行 B -> C 的操作，可能会点在广告上。
 
 建议改进（更贪婪的策略）： 不要一次性把路走完，每走一步，就清空路径，重新规划。
 
