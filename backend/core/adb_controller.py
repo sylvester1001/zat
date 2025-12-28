@@ -8,7 +8,7 @@ from typing import Optional
 import numpy as np
 import cv2
 
-from .scrcpy_capture import ScrcpyCapture, AsyncScrcpyCapture, ScrcpyError
+from .screen_capture import ScreenCapture, AsyncScreenCapture, ScreenCaptureError
 
 logger = logging.getLogger("zat.adb")
 
@@ -51,8 +51,8 @@ class ADBController:
         self.bit_rate = bit_rate
         
         # 屏幕捕获器实例
-        self._capture: Optional[ScrcpyCapture] = None
-        self._async_capture: Optional[AsyncScrcpyCapture] = None
+        self._capture: Optional[ScreenCapture] = None
+        self._async_capture: Optional[AsyncScreenCapture] = None
         
         # 检查 ADB 是否可用
         if not shutil.which(self.adb_path):
@@ -77,15 +77,15 @@ class ADBController:
             return
         
         try:
-            self._capture = ScrcpyCapture(
+            self._capture = ScreenCapture(
                 device=self.device,
                 bit_rate=self.bit_rate,
                 adb_path=self.adb_path,
             )
-            self._async_capture = AsyncScrcpyCapture(self._capture)
+            self._async_capture = AsyncScreenCapture(self._capture)
             await self._async_capture.start()
             logger.info("屏幕捕获已启动")
-        except ScrcpyError as e:
+        except ScreenCaptureError as e:
             logger.error(f"启动屏幕捕获失败: {e}")
             self._capture = None
             self._async_capture = None
