@@ -1,7 +1,6 @@
-"""
-任务引擎
-负责执行自动化任务流程
-"""
+# 任务引擎
+# 负责执行自动化任务流程
+
 import asyncio
 import logging
 from typing import Optional
@@ -13,7 +12,7 @@ logger = logging.getLogger("zat.task")
 
 
 class TaskEngine:
-    """任务引擎 - 负责自动化任务的执行"""
+    # 任务引擎 - 负责自动化任务的执行
     
     def __init__(self, adb: ADBController, log_broadcaster: LogBroadcaster):
         self.adb = adb
@@ -25,11 +24,11 @@ class TaskEngine:
         self._task: Optional[asyncio.Task] = None
     
     def is_running(self) -> bool:
-        """检查任务是否正在运行"""
+        # 检查任务是否正在运行
         return self._running
     
     async def start(self, task_name: str):
-        """启动任务"""
+        # 启动任务
         if self._running:
             raise RuntimeError("任务已在运行")
         
@@ -43,7 +42,7 @@ class TaskEngine:
         logger.info(f"任务引擎已启动: {task_name}")
     
     async def stop(self):
-        """停止任务"""
+        # 停止任务
         if not self._running:
             return
         
@@ -62,7 +61,7 @@ class TaskEngine:
         logger.info("任务引擎已停止")
     
     async def _run_task(self, task_name: str):
-        """运行任务（内部方法）"""
+        # 运行任务（内部方法）
         try:
             logger.info(f"开始执行任务: {task_name}")
             

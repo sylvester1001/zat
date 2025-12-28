@@ -1,7 +1,6 @@
-"""
-战斗状态循环
-负责战斗中的状态检测和操作
-"""
+# 战斗状态循环
+# 负责战斗中的状态检测和操作
+
 import asyncio
 import logging
 from typing import Optional, Callable
@@ -15,14 +14,14 @@ logger = logging.getLogger("zat.battle")
 
 
 class BattlePhase(str, Enum):
-    """战斗阶段"""
+    # 战斗阶段
     MATCHING = "matching"    # 匹配中（等待接受）
     BATTLING = "battling"    # 进行中（已点击准备）
 
 
 @dataclass
 class BattleResult:
-    """战斗结果"""
+    # 战斗结果
     success: bool
     rank: Optional[str] = None  # S/A/B/C
     message: str = ""
@@ -38,7 +37,7 @@ RANK_TEMPLATES = {
 
 
 class BattleLoop:
-    """战斗状态循环"""
+    # 战斗状态循环
     
     def __init__(self, adb: ADBController):
         self.adb = adb
@@ -47,11 +46,11 @@ class BattleLoop:
         self._on_phase_change: Optional[Callable[[BattlePhase], None]] = None
     
     def set_phase_callback(self, callback: Callable[[BattlePhase], None]):
-        """设置阶段变化回调"""
+        # 设置阶段变化回调
         self._on_phase_change = callback
     
     def _set_phase(self, phase: BattlePhase):
-        """设置阶段并触发回调"""
+        # 设置阶段并触发回调
         if self._phase != phase:
             self._phase = phase
             logger.debug(f"战斗阶段: {phase.value}")
@@ -59,7 +58,7 @@ class BattleLoop:
                 self._on_phase_change(phase)
     
     async def _detect_and_click(self, screen, template: str, threshold: float = 0.7) -> bool:
-        """检测模板并点击（单次检测）"""
+        # 检测模板并点击（单次检测）
         result = image_matcher.match_template(screen, template, threshold=threshold)
         if result:
             x, y, confidence = result
@@ -69,26 +68,19 @@ class BattleLoop:
         return False
     
     async def _detect_rank(self, screen) -> Optional[str]:
-        """检测评级"""
+        # 检测评级
         for rank, template in RANK_TEMPLATES.items():
             if image_matcher.match_template(screen, template, threshold=0.7):
                 return rank
         return None
     
     async def run(self, timeout: float = 600.0) -> BattleResult:
-        """
-        运行战斗循环
-        
-        阶段流转：
-        - MATCHING: 检测接受按钮，点击后可能被拒绝回到匹配
-        - BATTLING: 点击准备后进入，只检测准备按钮（多子地图）和评级
-        
-        Args:
-            timeout: 总超时时间（秒），默认10分钟
-        
-        Returns:
-            BattleResult
-        """
+        # 运行战斗循环
+        # 阶段流转：
+        # - MATCHING: 检测接受按钮，点击后可能被拒绝回到匹配
+        # - BATTLING: 点击准备后进入，只检测准备按钮（多子地图）和评级
+        # timeout: 总超时时间（秒），默认10分钟
+        # Returns: BattleResult
         logger.info("进入战斗循环...")
         self._running = True
         self._set_phase(BattlePhase.MATCHING)
@@ -144,6 +136,6 @@ class BattleLoop:
         return BattleResult(success=False, message="战斗被中断")
     
     def stop(self):
-        """停止战斗循环"""
+        # 停止战斗循环
         self._running = False
         logger.info("战斗循环已停止")

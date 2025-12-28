@@ -1,7 +1,6 @@
-"""
-游戏场景导航器
-负责场景检测和导航
-"""
+# 游戏场景导航器
+# 负责场景检测和导航
+
 import asyncio
 import logging
 from typing import Optional
@@ -13,25 +12,27 @@ from core.scene_graph import (
     Scene, 
     Transition, 
     ActionType,
-    SCENES
+    SCENES,
+    DEFAULT_WAIT_AFTER,
+    MATCH_INTERVAL,
 )
 
 logger = logging.getLogger("zat.navigator")
 
 
 class GameNavigator:
-    """游戏场景导航器"""
+    # 游戏场景导航器
     
     def __init__(self, adb: ADBController):
         self.adb = adb
         scene_navigator.set_action_handler(self._execute_transition)
     
     async def _execute_transition(self, transition: Transition, from_scene: Scene) -> bool:
-        """执行场景转移操作"""
+        # 执行场景转移操作
         try:
             if transition.scroll:
                 await self._scroll(transition.scroll, transition.scroll_distance)
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(0.1)
             
             if transition.action == ActionType.CLICK:
                 if not transition.template:
@@ -59,7 +60,10 @@ class GameNavigator:
                 return False
             
             if success:
-                await asyncio.sleep(transition.wait_after)
+                # 使用 transition 指定的等待时间，或全局默认值
+                wait_time = transition.wait_after if transition.wait_after is not None else DEFAULT_WAIT_AFTER
+                if wait_time > 0:
+                    await asyncio.sleep(wait_time)
             
             return success
             
@@ -70,16 +74,9 @@ class GameNavigator:
     async def click_template(self, template_name: str, timeout: float = 5.0, threshold: float = 0.7) -> bool:
         # 等待并点击模板
         elapsed = 0
-        interval = 0.3
-        attempt = 0
         
         while elapsed < timeout:
-            attempt += 1
             screen = await self.adb.screencap_array()
-            
-            # 调试：每次都输出状态
-            logger.debug(f"[{template_name}] 尝试 {attempt}, 帧率: {self.adb.capture_fps:.1f}")
-            
             result = image_matcher.match_template(screen, template_name, threshold=threshold)
             
             if result:
@@ -88,8 +85,8 @@ class GameNavigator:
                 logger.info(f"点击模板: {template_name} at ({x}, {y}), 置信度: {confidence:.3f}")
                 return True
             
-            await asyncio.sleep(interval)
-            elapsed += interval
+            await asyncio.sleep(MATCH_INTERVAL)
+            elapsed += MATCH_INTERVAL
         
         # 匹配失败时保存当前帧用于调试
         import cv2
@@ -101,7 +98,7 @@ class GameNavigator:
         return False
     
     async def click_template_if_exists(self, screen, template_name: str, threshold: float = 0.7) -> bool:
-        """检测模板存在则点击（单次检测，不等待）"""
+        # 检测模板存在则点击（单次检测，不等待）
         result = image_matcher.match_template(screen, template_name, threshold=threshold)
         if result:
             x, y, confidence = result
@@ -111,7 +108,7 @@ class GameNavigator:
         return False
     
     async def _click_text(self, text: str, timeout: float = 5.0) -> bool:
-        """点击文字"""
+        # 点击文字
         elapsed = 0
         interval = 0.5
         
@@ -132,7 +129,7 @@ class GameNavigator:
         return False
     
     async def _scroll(self, direction: str, distance: int = 500):
-        """滑动屏幕"""
+        # 滑动屏幕
         screen = await self.adb.screencap_array()
         h, w = screen.shape[:2]
         
@@ -152,14 +149,14 @@ class GameNavigator:
         await asyncio.sleep(0.5)
     
     async def press_back(self) -> bool:
-        """按返回键"""
+        # 按返回键
         cmd = f'"{self.adb.adb_path}" -s {self.adb.device} shell input keyevent KEYCODE_BACK'
         await self.adb._run_command(cmd)
         logger.debug("按下返回键")
         return True
     
     async def detect_current_scene(self) -> Optional[str]:
-        """检测当前场景"""
+        # 检测当前场景
         screen = await self.adb.screencap_array()
         
         # 优先检测底部导航栏
@@ -195,7 +192,7 @@ class GameNavigator:
         return None
     
     async def navigate_to(self, target_scene: str) -> bool:
-        """导航到目标场景"""
+        # 导航到目标场景
         if scene_navigator.current_scene is None:
             detected = await self.detect_current_scene()
             if not detected:
@@ -214,7 +211,7 @@ class GameNavigator:
         return await scene_navigator.navigate_to(target_scene)
     
     def set_current_scene(self, scene_id: str):
-        """手动设置当前场景"""
+        # 手动设置当前场景
         if scene_id in SCENES:
             scene_navigator.current_scene = scene_id
             logger.info(f"设置当前场景: {SCENES[scene_id].name}")
@@ -222,5 +219,5 @@ class GameNavigator:
             logger.warning(f"未知场景: {scene_id}")
     
     def get_current_scene(self) -> Optional[str]:
-        """获取当前场景"""
+        # 获取当前场景
         return scene_navigator.current_scene
